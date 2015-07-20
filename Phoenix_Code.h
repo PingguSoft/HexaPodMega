@@ -430,6 +430,8 @@ void setup(){
 #endif
 #endif
 
+
+  pinMode(STATUS_LED_PIN, OUTPUT);
 }
 
 
@@ -568,6 +570,7 @@ void loop(void)
   //Drive Servos
   if (g_InControlState.fHexOn) {
     if (g_InControlState.fHexOn && !g_InControlState.fPrev_HexOn) {
+      digitalWrite(STATUS_LED_PIN, 1);
       MSound(3, 60, 2000, 80, 2250, 100, 2500);
 #ifdef USEXBEE
       XBeePlaySounds(3, 60, 2000, 80, 2250, 100, 2500);
@@ -672,6 +675,7 @@ void loop(void)
       XBeePlaySounds(3, 100, 2500, 80, 2250, 60, 2000);
 #endif
       delay(600);
+      digitalWrite(STATUS_LED_PIN, 0);
     }
     else {
       g_ServoDriver.FreeServos();

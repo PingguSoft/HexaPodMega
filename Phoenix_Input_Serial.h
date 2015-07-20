@@ -310,44 +310,44 @@ void InputController::ControlInput(void)
 
     // Left Joystick
     case 't':
-        if (abDualShock[SER_LY] != 0)
-            abDualShock[SER_LY]--;
+        if (abDualShock[SER_LY] > 10)
+            abDualShock[SER_LY] -= 10;
         break;
 
     case 'f':
-        if (abDualShock[SER_LX] != 0)
-            abDualShock[SER_LX]--;
+        if (abDualShock[SER_LX] > 10)
+            abDualShock[SER_LX] -= 10;
         break;
 
     case 'g':
-        if (abDualShock[SER_LY] != 255)
-            abDualShock[SER_LY]++;
+        if (abDualShock[SER_LY] < 245)
+            abDualShock[SER_LY] += 10;
         break;
 
     case 'h':
-        if (abDualShock[SER_LX] != 255)
-            abDualShock[SER_LX]++;
+        if (abDualShock[SER_LX] < 245)
+            abDualShock[SER_LX] += 10;
         break;
 
     // Right Joystick
     case 'i':
-        if (abDualShock[SER_RY] != 0)
-            abDualShock[SER_RY]--;
+        if (abDualShock[SER_RY] > 10)
+            abDualShock[SER_RY] -= 10;
         break;
 
     case 'j':
-        if (abDualShock[SER_RX] != 0)
-            abDualShock[SER_RX]--;
+        if (abDualShock[SER_RX] > 10)
+            abDualShock[SER_RX] -= 10;
         break;
 
     case 'k':
-        if (abDualShock[SER_RY] != 255)
-            abDualShock[SER_RY]++;
+        if (abDualShock[SER_RY] < 245)
+            abDualShock[SER_RY] += 10;
         break;
 
     case 'l':
-        if (abDualShock[SER_RX] != 255)
-            abDualShock[SER_RX]++;
+        if (abDualShock[SER_RX] < 245)
+            abDualShock[SER_RX] += 10;
         break;
 
     // buttons
@@ -368,8 +368,20 @@ void InputController::ControlInput(void)
         break;
   }
 
-  // Lets check the checksum...
-  //if (abDualShock[0] == (abDualShock[1] ^ abDualShock[2] ^ abDualShock[3] ^ abDualShock[4] ^ abDualShock[5] ^ abDualShock[6])) {
+  switch(cmd) {
+    case 't':
+    case 'f':
+    case 'g':
+    case 'h':
+    case 'i':
+    case 'j':
+    case 'k':
+    case 'l':
+        printf(F("LX:%3d, LY:%3d, RX:%3d, RY:%3d\n"), abDualShock[SER_LX], abDualShock[SER_LY],
+            abDualShock[SER_RX], abDualShock[SER_RY]);
+        break;
+  }
+
   if (1) {
 
 //    wButtons = (abDualShock[1] << 8) | abDualShock[2];
