@@ -8,9 +8,9 @@
 //Programmer: Jeroen Janssen (aka Xan)
 //             Kurt Eckhardt (aka KurtE) - converted to c ported to Arduino...
 //
-//Hardware setup: Serial version - This contoll input, uses the same format of input as the old Powerpod serial test program.  
+//Hardware setup: Serial version - This contoll input, uses the same format of input as the old Powerpod serial test program.
 // Obviously it can be hacked up to almost any format
-// 
+//
 //NEW IN V1.1
 //	- added speaker constant
 //	- added variable for number of gaits in code
@@ -29,7 +29,7 @@
 //
 // Packet format:
 // DualShock(0) : Checksum of other byte
-// DualShock(1) 
+// DualShock(1)
 //   bit7 - Left Button test
 //   bit6 - Down Button test
 //   bit5 - Right Button test
@@ -59,7 +59,7 @@
 //	- L2			Toggle Rotate mode
 //	- Circle		Toggle Single leg mode
 //   - Square        Toggle Balance mode
-//	- Triangle		Move body to 35 mm from the ground (walk pos) 
+//	- Triangle		Move body to 35 mm from the ground (walk pos)
 //					and back to the ground
 //	- D-Pad up		Body up 10 mm
 //	- D-Pad down	Body down 10 mm
@@ -70,7 +70,7 @@
 //	- select		Switch gaits
 //	- Left Stick	(Walk mode 1) Walk/Strafe
 //				 	(Walk mode 2) Disable
-//	- Right Stick	(Walk mode 1) Rotate, 		
+//	- Right Stick	(Walk mode 1) Rotate,
 //					(Walk mode 2) Walk/Rotate
 //	- R1			Toggle Double gait travel speed
 //	- R2			Toggle Double gait travel length
@@ -81,7 +81,7 @@
 //
 //	[Rotate Controls]
 //	- Left Stick	Rotate body X/Z
-//	- Right Stick	Rotate body Y	
+//	- Right Stick	Rotate body Y
 //
 //	[Single leg Controls]
 //	- select		Switch legs
@@ -100,6 +100,9 @@
 #else
 #include <Wprogram.h> // Arduino 0022
 #endif
+#include <avr/pgmspace.h>
+
+void printf(const __FlashStringHelper *fmt, ... );
 
 //[CONSTANTS]
 // Default to Serial but allow to be defined to something else
@@ -153,9 +156,9 @@
 //=============================================================================
 
 // Define an instance of the Input Controller...
-InputController  g_InputController;       // Our Input controller 
+InputController  g_InputController;       // Our Input controller
 
-static short       g_BodyYOffset; 
+static short       g_BodyYOffset;
 static word        g_wSerialErrorCnt;
 static short       g_BodyYShift;
 static byte        ControlMode;
@@ -175,23 +178,31 @@ extern void SerTurnRobotOff(void);
 //process any commands.
 //==============================================================================
 // If both PS2 and XBee are defined then we will become secondary to the xbee
+
+byte abDualShock[7];  // we will to receive 7 bytes of data with the first byte being the checksum
+
 void InputController::Init(void)
 {
   int error;
 
   // May need to init the Serial port here...
   SerSerial.begin(SERIAL_BAUD);
-  
-  g_BodyYOffset = 0;    
+
+  g_BodyYOffset = 0;
   g_BodyYShift = 0;
   g_wSerialErrorCnt = 0;  // error count
 
-  ControlMode = WALKMODE;
+  ControlMode = SINGLELEGMODE;
   DoubleHeightOn = false;
   DoubleTravelOn = false;
   WalkMethod = false;
 
   g_InControlState.SpeedControl = 100;    // Sort of migrate stuff in from Devon.
+
+  abDualShock[SER_LX] = 128;
+  abDualShock[SER_LY] = 128;
+  abDualShock[SER_RX] = 128;
+  abDualShock[SER_RY] = 128;
 }
 
 //==============================================================================
@@ -202,10 +213,12 @@ void InputController::Init(void)
 void InputController::AllowControllerInterrupts(boolean fAllow)
 {
   // We don't need to do anything...
-  
+
 }
 
-#define ButtonPressed(wMask) (((wButtons & wMask) == 0) && ((g_wButtonsPrev & wMask) != 0))
+//#define ButtonPressed(wMask) (((wButtons & wMask) == 0) && ((g_wButtonsPrev & wMask) != 0))
+#define ButtonPressed(wMask) (wButtons & wMask)
+
 
 //==============================================================================
 // This is The main code to input function to read inputs from the PS2 and then
@@ -213,11 +226,12 @@ void InputController::AllowControllerInterrupts(boolean fAllow)
 //==============================================================================
 void InputController::ControlInput(void)
 {
-  byte abDualShock[7];  // we will to receive 7 bytes of data with the first byte being the checksum
+  //byte abDualShock[7];  // we will to receive 7 bytes of data with the first byte being the checksum
   unsigned long ulLastChar;
   boolean fAdjustLegPositions = false;
   word wButtons;
 
+#if 0
   SerSerial.print("Rd");
 
   // we will loop through reading our 7 bytes
@@ -225,35 +239,153 @@ void InputController::ControlInput(void)
   for (byte i=0; i < 7; i++) {
     while  (SerSerial.available() == 0) {
       if ((millis() - ulLastChar) > 200) {
-        // We may have lost the serial communications 
+        // We may have lost the serial communications
         if (g_wSerialErrorCnt < MAXPS2ERRORCNT)
           g_wSerialErrorCnt++;    // Increment the error count and if to many errors, turn off the robot.
         else if (g_InControlState.fHexOn)
           SerTurnRobotOff();
-        return;  // 
-      }      
+        return;  //
+      }
     }
 
     abDualShock[i] = SerSerial.read();
     ulLastChar = millis();
-  }  
+  }
+#endif
+
+  int cmd = -1;
+
+  if (SerSerial.available() == 0)
+    return;
+
+  cmd = SerSerial.read();
+  printf(F("cmd:%c\n"), cmd);
+
+  wButtons = 0;
+
+  switch(cmd) {
+    case 'w':
+        wButtons |= SERB_PAD_UP;
+        break;
+
+    case 'a':
+        wButtons |= SERB_PAD_LEFT;
+        break;
+
+    case 's':
+        wButtons |= SERB_PAD_DOWN;
+        break;
+
+    case 'd':
+        wButtons |= SERB_PAD_RIGHT;
+        break;
+
+    case ' ':
+        wButtons |= SERB_START;
+          abDualShock[SER_LX] = 128;
+          abDualShock[SER_LY] = 128;
+          abDualShock[SER_RX] = 128;
+          abDualShock[SER_RY] = 128;
+        break;
+
+    case 'z':
+        wButtons |= SERB_SELECT;
+        break;
+
+    case '1':
+        wButtons |= SERB_L1;
+        break;
+
+    case 'q':
+        wButtons |= SERB_L2;
+        break;
+
+    case '3':
+        wButtons |= SERB_R1;
+        break;
+
+    case 'e':
+        wButtons |= SERB_R2;
+        break;
+
+    // Left Joystick
+    case 't':
+        if (abDualShock[SER_LY] != 0)
+            abDualShock[SER_LY]--;
+        break;
+
+    case 'f':
+        if (abDualShock[SER_LX] != 0)
+            abDualShock[SER_LX]--;
+        break;
+
+    case 'g':
+        if (abDualShock[SER_LY] != 255)
+            abDualShock[SER_LY]++;
+        break;
+
+    case 'h':
+        if (abDualShock[SER_LX] != 255)
+            abDualShock[SER_LX]++;
+        break;
+
+    // Right Joystick
+    case 'i':
+        if (abDualShock[SER_RY] != 0)
+            abDualShock[SER_RY]--;
+        break;
+
+    case 'j':
+        if (abDualShock[SER_RX] != 0)
+            abDualShock[SER_RX]--;
+        break;
+
+    case 'k':
+        if (abDualShock[SER_RY] != 255)
+            abDualShock[SER_RY]++;
+        break;
+
+    case 'l':
+        if (abDualShock[SER_RX] != 255)
+            abDualShock[SER_RX]++;
+        break;
+
+    // buttons
+    case 'm':
+        wButtons |= SERB_CROSS;
+        break;
+
+    case ',':
+        wButtons |= SERB_CIRCLE;
+        break;
+
+    case '.':
+        wButtons |= SERB_SQUARE;
+        break;
+
+    case '/':
+        wButtons |= SERB_TRIANGLE;
+        break;
+  }
 
   // Lets check the checksum...
-  if (abDualShock[0] == (abDualShock[1] ^ abDualShock[2] ^ abDualShock[3] ^ abDualShock[4] ^ abDualShock[5] ^ abDualShock[6])) {
+  //if (abDualShock[0] == (abDualShock[1] ^ abDualShock[2] ^ abDualShock[3] ^ abDualShock[4] ^ abDualShock[5] ^ abDualShock[6])) {
+  if (1) {
 
-    wButtons = (abDualShock[1] << 8) | abDualShock[2];
+//    wButtons = (abDualShock[1] << 8) | abDualShock[2];
 
     // In an analog mode so should be OK...
     g_wSerialErrorCnt = 0;    // clear out error count...
 
-    if (ButtonPressed(SERB_START)) {// OK lets try "0" button for Start. 
+    if (ButtonPressed(SERB_START)) {// OK lets try "0" button for Start.
       if (g_InControlState.fHexOn) {
         SerTurnRobotOff();
-      } 
+      }
       else {
         //Turn on
         g_InControlState.fHexOn = 1;
         fAdjustLegPositions = true;
+        printf(F("ON\n"));
       }
     }
 
@@ -262,15 +394,16 @@ void InputController::ControlInput(void)
 
       //Translate mode
       if (ButtonPressed(SERB_L1)) {// L1 Button Test
-        MSound( 1, 50, 2000);  
+        MSound( 1, 50, 2000);
         if (ControlMode != TRANSLATEMODE )
           ControlMode = TRANSLATEMODE;
         else {
-          if (g_InControlState.SelectedLeg==255) 
+          if (g_InControlState.SelectedLeg==255)
             ControlMode = WALKMODE;
           else
             ControlMode = SINGLELEGMODE;
         }
+        printf(F("MODE:%d\n"), ControlMode);
       }
 
       //Rotate mode
@@ -279,57 +412,59 @@ void InputController::ControlInput(void)
         if (ControlMode != ROTATEMODE)
           ControlMode = ROTATEMODE;
         else {
-          if (g_InControlState.SelectedLeg == 255) 
+          if (g_InControlState.SelectedLeg == 255)
             ControlMode = WALKMODE;
           else
             ControlMode = SINGLELEGMODE;
         }
+        printf(F("MODE:%d\n"), ControlMode);
       }
 
       //Single leg mode fNO
       if (ButtonPressed(SERB_CIRCLE)) {// O - Circle Button Test
-        if (abs(g_InControlState.TravelLength.x)<cTravelDeadZone && abs(g_InControlState.TravelLength.z)<cTravelDeadZone 
+        if (abs(g_InControlState.TravelLength.x)<cTravelDeadZone && abs(g_InControlState.TravelLength.z)<cTravelDeadZone
           && abs(g_InControlState.TravelLength.y*2)<cTravelDeadZone )   {
           if (ControlMode != SINGLELEGMODE) {
             ControlMode = SINGLELEGMODE;
             if (g_InControlState.SelectedLeg == 255)  //Select leg if none is selected
               g_InControlState.SelectedLeg=cRF; //Startleg
-          } 
+          }
           else {
             ControlMode = WALKMODE;
             g_InControlState.SelectedLeg=255;
           }
         }
-      }      
+        printf(F("MODE:%d\n"), ControlMode);
+      }
 
 #ifdef OPT_GPPLAYER
       // GP Player Mode X
       if (ButtonPressed(SERB_CROSS)) { // X - Cross Button Test
-        MSound(1, 50, 2000);  
+        MSound(1, 50, 2000);
         if (ControlMode != GPPLAYERMODE) {
           ControlMode = GPPLAYERMODE;
           GPSeq=0;
-        } 
+        }
         else
           ControlMode = WALKMODE;
       }
 #endif // OPT_GPPLAYER
 
       //[Common functions]
-      //Switch Balance mode on/off 
+      //Switch Balance mode on/off
       if (ButtonPressed(SERB_SQUARE)) { // Square Button Test
         g_InControlState.BalanceMode = !g_InControlState.BalanceMode;
         if (g_InControlState.BalanceMode) {
-          MSound(1, 250, 1500); 
-        } 
+          MSound(1, 250, 1500);
+        }
         else {
           MSound( 2, 100, 2000, 50, 4000);
         }
       }
 
-      //Stand up, sit down  
+      //Stand up, sit down
       if (ButtonPressed(SERB_TRIANGLE)) { // Triangle - Button Test
-        if (g_BodyYOffset>0) 
+        if (g_BodyYOffset>0)
           g_BodyYOffset = 0;
         else
           g_BodyYOffset = 35;
@@ -358,14 +493,14 @@ void InputController::ControlInput(void)
       if (ButtonPressed(SERB_PAD_RIGHT)) { // D-Right - Button Test
         if (g_InControlState.SpeedControl>0) {
           g_InControlState.SpeedControl = g_InControlState.SpeedControl - 50;
-          MSound( 1, 50, 2000);  
+          MSound( 1, 50, 2000);
         }
       }
 
       if (ButtonPressed(SERB_PAD_LEFT)) { // D-Left - Button Test
         if (g_InControlState.SpeedControl<2000 ) {
           g_InControlState.SpeedControl = g_InControlState.SpeedControl + 50;
-          MSound( 1, 50, 2000); 
+          MSound( 1, 50, 2000);
         }
       }
 
@@ -374,14 +509,14 @@ void InputController::ControlInput(void)
         //Switch gates
         if (ButtonPressed(SERB_SELECT)            // Select Button Test
         && abs(g_InControlState.TravelLength.x)<cTravelDeadZone //No movement
-        && abs(g_InControlState.TravelLength.z)<cTravelDeadZone 
+        && abs(g_InControlState.TravelLength.z)<cTravelDeadZone
           && abs(g_InControlState.TravelLength.y*2)<cTravelDeadZone  ) {
           g_InControlState.GaitType = g_InControlState.GaitType+1;                    // Go to the next gait...
           if (g_InControlState.GaitType<NUM_GAITS) {                 // Make sure we did not exceed number of gaits...
-            MSound( 1, 50, 2000); 
-          } 
+            MSound( 1, 50, 2000);
+          }
           else {
-            MSound(2, 50, 2000, 50, 2250); 
+            MSound(2, 50, 2000, 50, 2250);
             g_InControlState.GaitType = 0;
           }
           GaitSelect();
@@ -389,7 +524,7 @@ void InputController::ControlInput(void)
 
         //Double leg lift height
         if (ButtonPressed(SERB_R1)) { // R1 Button Test
-          MSound( 1, 50, 2000); 
+          MSound( 1, 50, 2000);
           DoubleHeightOn = !DoubleHeightOn;
           if (DoubleHeightOn)
             g_InControlState.LegLiftHeight = 80;
@@ -399,19 +534,19 @@ void InputController::ControlInput(void)
 
         //Double Travel Length
         if (ButtonPressed(SERB_R2)) {// R2 Button Test
-          MSound(1, 50, 2000); 
+          MSound(1, 50, 2000);
           DoubleTravelOn = !DoubleTravelOn;
         }
 
         // Switch between Walk method 1 && Walk method 2
         if (ButtonPressed(SERB_R3)) { // R3 Button Test
-          MSound(1, 50, 2000); 
+          MSound(1, 50, 2000);
           WalkMethod = !WalkMethod;
         }
 
         //Walking
-        if (WalkMethod)  //(Walk Methode) 
-          g_InControlState.TravelLength.z = (abDualShock[SER_RY]-128); //Right Stick Up/Down  
+        if (WalkMethod)  //(Walk Methode)
+          g_InControlState.TravelLength.z = (abDualShock[SER_RY]-128); //Right Stick Up/Down
 
         else {
           g_InControlState.TravelLength.x = -(abDualShock[SER_LX] - 128);
@@ -423,7 +558,7 @@ void InputController::ControlInput(void)
           g_InControlState.TravelLength.z = g_InControlState.TravelLength.z/2;
         }
 
-        g_InControlState.TravelLength.y = -(abDualShock[SER_RX] - 128)/4; //Right Stick Left/Right 
+        g_InControlState.TravelLength.y = -(abDualShock[SER_RX] - 128)/4; //Right Stick Left/Right
       }
 
       //[Translate functions]
@@ -447,7 +582,7 @@ void InputController::ControlInput(void)
       if (ControlMode == SINGLELEGMODE) {
         //Switch leg for single leg control
         if (ButtonPressed(SERB_SELECT)) { // Select Button Test
-          MSound(1, 50, 2000); 
+          MSound(1, 50, 2000);
           if (g_InControlState.SelectedLeg<5)
             g_InControlState.SelectedLeg = g_InControlState.SelectedLeg+1;
           else
@@ -460,7 +595,7 @@ void InputController::ControlInput(void)
 
         // Hold single leg in place
         if (ButtonPressed(SERB_R2)) { // R2 Button Test
-          MSound(1, 50, 2000);  
+          MSound(1, 50, 2000);
           g_InControlState.fSLHold = !g_InControlState.fSLHold;
         }
       }
@@ -473,7 +608,7 @@ void InputController::ControlInput(void)
         // or start mapping if we exceed some minimum delta from center
         // Have to keep reminding myself that commander library already subtracted 128...
         if (g_ServoDriver.FIsGPSeqActive() ) {
-          if ((g_sGPSMController != 32767)  
+          if ((g_sGPSMController != 32767)
             || (abDualShock[SER_RY] > (128+16)) || (abDualShock[SER_RY] < (128-16)))
           {
             // We are in speed modify mode...
@@ -492,7 +627,7 @@ void InputController::ControlInput(void)
             if (GPSeq < 5) {  //Max sequence
               MSound(1, 50, 1500);
               GPSeq = GPSeq+1;
-            } 
+            }
             else {
               MSound(2, 50, 2000, 50, 2250);
               GPSeq=0;
@@ -503,7 +638,7 @@ void InputController::ControlInput(void)
         if (ButtonPressed(SERB_R2))// R2 Button Test
           if (!g_ServoDriver.FIsGPSeqActive() ) {
             g_ServoDriver.GPStartSeq(GPSeq);
-            g_sGPSMController = 32767;  // Say that we are not in Speed modify mode yet... valid ranges are 50-200 (both postive and negative... 
+            g_sGPSMController = 32767;  // Say that we are not in Speed modify mode yet... valid ranges are 50-200 (both postive and negative...
           }
           else {
             g_ServoDriver.GPStartSeq(0xff);    // tell the GP system to abort if possible...
@@ -526,7 +661,7 @@ void InputController::ControlInput(void)
   // remember which buttons were set here
   g_wButtonsPrev = wButtons;
 
-  } 
+  }
   else {
     // We may have lost the PS2... See what we can do to recover...
     if (g_wSerialErrorCnt < MAXPS2ERRORCNT)
