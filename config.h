@@ -21,29 +21,11 @@
 #ifndef HEX_CFG_CHR3_H
 #define HEX_CFG_CHR3_H
 
-
-// Which type of control(s) do you want to compile in
-
 #define DEBUG
+#define DBG_SERIAL Serial
+#define BT_SERIAL  Serial
 
-//==================================================================================================================================
-// Define which input classes we will use. If we wish to use more than one we need to define USEMULTI - This will define a forwarder
-//    type implementation, that the Inputcontroller will need to call.  There will be some negotion for which one is in contol.
-//
-//  If this is not defined, The included Controller should simply implement the InputController Class...
-//==================================================================================================================================
-//#define USEMULTI
-//#define USEXBEE            // only allow to be defined on Megas...
-//#define USEPS2
-//#define USECOMMANDER
-#define USESERIAL
-#define DBGSerial Serial
-
-#ifdef USESERIAL
-#define SerSerial Serial
-#endif
-
-#ifdef DBGSerial
+#ifdef DBG_SERIAL
 //  #define OPT_TERMINAL_MONITOR        // Only allow this to be defined if we have a debug serial port
 #endif
 
@@ -51,18 +33,15 @@
     #define OPT_FIND_SERVO_OFFSETS      // Only useful if terminal monitor is enabled
 #endif
 
-// Debug options
-//#define DEBUG_IOPINS                  // used to control if we are going to use IO pins for debug support
-
-#define STATUS_LED_PIN  30
-#define SOUND_PIN       37
-#define SERIAL_BAUD     115200
-#define DEBUG_BAUD      115200
+#define PIN_STATUS_LED  30
+#define PIN_SOUND       37
+#define BAUD_BT         115200
+#define BAUD_DEBUG      115200
 
 // Define Analog pin and minimum voltage that we will allow the servos to run
-#define cVoltagePin     0       // Use our Analog pin jumper here...
-#define cTurnOffVol     470     // 4.7v
-#define cTurnOnVol      550     // 5.5V - optional part to say if voltage goes back up, turn it back on...
+#define PIN_ANALOG_VOLT 0       // Use our Analog pin jumper here...
+#define VOLT_TURN_OFF   470     // 4.7v
+#define VOLT_TURN_ON    550     // 5.5V - optional part to say if voltage goes back up, turn it back on...
 
 //====================================================================
 //[IO Pins On 2560]
@@ -222,20 +201,13 @@
 #define CHexInitXZSin60     ((long)(cHexInitXZ*0.7))        // sin(60) = .866
 #define CHexInitY	        40
 
-
 // Lets try some multi leg positions depending on height settings.
-
-#if 1
-#define CNT_HEX_INITS 3
-#define MAX_BODY_Y  90
+#define CNT_HEX_INITS       3
+#define MAX_BODY_Y          90
 #ifdef DEFINE_HEX_GLOBALS
-  const byte g_abHexIntXZ[] PROGMEM = {cHexInitXZ, 99, 86};
-  const byte g_abHexMaxBodyY[] PROGMEM = { 20, 50, MAX_BODY_Y};
-#else
-  extern const byte g_abHexIntXZ[] PROGMEM;
-  extern const byte g_abHexMaxBodyY[] PROGMEM;
+  const u8 TBL_INIT_HEX_XZ[]    PROGMEM = {cHexInitXZ, 99, 86};
+  const u8 TBL_MAX_HEX_BODY_Y[] PROGMEM = { 20, 50, MAX_BODY_Y};
 #endif
-#endif // if 0
 
 #define cRRInitPosX     CHexInitXZCos60      //Start positions of the Right Rear leg
 #define cRRInitPosY     CHexInitY
@@ -269,4 +241,5 @@
 #define cTarsFactorB	60	//4DOF ONLY
 #define cTarsFactorC	50	//4DOF ONLY
 
-#endif CFG_HEX_H
+#endif //CFG_HEX_H
+

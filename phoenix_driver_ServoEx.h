@@ -9,19 +9,19 @@
 #include "ServoEx.h"
 
 //Servo Pin numbers - May be SSC-32 or actual pins on main controller, depending on configuration.
-const byte cCoxaPin[] PROGMEM = {
+static const u8 TBL_COXA_PIN[] PROGMEM = {
   cRRCoxaPin,  cRMCoxaPin,  cRFCoxaPin,  cLRCoxaPin,  cLMCoxaPin,  cLFCoxaPin};
-const byte cFemurPin[] PROGMEM = {
+static const u8 TBL_FEMUR_PIN[] PROGMEM = {
   cRRFemurPin, cRMFemurPin, cRFFemurPin, cLRFemurPin, cLMFemurPin, cLFFemurPin};
-const byte cTibiaPin[] PROGMEM = {
+static const u8 TBL_TIBIA_PIN[] PROGMEM = {
   cRRTibiaPin, cRMTibiaPin, cRFTibiaPin, cLRTibiaPin, cLMTibiaPin, cLFTibiaPin};
-#ifdef c4DOF
-const byte cTarsPin[] PROGMEM = {
+#ifdef CONFIG_4DOF
+static const u8 TBL_TARS_PIN[] PROGMEM = {
   cRRTarsPin, cRMTarsPin, cRFTarsPin, cLRTarsPin, cLMTarsPin, cLFTarsPin};
 #endif
 
 // 12 64 0 0 A1 FF 56 FF 0 0 92 FF 0 0 0 0
-const short cLegsOffset[] PROGMEM = {
+static const short TBL_LEGS_OFFSET[] PROGMEM = {
     0,  -95, -170,
     0, -110,    0,
     0,  -90,  -35,
@@ -34,13 +34,13 @@ const short cLegsOffset[] PROGMEM = {
 //=============================================================================
 // Global - Local to this file only...
 //=============================================================================
-#ifdef c4DOF
-#define NUMSERVOSPERLEG 4
+#ifdef CONFIG_4DOF
+#define NUM_SERVOS_PER_LEG 4
 #else
-#define NUMSERVOSPERLEG 3
+#define NUM_SERVOS_PER_LEG 3
 #endif
-ServoEx          g_aservoLegs[6*NUMSERVOSPERLEG];        // Define the servo objects...
-short            g_asLegOffsets[6*NUMSERVOSPERLEG];
+ServoEx          g_aservoLegs[6 * NUM_SERVOS_PER_LEG];        // Define the servo objects...
+short            g_asLegOffsets[6 * NUM_SERVOS_PER_LEG];
 cServoGroupMove  g_cSGM;
 boolean g_fServosAttached;
 
@@ -50,15 +50,15 @@ boolean g_fServosAttached;
 //--------------------------------------------------------------------
 void LoadServosConfig(void) {
 
-  byte *pb = (byte*)&g_asLegOffsets;
-  byte bChkSum = 0;      //
+  u8 *pb = (u8*)&g_asLegOffsets;
+  u8 bChkSum = 0;      //
   int i;
 
 #if 0
-  if (EEPROM.read(0) == 6*NUMSERVOSPERLEG) {
+  if (EEPROM.read(0) == 6*NUM_SERVOS_PER_LEG) {
 
 #ifdef DEBUG
-        DBGSerial.println("Load from EEPROM");
+        DBG_SERIAL.println("Load from EEPROM");
 #endif
 
     for (i=0; i < sizeof(g_asLegOffsets); i++) {
@@ -73,12 +73,12 @@ void LoadServosConfig(void) {
 #endif
 
 #ifdef DEBUG
-  DBGSerial.println("Load default");
+  DBG_SERIAL.println("Load default");
 #endif
   // got to here, something not right, set up 0's for servo offsets.
-  for (i = 0; i < 6*NUMSERVOSPERLEG; i++) {
+  for (i = 0; i < 6*NUM_SERVOS_PER_LEG; i++) {
 //    g_asLegOffsets[i] = 0;
-    g_asLegOffsets[i] = (short)pgm_read_word(&cLegsOffset[i]);
+    g_asLegOffsets[i] = (short)pgm_read_word(&TBL_LEGS_OFFSET[i]);
   }
 }
 
@@ -87,7 +87,7 @@ void LoadServosConfig(void) {
 //Init
 //--------------------------------------------------------------------
 void ServoDriver::Init(void) {
-  byte bServoIndex;
+  u8 bServoIndex;
   g_fServosAttached = false;  // remember we are not attached. Could simply ask one of our servos...
 
 #ifdef OPT_GPPLAYER
@@ -96,12 +96,12 @@ void ServoDriver::Init(void) {
 #endif
 
   // Need to read in the servo offsets... but for now just init all to 0
-  for (bServoIndex = 0; bServoIndex < 6*NUMSERVOSPERLEG; bServoIndex++)
+  for (bServoIndex = 0; bServoIndex < 6*NUM_SERVOS_PER_LEG; bServoIndex++)
       g_asLegOffsets[bServoIndex] = 0;
 
   LoadServosConfig();
 
-#ifdef cVoltagePin
+#ifdef PIN_ANALOG_VOLT
   // If we have a voltage pin, we are doing averaging of voltages over
   // 8 reads, so lets prefill that array...
   for (bServoIndex = 0; bServoIndex < 8; bServoIndex++)
@@ -115,7 +115,7 @@ void ServoDriver::Init(void) {
 // or if maybe some minimum time has elapsed...
 //--------------------------------------------------------------------
 
-#ifdef cVoltagePin
+#ifdef PIN_ANALOG_VOLT
 #ifndef CVADR1
 #define CVADR1      30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
 #define CVADR2      10  // VD Resistor 2
@@ -124,12 +124,12 @@ void ServoDriver::Init(void) {
 word  g_awVoltages[8]={
   0,0,0,0,0,0,0,0};
 word  g_wVoltageSum = 0;
-byte  g_iVoltages = 0;
+u8  g_iVoltages = 0;
 
 word ServoDriver::GetBatteryVoltage(void) {
   g_iVoltages = (++g_iVoltages)&0x7;  // setup index to our array...
   g_wVoltageSum -= g_awVoltages[g_iVoltages];
-  g_awVoltages[g_iVoltages] = analogRead(cVoltagePin);
+  g_awVoltages[g_iVoltages] = analogRead(PIN_ANALOG_VOLT);
   g_wVoltageSum += g_awVoltages[g_iVoltages];
 
   return ((long)((long)g_wVoltageSum*125*(CVADR1+CVADR2))/(long)(2048*(long)CVADR2));
@@ -193,17 +193,17 @@ void ServoDriver::GPSetSpeedMultiplyer(short sm)      // Set the Speed multiplie
 // Attach Servos...
 //--------------------------------------------------------------------
 void AttachServos(void) {
-  byte bServoIndex;
+  u8 bServoIndex;
   if (!g_fServosAttached) {
     bServoIndex = 0;
-    for ( byte LegIndex=0; LegIndex < 6; LegIndex++) {
+    for ( u8 LegIndex=0; LegIndex < 6; LegIndex++) {
       // BUGBUG:: will probably need to add additional stuff here to get the servo offsets
       // and calculate min/max to use...
-      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&cCoxaPin[LegIndex]));
-      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&cFemurPin[LegIndex]));
-      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&cTibiaPin[LegIndex]));
-#ifdef c4DOF
-      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&cTarsPin[LegIndex]));
+      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&TBL_COXA_PIN[LegIndex]));
+      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&TBL_FEMUR_PIN[LegIndex]));
+      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&TBL_TIBIA_PIN[LegIndex]));
+#ifdef CONFIG_4DOF
+      g_aservoLegs[bServoIndex++].attach(pgm_read_byte(&TBL_TARS_PIN[LegIndex]));
 #endif
     }
     g_fServosAttached = true;
@@ -230,16 +230,16 @@ void ServoDriver::BeginServoUpdate(void)    // Start the update
 #define cPFConst      592  //old 650 ; 900*(1000/cPwmDiv)+cPFConst must always be 1500
 // A PWM/deg factor of 10,09 give cPwmDiv = 991 and cPFConst = 592
 // For a modified 5645 (to 180 deg travel): cPwmDiv = 1500 and cPFConst = 900.
-#ifdef c4DOF
-void ServoDriver::OutputServoInfoForLeg(byte LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1, short sTarsAngle1)
+#ifdef CONFIG_4DOF
+void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1, short sTarsAngle1)
 #else
-void ServoDriver::OutputServoInfoForLeg(byte LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1)
+void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1)
 #endif
 {
   word    wCoxaSSCV;        // Coxa value in SSC units
   word    wFemurSSCV;        //
   word    wTibiaSSCV;        //
-#ifdef c4DOF
+#ifdef CONFIG_4DOF
   word    wTarsSSCV;        //
 #endif
   //Update Right Legs
@@ -248,7 +248,7 @@ void ServoDriver::OutputServoInfoForLeg(byte LegIndex, short sCoxaAngle1, short 
     wCoxaSSCV = ((long)(sCoxaAngle1 +900))*1000/cPwmDiv+cPFConst;
     wFemurSSCV = ((long)(-sFemurAngle1+900)*1000/cPwmDiv+cPFConst);
     wTibiaSSCV = ((long)(-sTibiaAngle1+900))*1000/cPwmDiv+cPFConst;
-#ifdef c4DOF
+#ifdef CONFIG_4DOF
     wTarsSSCV = ((long)(-sTarsAngle1+900))*1000/cPwmDiv+cPFConst;
 #endif
   }
@@ -256,18 +256,18 @@ void ServoDriver::OutputServoInfoForLeg(byte LegIndex, short sCoxaAngle1, short 
     wCoxaSSCV = ((long)(-sCoxaAngle1 +900))*1000/cPwmDiv+cPFConst;
     wFemurSSCV = ((long)((long)(-sFemurAngle1+900))*1000/cPwmDiv+cPFConst);
     wTibiaSSCV = ((long)(-sTibiaAngle1+900))*1000/cPwmDiv+cPFConst;
-#ifdef c4DOF
+#ifdef CONFIG_4DOF
     wTarsSSCV = ((long)(sTarsAngle1+900))*1000/cPwmDiv+cPFConst;
 #endif
   }
   // Now lets tell the servos their next  location...
-  uint8_t bServoIndex = LegIndex * NUMSERVOSPERLEG;
+  uint8_t bServoIndex = LegIndex * NUM_SERVOS_PER_LEG;
   g_aservoLegs[bServoIndex].writeMicroseconds(wCoxaSSCV + g_asLegOffsets[bServoIndex]);
   bServoIndex++;
   g_aservoLegs[bServoIndex].writeMicroseconds(wFemurSSCV + g_asLegOffsets[bServoIndex]);
   bServoIndex++;
   g_aservoLegs[bServoIndex].writeMicroseconds(wTibiaSSCV + g_asLegOffsets[bServoIndex]);
-#ifdef c4DOF
+#ifdef CONFIG_4DOF
   bServoIndex++;
   g_aservoLegs[bServoIndex].writeMicroseconds(wTarsSSCV + g_asLegOffsets[bServoIndex]);
 #endif
@@ -291,7 +291,7 @@ void ServoDriver::CommitServoDriver(word wMoveTime)
 //--------------------------------------------------------------------
 void ServoDriver::FreeServos(void)
 {
-  for (byte bServoIndex=0; bServoIndex < 6*NUMSERVOSPERLEG; bServoIndex++) {
+  for (u8 bServoIndex=0; bServoIndex < 6*NUM_SERVOS_PER_LEG; bServoIndex++) {
     // BUGBUG:: will probably need to add additional stuff here to get the servo offsets
     // and calculate min/max to use...
     g_aservoLegs[bServoIndex].detach();
@@ -309,7 +309,7 @@ extern void FindServoOffsets(void);
 void ServoDriver::ShowTerminalCommandList(void)
 {
 #ifdef OPT_FIND_SERVO_OFFSETS
-  DBGSerial.println(F("O - Enter Servo offset mode"));
+  DBG_SERIAL.println(F("O - Enter Servo offset mode"));
 #endif
 }
 
@@ -317,7 +317,7 @@ void ServoDriver::ShowTerminalCommandList(void)
 // ProcessTerminalCommand: The terminal monitor will call this to see if the
 //     command the user entered was one added by the servo driver.
 //==============================================================================
-boolean ServoDriver::ProcessTerminalCommand(byte *psz, byte bLen)
+boolean ServoDriver::ProcessTerminalCommand(u8 *psz, u8 bLen)
 {
 #ifdef OPT_FIND_SERVO_OFFSETS
   if ((bLen == 1) && ((*psz == 'o') || (*psz == 'O'))) {
@@ -332,7 +332,7 @@ boolean ServoDriver::ProcessTerminalCommand(byte *psz, byte bLen)
 #ifdef OPT_FIND_SERVO_OFFSETS
 void AllLegServos1500()
 {
-    for (byte bServoIndex=0; bServoIndex < 6*NUMSERVOSPERLEG; bServoIndex++) {
+    for (u8 bServoIndex=0; bServoIndex < 6*NUM_SERVOS_PER_LEG; bServoIndex++) {
         g_aservoLegs[bServoIndex].writeMicroseconds(1500 + g_asLegOffsets[bServoIndex]);
     }
 }
@@ -377,8 +377,8 @@ void FindServoOffsets()
         if (fNew) {
             sOffset = g_asLegOffsets[sSN];
             Serial.print("Servo: ");
-			Serial.print(apszLegs[sSN/NUMSERVOSPERLEG]);
-			Serial.print(apszLJoints[sSN%NUMSERVOSPERLEG]);
+			Serial.print(apszLegs[sSN/NUM_SERVOS_PER_LEG]);
+			Serial.print(apszLJoints[sSN%NUM_SERVOS_PER_LEG]);
 			Serial.print("(");
 			Serial.print(sOffset, DEC);
 			Serial.println(")");
@@ -415,28 +415,28 @@ void FindServoOffsets()
 	} else if ((data >= '0') && (data <= '5')) {
 		// direct enter of which servo to change
 		fNew = true;
-		sSN = (sSN % NUMSERVOSPERLEG) + (data - '0')*NUMSERVOSPERLEG;
+		sSN = (sSN % NUM_SERVOS_PER_LEG) + (data - '0')*NUM_SERVOS_PER_LEG;
 	    } else if ((data == 'c') && (data == 'C')) {
 		fNew = true;
-		sSN = (sSN / NUMSERVOSPERLEG) * NUMSERVOSPERLEG + 0;
+		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 0;
 	    } else if ((data == 'c') && (data == 'C')) {
 		fNew = true;
-		sSN = (sSN / NUMSERVOSPERLEG) * NUMSERVOSPERLEG + 1;
+		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 1;
 	    } else if ((data == 'c') && (data == 'C')) {
 		// direct enter of which servo to change
 		fNew = true;
-		sSN = (sSN / NUMSERVOSPERLEG) * NUMSERVOSPERLEG + 2;
+		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 2;
 	    } else if (data == '*') {
 	        // direct enter of which servo to change
 		fNew = true;
 		sSN++;
-		if (sSN == 6*NUMSERVOSPERLEG)
+		if (sSN == 6*NUM_SERVOS_PER_LEG)
 		    sSN = 0;
 	    }
 	}
     }
     Serial.print("Find Servo exit ");
-    for (sSN=0; sSN < 6*NUMSERVOSPERLEG; sSN++){
+    for (sSN=0; sSN < 6*NUM_SERVOS_PER_LEG; sSN++){
         Serial.print(" ");
         Serial.print(g_asLegOffsets[sSN], DEC);
     }
@@ -449,12 +449,12 @@ void FindServoOffsets()
 
     if ((data == 'Y') || (data == 'y')) {
         // Ok they asked for the data to be saved.  We will store the data with a
-        // number of servos (byte)at the start, followed by a byte for a checksum...followed by our offsets array...
+        // number of servos (u8)at the start, followed by a u8 for a checksum...followed by our offsets array...
         // Currently we store these values starting at EEPROM address 0. May later change...
 	//
-        byte *pb = (byte*)&g_asLegOffsets;
-        byte bChkSum = 0;  //
-        EEPROM.write(0, 6*NUMSERVOSPERLEG);    // Ok lets write out our count of servos
+        u8 *pb = (u8*)&g_asLegOffsets;
+        u8 bChkSum = 0;  //
+        EEPROM.write(0, 6*NUM_SERVOS_PER_LEG);    // Ok lets write out our count of servos
         for (sSN=0; sSN < sizeof(g_asLegOffsets); sSN++) {
             EEPROM.write(sSN+2, *pb);
             bChkSum += *pb++;

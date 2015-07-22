@@ -28,7 +28,7 @@
 //
 //
 // Packet format:
-// DualShock(0) : Checksum of other byte
+// DualShock(0) : Checksum of other u8
 // DualShock(1)
 //   bit7 - Left Button test
 //   bit6 - Down Button test
@@ -101,17 +101,17 @@
 #include <Wprogram.h> // Arduino 0022
 #endif
 #include <avr/pgmspace.h>
+#include "utils.h"
 
-void printf(const __FlashStringHelper *fmt, ... );
 
 //[CONSTANTS]
 // Default to Serial but allow to be defined to something else
-#ifndef SerSerial
-#define SerSerial Serial
+#ifndef BT_SERIAL
+#define BT_SERIAL Serial
 #endif
 
-#ifndef SERIAL_BAUD
-#define SERIAL_BAUD 38400
+#ifndef BAUD_BT
+#define BAUD_BT 38400
 #endif
 
 #define WALKMODE          0
@@ -144,7 +144,7 @@ void printf(const __FlashStringHelper *fmt, ... );
 #define  SER_LY          6            // DualShock(6) - Left Stick Up/Down
 
 
-#define cTravelDeadZone 4      //The deadzone for the analog input from the remote
+#define TRAVEL_DEAD_ZONE 4      //The deadzone for the analog input from the remote
 #define  MAXPS2ERRORCNT  5     // How many times through the loop will we go before shutting off robot?
 
 #ifndef MAX_BODY_Y
@@ -161,12 +161,12 @@ InputController  g_InputController;       // Our Input controller
 static short       g_BodyYOffset;
 static word        g_wSerialErrorCnt;
 static short       g_BodyYShift;
-static byte        ControlMode;
+static u8        ControlMode;
 static word        g_wButtonsPrev;
 static bool        DoubleHeightOn;
 static bool        DoubleTravelOn;
 static bool        WalkMethod;
-byte               GPSeq;             //Number of the sequence
+u8               GPSeq;             //Number of the sequence
 short              g_sGPSMController;    // What GPSM value have we calculated. 0xff - Not used yet
 
 // some external or forward function references.
@@ -179,14 +179,14 @@ extern void SerTurnRobotOff(void);
 //==============================================================================
 // If both PS2 and XBee are defined then we will become secondary to the xbee
 
-byte abDualShock[7];  // we will to receive 7 bytes of data with the first byte being the checksum
+u8 abDualShock[7];  // we will to receive 7 u8s of data with the first u8 being the checksum
 
 void InputController::Init(void)
 {
   int error;
 
   // May need to init the Serial port here...
-  SerSerial.begin(SERIAL_BAUD);
+  BT_SERIAL.begin(BAUD_BT);
 
   g_BodyYOffset = 0;
   g_BodyYShift = 0;
@@ -226,18 +226,18 @@ void InputController::AllowControllerInterrupts(boolean fAllow)
 //==============================================================================
 void InputController::ControlInput(void)
 {
-  //byte abDualShock[7];  // we will to receive 7 bytes of data with the first byte being the checksum
+  //u8 abDualShock[7];  // we will to receive 7 u8s of data with the first u8 being the checksum
   unsigned long ulLastChar;
   boolean fAdjustLegPositions = false;
   word wButtons;
 
 #if 0
-  SerSerial.print("Rd");
+  BT_SERIAL.print("Rd");
 
-  // we will loop through reading our 7 bytes
+  // we will loop through reading our 7 u8s
   ulLastChar = millis();
-  for (byte i=0; i < 7; i++) {
-    while  (SerSerial.available() == 0) {
+  for (u8 i=0; i < 7; i++) {
+    while  (BT_SERIAL.available() == 0) {
       if ((millis() - ulLastChar) > 200) {
         // We may have lost the serial communications
         if (g_wSerialErrorCnt < MAXPS2ERRORCNT)
@@ -248,17 +248,17 @@ void InputController::ControlInput(void)
       }
     }
 
-    abDualShock[i] = SerSerial.read();
+    abDualShock[i] = BT_SERIAL.read();
     ulLastChar = millis();
   }
 #endif
 
   int cmd = -1;
 
-  if (SerSerial.available() == 0)
+  if (BT_SERIAL.available() == 0)
     return;
 
-  cmd = SerSerial.read();
+  cmd = BT_SERIAL.read();
   printf(F("cmd:%c\n"), cmd);
 
   wButtons = 0;
@@ -406,7 +406,7 @@ void InputController::ControlInput(void)
 
       //Translate mode
       if (ButtonPressed(SERB_L1)) {// L1 Button Test
-        MSound( 1, 50, 2000);
+        Utils::sound( 1, 50, 2000);
         if (ControlMode != TRANSLATEMODE )
           ControlMode = TRANSLATEMODE;
         else {
@@ -420,7 +420,7 @@ void InputController::ControlInput(void)
 
       //Rotate mode
       if (ButtonPressed(SERB_L2)) {    // L2 Button Test
-        MSound( 1, 50, 2000);
+        Utils::sound( 1, 50, 2000);
         if (ControlMode != ROTATEMODE)
           ControlMode = ROTATEMODE;
         else {
@@ -434,12 +434,12 @@ void InputController::ControlInput(void)
 
       //Single leg mode fNO
       if (ButtonPressed(SERB_CIRCLE)) {// O - Circle Button Test
-        if (abs(g_InControlState.TravelLength.x)<cTravelDeadZone && abs(g_InControlState.TravelLength.z)<cTravelDeadZone
-          && abs(g_InControlState.TravelLength.y*2)<cTravelDeadZone )   {
+        if (abs(g_InControlState.TravelLength.x)<TRAVEL_DEAD_ZONE && abs(g_InControlState.TravelLength.z)<TRAVEL_DEAD_ZONE
+          && abs(g_InControlState.TravelLength.y*2)<TRAVEL_DEAD_ZONE )   {
           if (ControlMode != SINGLELEGMODE) {
             ControlMode = SINGLELEGMODE;
             if (g_InControlState.SelectedLeg == 255)  //Select leg if none is selected
-              g_InControlState.SelectedLeg=cRF; //Startleg
+              g_InControlState.SelectedLeg=IDX_RF; //Startleg
           }
           else {
             ControlMode = WALKMODE;
@@ -452,7 +452,7 @@ void InputController::ControlInput(void)
 #ifdef OPT_GPPLAYER
       // GP Player Mode X
       if (ButtonPressed(SERB_CROSS)) { // X - Cross Button Test
-        MSound(1, 50, 2000);
+        Utils::sound(1, 50, 2000);
         if (ControlMode != GPPLAYERMODE) {
           ControlMode = GPPLAYERMODE;
           GPSeq=0;
@@ -467,10 +467,10 @@ void InputController::ControlInput(void)
       if (ButtonPressed(SERB_SQUARE)) { // Square Button Test
         g_InControlState.BalanceMode = !g_InControlState.BalanceMode;
         if (g_InControlState.BalanceMode) {
-          MSound(1, 250, 1500);
+          Utils::sound(1, 250, 1500);
         }
         else {
-          MSound( 2, 100, 2000, 50, 4000);
+          Utils::sound( 2, 100, 2000, 50, 4000);
         }
       }
 
@@ -505,14 +505,14 @@ void InputController::ControlInput(void)
       if (ButtonPressed(SERB_PAD_RIGHT)) { // D-Right - Button Test
         if (g_InControlState.SpeedControl>0) {
           g_InControlState.SpeedControl = g_InControlState.SpeedControl - 50;
-          MSound( 1, 50, 2000);
+          Utils::sound( 1, 50, 2000);
         }
       }
 
       if (ButtonPressed(SERB_PAD_LEFT)) { // D-Left - Button Test
         if (g_InControlState.SpeedControl<2000 ) {
           g_InControlState.SpeedControl = g_InControlState.SpeedControl + 50;
-          MSound( 1, 50, 2000);
+          Utils::sound( 1, 50, 2000);
         }
       }
 
@@ -520,15 +520,15 @@ void InputController::ControlInput(void)
       if (ControlMode == WALKMODE) {
         //Switch gates
         if (ButtonPressed(SERB_SELECT)            // Select Button Test
-        && abs(g_InControlState.TravelLength.x)<cTravelDeadZone //No movement
-        && abs(g_InControlState.TravelLength.z)<cTravelDeadZone
-          && abs(g_InControlState.TravelLength.y*2)<cTravelDeadZone  ) {
+        && abs(g_InControlState.TravelLength.x)<TRAVEL_DEAD_ZONE //No movement
+        && abs(g_InControlState.TravelLength.z)<TRAVEL_DEAD_ZONE
+          && abs(g_InControlState.TravelLength.y*2)<TRAVEL_DEAD_ZONE  ) {
           g_InControlState.GaitType = g_InControlState.GaitType+1;                    // Go to the next gait...
           if (g_InControlState.GaitType<NUM_GAITS) {                 // Make sure we did not exceed number of gaits...
-            MSound( 1, 50, 2000);
+            Utils::sound( 1, 50, 2000);
           }
           else {
-            MSound(2, 50, 2000, 50, 2250);
+            Utils::sound(2, 50, 2000, 50, 2250);
             g_InControlState.GaitType = 0;
           }
           GaitSelect();
@@ -536,7 +536,7 @@ void InputController::ControlInput(void)
 
         //Double leg lift height
         if (ButtonPressed(SERB_R1)) { // R1 Button Test
-          MSound( 1, 50, 2000);
+          Utils::sound( 1, 50, 2000);
           DoubleHeightOn = !DoubleHeightOn;
           if (DoubleHeightOn)
             g_InControlState.LegLiftHeight = 80;
@@ -546,13 +546,13 @@ void InputController::ControlInput(void)
 
         //Double Travel Length
         if (ButtonPressed(SERB_R2)) {// R2 Button Test
-          MSound(1, 50, 2000);
+          Utils::sound(1, 50, 2000);
           DoubleTravelOn = !DoubleTravelOn;
         }
 
         // Switch between Walk method 1 && Walk method 2
         if (ButtonPressed(SERB_R3)) { // R3 Button Test
-          MSound(1, 50, 2000);
+          Utils::sound(1, 50, 2000);
           WalkMethod = !WalkMethod;
         }
 
@@ -594,7 +594,7 @@ void InputController::ControlInput(void)
       if (ControlMode == SINGLELEGMODE) {
         //Switch leg for single leg control
         if (ButtonPressed(SERB_SELECT)) { // Select Button Test
-          MSound(1, 50, 2000);
+          Utils::sound(1, 50, 2000);
           if (g_InControlState.SelectedLeg<5)
             g_InControlState.SelectedLeg = g_InControlState.SelectedLeg+1;
           else
@@ -607,7 +607,7 @@ void InputController::ControlInput(void)
 
         // Hold single leg in place
         if (ButtonPressed(SERB_R2)) { // R2 Button Test
-          MSound(1, 50, 2000);
+          Utils::sound(1, 50, 2000);
           g_InControlState.fSLHold = !g_InControlState.fSLHold;
         }
       }
@@ -637,11 +637,11 @@ void InputController::ControlInput(void)
         if (ButtonPressed(SERB_SELECT)) { // Select Button Test
           if (!g_ServoDriver.FIsGPSeqActive() ) {
             if (GPSeq < 5) {  //Max sequence
-              MSound(1, 50, 1500);
+              Utils::sound(1, 50, 1500);
               GPSeq = GPSeq+1;
             }
             else {
-              MSound(2, 50, 2000, 50, 2250);
+              Utils::sound(2, 50, 2000, 50, 2250);
               GPSeq=0;
             }
           }
@@ -654,7 +654,7 @@ void InputController::ControlInput(void)
           }
           else {
             g_ServoDriver.GPStartSeq(0xff);    // tell the GP system to abort if possible...
-            MSound (2, 50, 2000, 50, 2000);
+            Utils::sound (2, 50, 2000, 50, 2000);
           }
 
 

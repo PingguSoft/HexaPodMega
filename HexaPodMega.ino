@@ -7,10 +7,10 @@
 //Date: 29-10-2009
 //Programmer: Jeroen Janssen [aka Xan]
 //         Kurt Eckhardt(KurtE) converted to C and Arduino
-//   KÃ¥re Halvorsen aka Zenta - Makes everything work correctly!     
+//   KÃ¥re Halvorsen aka Zenta - Makes everything work correctly!
 //
 // This version of the Phoenix code was ported over to the Arduino Environement
-// and is specifically configured for the Lynxmotion BotBoarduino 
+// and is specifically configured for the Lynxmotion BotBoarduino
 //
 //=============================================================================
 //
@@ -28,11 +28,10 @@
 #endif
 #include <Wire.h>
 #include <EEPROM.h>
-//#include <PS2X_lib.h>
 
-//#include <I2CEEProm.h>
+#include "common.h"
 #include "ServoEx.h"
-#include "Hex_CFG.h"
+#include "config.h"
 #include "Phoenix.h"
 #include "Phoenix_Input_Serial.h"
 #include "phoenix_driver_ServoEx.h"
