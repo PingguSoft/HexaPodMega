@@ -12,18 +12,18 @@
 // Obviously it can be hacked up to almost any format
 //
 //NEW IN V1.1
-//	- added speaker constant
-//	- added variable for number of gaits in code
-//	- Changed BodyRot to 1 decimal percision
-//	- Added variable Center Point of Rotation for the body
+//    - added speaker constant
+//    - added variable for number of gaits in code
+//    - Changed BodyRot to 1 decimal percision
+//    - Added variable Center Point of Rotation for the body
 //
 //	Walk method 1:
-//	- Left Stick	Walk/Strafe
-//	- Right Stick	Rotate
+//    - Left Stick	Walk/Strafe
+//    - Right Stick	Rotate
 //
 //	Walk method 2:
-//	- Left Stick	Disable
-//	- Right Stick	Walk/Rotate
+//    - Left Stick	Disable
+//    - Right Stick	Walk/Rotate
 //
 //
 //
@@ -53,45 +53,45 @@
 // DualShock(6) - Left Stick Up/Down
 // Note: The actual usages are from PS2 control
 //PS2 CONTROLS:
-//	[Common Controls]
-//	- Start			Turn on/off the bot
-//	- L1			Toggle Shift mode
-//	- L2			Toggle Rotate mode
-//	- Circle		Toggle Single leg mode
+//    [Common Controls]
+//    - Start	    	Turn on/off the bot
+//    - L1	    	Toggle Shift mode
+//    - L2	    	Toggle Rotate mode
+//    - Circle		Toggle Single leg mode
 //   - Square        Toggle Balance mode
-//	- Triangle		Move body to 35 mm from the ground (walk pos)
-//					and back to the ground
-//	- D-Pad up		Body up 10 mm
-//	- D-Pad down	Body down 10 mm
-//	- D-Pad left	decrease speed with 50mS
-//	- D-Pad right	increase speed with 50mS
+//    - Triangle		Move body to 35 mm from the ground (walk pos)
+//                	and back to the ground
+//    - D-Pad up		Body up 10 mm
+//    - D-Pad down	Body down 10 mm
+//    - D-Pad left	decrease speed with 50mS
+//    - D-Pad right	increase speed with 50mS
 //
-//	[Walk Controls]
-//	- select		Switch gaits
-//	- Left Stick	(Walk mode 1) Walk/Strafe
-//				 	(Walk mode 2) Disable
-//	- Right Stick	(Walk mode 1) Rotate,
-//					(Walk mode 2) Walk/Rotate
-//	- R1			Toggle Double gait travel speed
-//	- R2			Toggle Double gait travel length
+//    [Walk Controls]
+//    - select		Switch gaits
+//    - Left Stick	(Walk mode 1) Walk/Strafe
+//                     (Walk mode 2) Disable
+//    - Right Stick	(Walk mode 1) Rotate,
+//                    (Walk mode 2) Walk/Rotate
+//    - R1	    	Toggle Double gait travel speed
+//    - R2	    	Toggle Double gait travel length
 //
-//	[Shift Controls]
-//	- Left Stick	Shift body X/Z
-//	- Right Stick	Shift body Y and rotate body Y
+//    [Shift Controls]
+//    - Left Stick	Shift body X/Z
+//    - Right Stick	Shift body Y and rotate body Y
 //
-//	[Rotate Controls]
-//	- Left Stick	Rotate body X/Z
-//	- Right Stick	Rotate body Y
+//    [Rotate Controls]
+//    - Left Stick	Rotate body X/Z
+//    - Right Stick	Rotate body Y
 //
-//	[Single leg Controls]
-//	- select		Switch legs
-//	- Left Stick	Move Leg X/Z (relative)
-//	- Right Stick	Move Leg Y (absolute)
-//	- R2			Hold/release leg position
+//    [Single leg Controls]
+//    - select		Switch legs
+//    - Left Stick	Move Leg X/Z (relative)
+//    - Right Stick	Move Leg Y (absolute)
+//    - R2	    	Hold/release leg position
 //
-//	[GP Player Controls]
-//	- select		Switch Sequences
-//	- R2			Start Sequence
+//    [GP Player Controls]
+//    - select		Switch Sequences
+//    - R2	    	Start Sequence
 //
 //====================================================================
 // [Include files]
@@ -158,16 +158,16 @@
 // Define an instance of the Input Controller...
 InputController  g_InputController;       // Our Input controller
 
-static short       g_BodyYOffset;
+static s16       g_BodyYOffset;
 static word        g_wSerialErrorCnt;
-static short       g_BodyYShift;
+static s16       g_BodyYShift;
 static u8        ControlMode;
 static word        g_wButtonsPrev;
 static bool        DoubleHeightOn;
 static bool        DoubleTravelOn;
 static bool        WalkMethod;
 u8               GPSeq;             //Number of the sequence
-short              g_sGPSMController;    // What GPSM value have we calculated. 0xff - Not used yet
+s16              g_sGPSMController;    // What GPSM value have we calculated. 0xff - Not used yet
 
 // some external or forward function references.
 extern void SerTurnRobotOff(void);
@@ -197,7 +197,7 @@ void InputController::Init(void)
   DoubleTravelOn = false;
   WalkMethod = false;
 
-  g_InControlState.SpeedControl = 100;    // Sort of migrate stuff in from Devon.
+  mControlState.wSpeedControl = 100;    // Sort of migrate stuff in from Devon.
 
   abDualShock[SER_LX] = 128;
   abDualShock[SER_LY] = 128;
@@ -210,7 +210,7 @@ void InputController::Init(void)
 // do a lot of bit-bang outputs and it would like us to minimize any interrupts
 // that we do while it is active...
 //==============================================================================
-void InputController::AllowControllerInterrupts(boolean fAllow)
+void InputController::AllowControllerInterrupts(bool fAllow)
 {
   // We don't need to do anything...
 
@@ -228,7 +228,7 @@ void InputController::ControlInput(void)
 {
   //u8 abDualShock[7];  // we will to receive 7 u8s of data with the first u8 being the checksum
   unsigned long ulLastChar;
-  boolean fAdjustLegPositions = false;
+  bool fAdjustLegPositions = false;
   word wButtons;
 
 #if 0
@@ -242,7 +242,7 @@ void InputController::ControlInput(void)
         // We may have lost the serial communications
         if (g_wSerialErrorCnt < MAXPS2ERRORCNT)
           g_wSerialErrorCnt++;    // Increment the error count and if to many errors, turn off the robot.
-        else if (g_InControlState.fHexOn)
+        else if (mControlState.fHexCurOn)
           SerTurnRobotOff();
         return;  //
       }
@@ -390,18 +390,18 @@ void InputController::ControlInput(void)
     g_wSerialErrorCnt = 0;    // clear out error count...
 
     if (ButtonPressed(SERB_START)) {// OK lets try "0" button for Start.
-      if (g_InControlState.fHexOn) {
+      if (mControlState.fHexCurOn) {
         SerTurnRobotOff();
       }
       else {
         //Turn on
-        g_InControlState.fHexOn = 1;
+        mControlState.fHexCurOn = 1;
         fAdjustLegPositions = true;
         printf(F("ON\n"));
       }
     }
 
-    if (g_InControlState.fHexOn) {
+    if (mControlState.fHexCurOn) {
       // [SWITCH MODES]
 
       //Translate mode
@@ -410,7 +410,7 @@ void InputController::ControlInput(void)
         if (ControlMode != TRANSLATEMODE )
           ControlMode = TRANSLATEMODE;
         else {
-          if (g_InControlState.SelectedLeg==255)
+          if (mControlState.bSingleLegCurSel==255)
             ControlMode = WALKMODE;
           else
             ControlMode = SINGLELEGMODE;
@@ -424,7 +424,7 @@ void InputController::ControlInput(void)
         if (ControlMode != ROTATEMODE)
           ControlMode = ROTATEMODE;
         else {
-          if (g_InControlState.SelectedLeg == 255)
+          if (mControlState.bSingleLegCurSel == 255)
             ControlMode = WALKMODE;
           else
             ControlMode = SINGLELEGMODE;
@@ -434,16 +434,16 @@ void InputController::ControlInput(void)
 
       //Single leg mode fNO
       if (ButtonPressed(SERB_CIRCLE)) {// O - Circle Button Test
-        if (abs(g_InControlState.TravelLength.x)<TRAVEL_DEAD_ZONE && abs(g_InControlState.TravelLength.z)<TRAVEL_DEAD_ZONE
-          && abs(g_InControlState.TravelLength.y*2)<TRAVEL_DEAD_ZONE )   {
+        if (abs(mControlState.c3dTravelLen.x)<TRAVEL_DEAD_ZONE && abs(mControlState.c3dTravelLen.z)<TRAVEL_DEAD_ZONE
+          && abs(mControlState.c3dTravelLen.y*2)<TRAVEL_DEAD_ZONE )   {
           if (ControlMode != SINGLELEGMODE) {
             ControlMode = SINGLELEGMODE;
-            if (g_InControlState.SelectedLeg == 255)  //Select leg if none is selected
-              g_InControlState.SelectedLeg=IDX_RF; //Startleg
+            if (mControlState.bSingleLegCurSel == 255)  //Select leg if none is selected
+              mControlState.bSingleLegCurSel=IDX_RF; //Startleg
           }
           else {
             ControlMode = WALKMODE;
-            g_InControlState.SelectedLeg=255;
+            mControlState.bSingleLegCurSel=255;
           }
         }
         printf(F("MODE:%d\n"), ControlMode);
@@ -465,8 +465,8 @@ void InputController::ControlInput(void)
       //[Common functions]
       //Switch Balance mode on/off
       if (ButtonPressed(SERB_SQUARE)) { // Square Button Test
-        g_InControlState.BalanceMode = !g_InControlState.BalanceMode;
-        if (g_InControlState.BalanceMode) {
+        mControlState.fBalanceMode = !mControlState.fBalanceMode;
+        if (mControlState.fBalanceMode) {
           Utils::sound(1, 250, 1500);
         }
         else {
@@ -503,15 +503,15 @@ void InputController::ControlInput(void)
       }
 
       if (ButtonPressed(SERB_PAD_RIGHT)) { // D-Right - Button Test
-        if (g_InControlState.SpeedControl>0) {
-          g_InControlState.SpeedControl = g_InControlState.SpeedControl - 50;
+        if (mControlState.wSpeedControl>0) {
+          mControlState.wSpeedControl = mControlState.wSpeedControl - 50;
           Utils::sound( 1, 50, 2000);
         }
       }
 
       if (ButtonPressed(SERB_PAD_LEFT)) { // D-Left - Button Test
-        if (g_InControlState.SpeedControl<2000 ) {
-          g_InControlState.SpeedControl = g_InControlState.SpeedControl + 50;
+        if (mControlState.wSpeedControl<2000 ) {
+          mControlState.wSpeedControl = mControlState.wSpeedControl + 50;
           Utils::sound( 1, 50, 2000);
         }
       }
@@ -520,18 +520,18 @@ void InputController::ControlInput(void)
       if (ControlMode == WALKMODE) {
         //Switch gates
         if (ButtonPressed(SERB_SELECT)            // Select Button Test
-        && abs(g_InControlState.TravelLength.x)<TRAVEL_DEAD_ZONE //No movement
-        && abs(g_InControlState.TravelLength.z)<TRAVEL_DEAD_ZONE
-          && abs(g_InControlState.TravelLength.y*2)<TRAVEL_DEAD_ZONE  ) {
-          g_InControlState.GaitType = g_InControlState.GaitType+1;                    // Go to the next gait...
-          if (g_InControlState.GaitType<NUM_GAITS) {                 // Make sure we did not exceed number of gaits...
+        && abs(mControlState.c3dTravelLen.x)<TRAVEL_DEAD_ZONE //No movement
+        && abs(mControlState.c3dTravelLen.z)<TRAVEL_DEAD_ZONE
+          && abs(mControlState.c3dTravelLen.y*2)<TRAVEL_DEAD_ZONE  ) {
+          mControlState.bGaitType = mControlState.bGaitType+1;                    // Go to the next gait...
+          if (mControlState.bGaitType<CONFIG_NUM_GAITS) {                 // Make sure we did not exceed number of gaits...
             Utils::sound( 1, 50, 2000);
           }
           else {
             Utils::sound(2, 50, 2000, 50, 2250);
-            g_InControlState.GaitType = 0;
+            mControlState.bGaitType = 0;
           }
-          GaitSelect();
+          selectGait();
         }
 
         //Double leg lift height
@@ -539,9 +539,9 @@ void InputController::ControlInput(void)
           Utils::sound( 1, 50, 2000);
           DoubleHeightOn = !DoubleHeightOn;
           if (DoubleHeightOn)
-            g_InControlState.LegLiftHeight = 80;
+            mControlState.sLegLiftHeight = 80;
           else
-            g_InControlState.LegLiftHeight = 50;
+            mControlState.sLegLiftHeight = 50;
         }
 
         //Double Travel Length
@@ -558,35 +558,35 @@ void InputController::ControlInput(void)
 
         //Walking
         if (WalkMethod)  //(Walk Methode)
-          g_InControlState.TravelLength.z = (abDualShock[SER_RY]-128); //Right Stick Up/Down
+          mControlState.c3dTravelLen.z = (abDualShock[SER_RY]-128); //Right Stick Up/Down
 
         else {
-          g_InControlState.TravelLength.x = -(abDualShock[SER_LX] - 128);
-          g_InControlState.TravelLength.z = (abDualShock[SER_LY] - 128);
+          mControlState.c3dTravelLen.x = -(abDualShock[SER_LX] - 128);
+          mControlState.c3dTravelLen.z = (abDualShock[SER_LY] - 128);
         }
 
         if (!DoubleTravelOn) {  //(Double travel length)
-          g_InControlState.TravelLength.x = g_InControlState.TravelLength.x/2;
-          g_InControlState.TravelLength.z = g_InControlState.TravelLength.z/2;
+          mControlState.c3dTravelLen.x = mControlState.c3dTravelLen.x/2;
+          mControlState.c3dTravelLen.z = mControlState.c3dTravelLen.z/2;
         }
 
-        g_InControlState.TravelLength.y = -(abDualShock[SER_RX] - 128)/4; //Right Stick Left/Right
+        mControlState.c3dTravelLen.y = -(abDualShock[SER_RX] - 128)/4; //Right Stick Left/Right
       }
 
       //[Translate functions]
       g_BodyYShift = 0;
       if (ControlMode == TRANSLATEMODE) {
-        g_InControlState.BodyPos.x = (abDualShock[SER_LX] - 128)/2;
-        g_InControlState.BodyPos.z = -(abDualShock[SER_LY] - 128)/3;
-        g_InControlState.BodyRot1.y = (abDualShock[SER_RX] - 128)*2;
+        mControlState.c3dBodyPos.x = (abDualShock[SER_LX] - 128)/2;
+        mControlState.c3dBodyPos.z = -(abDualShock[SER_LY] - 128)/3;
+        mControlState.c3dBodyRot.y = (abDualShock[SER_RX] - 128)*2;
         g_BodyYShift = (-(abDualShock[SER_RY] - 128)/2);
       }
 
       //[Rotate functions]
       if (ControlMode == ROTATEMODE) {
-        g_InControlState.BodyRot1.x = (abDualShock[SER_LY] - 128);
-        g_InControlState.BodyRot1.y = (abDualShock[SER_RX] - 128)*2;
-        g_InControlState.BodyRot1.z = (abDualShock[SER_LX] - 128);
+        mControlState.c3dBodyRot.x = (abDualShock[SER_LY] - 128);
+        mControlState.c3dBodyRot.y = (abDualShock[SER_RX] - 128)*2;
+        mControlState.c3dBodyRot.z = (abDualShock[SER_LX] - 128);
         g_BodyYShift = (-(abDualShock[SER_RY] - 128)/2);
       }
 
@@ -595,20 +595,20 @@ void InputController::ControlInput(void)
         //Switch leg for single leg control
         if (ButtonPressed(SERB_SELECT)) { // Select Button Test
           Utils::sound(1, 50, 2000);
-          if (g_InControlState.SelectedLeg<5)
-            g_InControlState.SelectedLeg = g_InControlState.SelectedLeg+1;
+          if (mControlState.bSingleLegCurSel<5)
+            mControlState.bSingleLegCurSel = mControlState.bSingleLegCurSel+1;
           else
-            g_InControlState.SelectedLeg=0;
+            mControlState.bSingleLegCurSel=0;
         }
 
-        g_InControlState.SLLeg.x= (abDualShock[SER_LX] - 128)/2; //Left Stick Right/Left
-        g_InControlState.SLLeg.y= (abDualShock[SER_RY] - 128)/10; //Right Stick Up/Down
-        g_InControlState.SLLeg.z = (abDualShock[SER_LY] - 128)/2; //Left Stick Up/Down
+        mControlState.c3dSingleLeg.x= (abDualShock[SER_LX] - 128)/2; //Left Stick Right/Left
+        mControlState.c3dSingleLeg.y= (abDualShock[SER_RY] - 128)/10; //Right Stick Up/Down
+        mControlState.c3dSingleLeg.z = (abDualShock[SER_LY] - 128)/2; //Left Stick Up/Down
 
         // Hold single leg in place
         if (ButtonPressed(SERB_R2)) { // R2 Button Test
           Utils::sound(1, 50, 2000);
-          g_InControlState.fSLHold = !g_InControlState.fSLHold;
+          mControlState.fSingleLegHold = !mControlState.fSingleLegHold;
         }
       }
 
@@ -624,7 +624,7 @@ void InputController::ControlInput(void)
             || (abDualShock[SER_RY] > (128+16)) || (abDualShock[SER_RY] < (128-16)))
           {
             // We are in speed modify mode...
-            short sNewGPSM = map(abDualShock[SER_RY], 0, 255, -200, 200);
+            s16 sNewGPSM = map(abDualShock[SER_RY], 0, 255, -200, 200);
             if (sNewGPSM != g_sGPSMController) {
               g_sGPSMController = sNewGPSM;
               g_ServoDriver.GPSetSpeedMultiplyer(g_sGPSMController);
@@ -662,13 +662,13 @@ void InputController::ControlInput(void)
 #endif // OPT_GPPLAYER
 
       //Calculate walking time delay
-      g_InControlState.InputTimeDelay = 128 - max(max(abs(abDualShock[SER_LX] - 128), abs(abDualShock[SER_LY] - 128)), abs(abDualShock[SER_RX] - 128));
+      mControlState.bInputTimeDelay = 128 - max(max(abs(abDualShock[SER_LX] - 128), abs(abDualShock[SER_LY] - 128)), abs(abDualShock[SER_RX] - 128));
     }
 
-    //Calculate g_InControlState.BodyPos.y
-    g_InControlState.BodyPos.y = min(max(g_BodyYOffset + g_BodyYShift,  0), MAX_BODY_Y);
+    //Calculate mControlState.c3dBodyPos.y
+    mControlState.c3dBodyPos.y = min(max(g_BodyYOffset + g_BodyYShift,  0), MAX_BODY_Y);
     if (fAdjustLegPositions)
-      AdjustLegPositionsToBodyHeight();    // Put main workings into main program file
+      adjustLegPosToBodyHeight();    // Put main workings into main program file
 
   // remember which buttons were set here
   g_wButtonsPrev = wButtons;
@@ -678,7 +678,7 @@ void InputController::ControlInput(void)
     // We may have lost the PS2... See what we can do to recover...
     if (g_wSerialErrorCnt < MAXPS2ERRORCNT)
       g_wSerialErrorCnt++;    // Increment the error count and if to many errors, turn off the robot.
-    else if (g_InControlState.fHexOn)
+    else if (mControlState.fHexCurOn)
       SerTurnRobotOff();
   }
 }
@@ -689,20 +689,20 @@ void InputController::ControlInput(void)
 void SerTurnRobotOff(void)
 {
   //Turn off
-  g_InControlState.BodyPos.x = 0;
-  g_InControlState.BodyPos.y = 0;
-  g_InControlState.BodyPos.z = 0;
-  g_InControlState.BodyRot1.x = 0;
-  g_InControlState.BodyRot1.y = 0;
-  g_InControlState.BodyRot1.z = 0;
-  g_InControlState.TravelLength.x = 0;
-  g_InControlState.TravelLength.z = 0;
-  g_InControlState.TravelLength.y = 0;
+  mControlState.c3dBodyPos.x = 0;
+  mControlState.c3dBodyPos.y = 0;
+  mControlState.c3dBodyPos.z = 0;
+  mControlState.c3dBodyRot.x = 0;
+  mControlState.c3dBodyRot.y = 0;
+  mControlState.c3dBodyRot.z = 0;
+  mControlState.c3dTravelLen.x = 0;
+  mControlState.c3dTravelLen.z = 0;
+  mControlState.c3dTravelLen.y = 0;
   g_BodyYOffset = 0;
   g_BodyYShift = 0;
-  g_InControlState.SelectedLeg = 255;
-  g_InControlState.fHexOn = 0;
-  AdjustLegPositionsToBodyHeight();    // Put main workings into main program file
+  mControlState.bSingleLegCurSel = 255;
+  mControlState.fHexCurOn = 0;
+  adjustLegPosToBodyHeight();    // Put main workings into main program file
 }
 
 

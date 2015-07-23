@@ -47,20 +47,20 @@
    detach()    - Stops an attached servos from pulsing its i/o pin.
 
    New methods:
-	moving  	- Returns true if the servo is still moving to it's new location.
-    move	 	- Move the one servo to a new location...
+	moving      - Returns true if the servo is still moving to it's new location.
+    move	     - Move the one servo to a new location...
 
 	New Class cServoGroupMove - used to start a new group move.  There is one instance of this class
-		defined ServoGroupMove.
+    	defined ServoGroupMove.
 
 	The methods are:
 
-    start 		- Starts a group move.  The servos are not moved until the commit call
-    commit		- Commits the moves(write, writeMicroseconds) that happened since start
+    start         - Starts a group move.  The servos are not moved until the commit call
+    commit	    - Commits the moves(write, writeMicroseconds) that happened since start
 
-    moving		- Returns a bitmask of the servos that are still moving.  The bits are in the order
-				  the servos were created.
-    wait		- Waits for all of the servos defined in the mask are to their end points.
+    moving	    - Returns a bitmask of the servos that are still moving.  The bits are in the order
+                  the servos were created.
+    wait	    - Waits for all of the servos defined in the mask are to their end points.
 
 */
 
@@ -86,7 +86,7 @@ static volatile int8_t Channel[_Nbr_16timers ];             // counter for the s
 uint8_t ServoCount = 0;                                     // the total number of attached servos
 
 // Group move variables
-uint8_t GroupMoveActiveCnt = 0;								// Do we have a group move active at this time?
+uint8_t GroupMoveActiveCnt = 0;                                // Do we have a group move active at this time?
 
 // convenience macros
 #define SERVO_INDEX_TO_TIMER(_servo_nbr) ((timer16_Sequence_t)(_servo_nbr / SERVOS_PER_TIMER)) // returns the timer controlling this servo
@@ -108,22 +108,22 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
 	pservo = &SERVO(timer,Channel[timer]);
     if( SERVO_INDEX(timer,Channel[timer]) < ServoCount && pservo->Pin.isActive == true )  {
       digitalWrite( pservo->Pin.nbr,LOW); // pulse this channel low if activated
-	  // See if we are in a timed move, if so update the move for the next time through...
-	  if (pservo->ticksDelta > 0) {
-	    pservo->ticks +=pservo->ticksDelta;
-		if (pservo->ticks >= pservo->ticksNew) {
-			pservo->ticks = pservo->ticksNew;
-			pservo->ticksDelta = 0;
-		}
-	  }
-	  else if (pservo->ticksDelta < 0) {
-	    pservo->ticks +=pservo->ticksDelta;
-		if (pservo->ticks <= pservo->ticksNew) {
-			pservo->ticks = pservo->ticksNew;
-			pservo->ticksDelta = 0;
-		}
-	  }
-	}
+      // See if we are in a timed move, if so update the move for the next time through...
+      if (pservo->ticksDelta > 0) {
+        pservo->ticks +=pservo->ticksDelta;
+    	if (pservo->ticks >= pservo->ticksNew) {
+        	pservo->ticks = pservo->ticksNew;
+        	pservo->ticksDelta = 0;
+        }
+      }
+      else if (pservo->ticksDelta < 0) {
+        pservo->ticks +=pservo->ticksDelta;
+    	if (pservo->ticks <= pservo->ticksNew) {
+        	pservo->ticks = pservo->ticksNew;
+        	pservo->ticksDelta = 0;
+        }
+      }
+    }
   }
 
   Channel[timer]++;    // increment to the next channel
@@ -276,7 +276,7 @@ static void finISR(timer16_Sequence_t timer)
 #endif
 }
 
-static boolean isTimerActive(timer16_Sequence_t timer)
+static bool isTimerActive(timer16_Sequence_t timer)
 {
   // returns true if any servo is active on this timer
   for(uint8_t channel=0; channel < SERVOS_PER_TIMER; channel++) {
@@ -355,7 +355,7 @@ void ServoEx::writeMicroseconds(int value)
   	value = value - TRIM_DURATION;
     value = usToTicks(value);  // convert to ticks after compensating for interrupt overhead - 12 Aug 2009
 
-	// Changes to handle multiple servo group move
+    // Changes to handle multiple servo group move
 	if (GroupMoveActiveCnt)
       servos[channel].ticksPending = value;
 	else {
@@ -363,7 +363,7 @@ void ServoEx::writeMicroseconds(int value)
       cli();
       servos[channel].ticks = value;
       SREG = oldSREG;
-	}
+    }
   }
 }
 
@@ -395,7 +395,7 @@ bool ServoEx::moving()
 
 void ServoEx::move(int value, unsigned int MoveTime)
 {
-	// For now just do shorthand of start, write and commit
+    // For now just do shorthand of start, write and commit
 	ServoGroupMove.start();
 	write(value);
 	ServoGroupMove.commit(MoveTime);
@@ -406,13 +406,13 @@ void ServoEx::move(int value, unsigned int MoveTime)
 
 void cServoGroupMove::start(void)
 {
-	//
+    //
 	if (!GroupMoveActiveCnt) {
-		uint8_t i;
-		for (i=0; i < ServoCount; i++)
-			servos[i].ticksPending = (unsigned int)-1;	// special value to say not part of group move.
-	}
-	GroupMoveActiveCnt++;	// Increment counter to say we are in a group move.
+    	uint8_t i;
+    	for (i=0; i < ServoCount; i++)
+        	servos[i].ticksPending = (unsigned int)-1;    // special value to say not part of group move.
+    }
+	GroupMoveActiveCnt++;    // Increment counter to say we are in a group move.
 }
 
 void cServoGroupMove::commit(unsigned int wMoveTime)
@@ -421,43 +421,43 @@ void cServoGroupMove::commit(unsigned int wMoveTime)
 	uint8_t
 	i;
 	if (GroupMoveActiveCnt) {
-		if ((--GroupMoveActiveCnt) == 0) {
-			// Ok we are back to zero.  Need to convert the move time to number of cycles...
-			// Lets convert the move time into number of Servo Intervals
-			// NOte Refresh_interval is in microseconds and our time was in milliseconds
-			wMoveTime = (wMoveTime + (REFRESH_INTERVAL/2000))/(REFRESH_INTERVAL/1000);
-			if (wMoveTime) {
-				// At least one clock tick so now
-				for (i=0; i < ServoCount; i++) {
-					if ((servos[i].ticksPending != (unsigned int)-1) && (servos[i].Pin.isActive) &&
-							(servos[i].ticks != servos[i].ticksPending)) {
-						cli();
-						servos[i].ticksNew = servos[i].ticksPending;
-						servos[i].ticksDelta = (int)((int)servos[i].ticksNew - (int)servos[i].ticks)/ (int)wMoveTime;
-						if (!servos[i].ticksDelta)
-							servos[i].ticksDelta = (servos[i].ticksNew > servos[i].ticks)? 1 : -1;
-						SREG = oldSREG;
-					}
-				}
-			}
-			else {
-				// less than one clock tick lets just set all of the active ones to their new values...
-				for (i=0; i < ServoCount; i++) {
-					if ((servos[i].ticksPending != (unsigned int)-1) && (servos[i].Pin.isActive)) {
-						cli();
-						servos[i].ticks = servos[i].ticksPending;
-						SREG = oldSREG;
-					}
-					servos[i].ticksDelta = 0;	// make sure they are all cleared out.
-				}
-			}
-		}
-	}
+    	if ((--GroupMoveActiveCnt) == 0) {
+            // Ok we are back to zero.  Need to convert the move time to number of cycles...
+            // Lets convert the move time into number of Servo Intervals
+            // NOte Refresh_interval is in microseconds and our time was in milliseconds
+        	wMoveTime = (wMoveTime + (REFRESH_INTERVAL/2000))/(REFRESH_INTERVAL/1000);
+        	if (wMoveTime) {
+                // At least one clock tick so now
+            	for (i=0; i < ServoCount; i++) {
+                	if ((servos[i].ticksPending != (unsigned int)-1) && (servos[i].Pin.isActive) &&
+                            (servos[i].ticks != servos[i].ticksPending)) {
+                    	cli();
+                    	servos[i].ticksNew = servos[i].ticksPending;
+                    	servos[i].ticksDelta = (int)((int)servos[i].ticksNew - (int)servos[i].ticks)/ (int)wMoveTime;
+                    	if (!servos[i].ticksDelta)
+                        	servos[i].ticksDelta = (servos[i].ticksNew > servos[i].ticks)? 1 : -1;
+                    	SREG = oldSREG;
+                    }
+                }
+            }
+        	else {
+                // less than one clock tick lets just set all of the active ones to their new values...
+            	for (i=0; i < ServoCount; i++) {
+                	if ((servos[i].ticksPending != (unsigned int)-1) && (servos[i].Pin.isActive)) {
+                    	cli();
+                    	servos[i].ticks = servos[i].ticksPending;
+                    	SREG = oldSREG;
+                    }
+                	servos[i].ticksDelta = 0;    // make sure they are all cleared out.
+                }
+            }
+        }
+    }
 }
 
 void cServoGroupMove::abort()
 {
-	GroupMoveActiveCnt = 0;	// clear out the counts...
+	GroupMoveActiveCnt = 0;    // clear out the counts...
 }
 
 
@@ -467,10 +467,10 @@ uint32_t cServoGroupMove::moving(void)
 	uint32_t	ulRet = 0;
 	uint32_t	ulMask = 1;
 	for (i=0; i < ServoCount; i++) {
-		if (servos[i].ticksDelta != 0)
-			ulRet |= ulMask;
-		ulMask <<= 1;	// setup for next servo...
-	}
+    	if (servos[i].ticksDelta != 0)
+        	ulRet |= ulMask;
+    	ulMask <<= 1;    // setup for next servo...
+    }
 	return ulRet;
 }
 
@@ -478,12 +478,12 @@ void cServoGroupMove::wait(uint32_t ulSGMMask)
 {
 	uint8_t i;
 	for (i=0; (i < ServoCount) && ulSGMMask; i++) {
-		if (ulSGMMask & 0x1) {
-			// We are interested in this servo...
-			while (servos[i].ticksDelta != 0)
-				delay(1);
-		}
-		ulSGMMask >>= 1;
-	}
+    	if (ulSGMMask & 0x1) {
+            // We are interested in this servo...
+        	while (servos[i].ticksDelta != 0)
+            	delay(1);
+        }
+    	ulSGMMask >>= 1;
+    }
 }
 

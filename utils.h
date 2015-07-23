@@ -20,7 +20,7 @@
 #include "Common.h"
 
 // Bit vector from bit position
-#define BV(bit) (1 << bit)
+#define BV(bit) (1 << (bit))
 
 #ifdef __DEBUG_PRINTF__
     void printf(char *fmt, ... );

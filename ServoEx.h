@@ -46,20 +46,20 @@
    detach()    - Stops an attached servos from pulsing its i/o pin.
 
    New methods:
-	moving  	- Returns true if the servo is still moving to it's new location.
-    move	 	- Move the one servo to a new location...
+	moving      - Returns true if the servo is still moving to it's new location.
+    move	     - Move the one servo to a new location...
 
 	New Class cServoGroupMove - used to start a new group move.  There is one instance of this class
-		defined ServoGroupMove.
+    	defined ServoGroupMove.
 
 	The methods are:
 
-    start 		- Starts a group move.  The servos are not moved until the commit call
-    commit		- Commits the moves(write, writeMicroseconds) that happened since start
+    start         - Starts a group move.  The servos are not moved until the commit call
+    commit	    - Commits the moves(write, writeMicroseconds) that happened since start
 
-    moving		- Returns a bitmask of the servos that are still moving.  The bits are in the order
-				  the servos were created.
-    wait		- Waits for all of the servos defined in the mask are to their end points.
+    moving	    - Returns a bitmask of the servos that are still moving.  The bits are in the order
+                  the servos were created.
+    wait	    - Waits for all of the servos defined in the mask are to their end points.
 
  */
 
@@ -125,10 +125,10 @@ typedef struct  {
 
 typedef struct {
   ServoPin_t Pin;
-  unsigned int ticks;				  // Current Tick count
-  unsigned int ticksNew;			  // New end point tick count
-  int	ticksDelta;					  // How much to change per servo cycle
-  unsigned int ticksPending; 		  // New pending value that commit will use.
+  unsigned int ticks;                  // Current Tick count
+  unsigned int ticksNew;              // New end point tick count
+  int	ticksDelta;                      // How much to change per servo cycle
+  unsigned int ticksPending;           // New pending value that commit will use.
 } servo_t;
 
 class ServoEx
@@ -143,7 +143,7 @@ public:
   int read();                        // returns current pulse width as an angle between 0 and 180 degrees
   int readMicroseconds();            // returns current pulse width in microseconds for this servo (was read_us() in first release)
   bool attached();                   // return true if this servo is attached, otherwise false
-  bool moving();					 // return true if the servo is still moving
+  bool moving();                     // return true if the servo is still moving
   void move(int value, unsigned int MoveTime); // A one servo group move...
 private:
    uint8_t servoIndex;               // index into the channel data for this servo
@@ -160,9 +160,9 @@ class cServoGroupMove {
 
     void     start(void);                            // Start a group move
     void     commit(unsigned int wMoveTime);         // how long in milliseconds the move should take
-	void	 abort(void);							 // Abort any moves that may be active
+	void	 abort(void);                             // Abort any moves that may be active
 
-    uint32_t moving(void);			    // returns bit mask for which servos are active.
+    uint32_t moving(void);                // returns bit mask for which servos are active.
     void     wait(uint32_t ulSGMMask);
 
 };

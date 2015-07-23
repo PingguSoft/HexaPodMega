@@ -33,8 +33,16 @@
 #include "ServoEx.h"
 #include "config.h"
 #include "Phoenix.h"
-#include "Phoenix_Input_Serial.h"
-#include "phoenix_driver_ServoEx.h"
-#include "Phoenix_Code.h"
+//#include "Phoenix_Input_Serial.h"
+//#include "Phoenix_Code.h"
 
+void setup()
+{
+#ifdef DBG_SERIAL
+    DBG_SERIAL.begin(BAUD_DEBUG);
+#endif    
+}
 
+void loop()
+{
+}

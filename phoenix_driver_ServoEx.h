@@ -21,7 +21,7 @@ static const u8 TBL_TARS_PIN[] PROGMEM = {
 #endif
 
 // 12 64 0 0 A1 FF 56 FF 0 0 92 FF 0 0 0 0
-static const short TBL_LEGS_OFFSET[] PROGMEM = {
+static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
     0,  -95, -170,
     0, -110,    0,
     0,  -90,  -35,
@@ -40,9 +40,9 @@ static const short TBL_LEGS_OFFSET[] PROGMEM = {
 #define NUM_SERVOS_PER_LEG 3
 #endif
 ServoEx          g_aservoLegs[6 * NUM_SERVOS_PER_LEG];        // Define the servo objects...
-short            g_asLegOffsets[6 * NUM_SERVOS_PER_LEG];
+s16            g_asLegOffsets[6 * NUM_SERVOS_PER_LEG];
 cServoGroupMove  g_cSGM;
-boolean g_fServosAttached;
+bool g_fServosAttached;
 
 
 //--------------------------------------------------------------------
@@ -78,7 +78,7 @@ void LoadServosConfig(void) {
   // got to here, something not right, set up 0's for servo offsets.
   for (i = 0; i < 6*NUM_SERVOS_PER_LEG; i++) {
 //    g_asLegOffsets[i] = 0;
-    g_asLegOffsets[i] = (short)pgm_read_word(&TBL_LEGS_OFFSET[i]);
+    g_asLegOffsets[i] = (s16)pgm_read_word(&TBL_LEGS_OFFSET[i]);
   }
 }
 
@@ -144,7 +144,7 @@ word ServoDriver::GetBatteryVoltage(void) {
 //--------------------------------------------------------------------
 //[FIsGPSeqDefined]
 //--------------------------------------------------------------------
-boolean ServoDriver::FIsGPSeqDefined(uint8_t iSeq)
+bool ServoDriver::FIsGPSeqDefined(uint8_t iSeq)
 {
   // for now assume that we don't support GP Player
   return false;
@@ -181,7 +181,7 @@ uint8_t ServoDriver::GPCurStep(void)           // Return which step currently on
 
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
-void ServoDriver::GPSetSpeedMultiplyer(short sm)      // Set the Speed multiplier (100 is default)
+void ServoDriver::GPSetSpeedMultiplyer(s16 sm)      // Set the Speed multiplier (100 is default)
 {
 }
 
@@ -231,9 +231,9 @@ void ServoDriver::BeginServoUpdate(void)    // Start the update
 // A PWM/deg factor of 10,09 give cPwmDiv = 991 and cPFConst = 592
 // For a modified 5645 (to 180 deg travel): cPwmDiv = 1500 and cPFConst = 900.
 #ifdef CONFIG_4DOF
-void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1, short sTarsAngle1)
+void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1, s16 sTarsAngle1)
 #else
-void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, short sCoxaAngle1, short sFemurAngle1, short sTibiaAngle1)
+void ServoDriver::OutputServoInfoForLeg(u8 LegIndex, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1)
 #endif
 {
   word    wCoxaSSCV;        // Coxa value in SSC units
@@ -317,7 +317,7 @@ void ServoDriver::ShowTerminalCommandList(void)
 // ProcessTerminalCommand: The terminal monitor will call this to see if the
 //     command the user entered was one added by the servo driver.
 //==============================================================================
-boolean ServoDriver::ProcessTerminalCommand(u8 *psz, u8 bLen)
+bool ServoDriver::ProcessTerminalCommand(u8 *psz, u8 bLen)
 {
 #ifdef OPT_FIND_SERVO_OFFSETS
   if ((bLen == 1) && ((*psz == 'o') || (*psz == 'O'))) {
@@ -339,8 +339,8 @@ void AllLegServos1500()
 
 //==============================================================================
 //	FindServoOffsets - Find the zero points for each of our servos...
-// 		Will use the new servo function to set the actual pwm rate and see
-//		how well that works...
+//     	Will use the new servo function to set the actual pwm rate and see
+//    	how well that works...
 //==============================================================================
 
 void FindServoOffsets()
@@ -349,16 +349,16 @@ void FindServoOffsets()
     static char *apszLegs[] = {"RR","RM","RF", "LR", "LM", "LF"};  // Leg Order
     static char *apszLJoints[] = {" Coxa", " Femur", " Tibia", " tArs"}; // which joint on the leg...
     int data;
-    short sSN = 0; 			// which servo number
-    boolean fNew = true;	// is this a new servo to work with?
-    boolean fExit = false;	// when to exit
+    s16 sSN = 0;             // which servo number
+    bool fNew = true;    // is this a new servo to work with?
+    bool fExit = false;    // when to exit
     int ich;
-    short sOffset;
+    s16 sOffset;
 
-    if (CheckVoltage()) {
+    if (checkVoltage()) {
         // Voltage is low...
         Serial.println("Low Voltage: fix or hit $ to abort");
-        while (CheckVoltage()) {
+        while (checkVoltage()) {
             if (Serial.read() == '$')  return;
         }
     }
@@ -377,13 +377,13 @@ void FindServoOffsets()
         if (fNew) {
             sOffset = g_asLegOffsets[sSN];
             Serial.print("Servo: ");
-			Serial.print(apszLegs[sSN/NUM_SERVOS_PER_LEG]);
-			Serial.print(apszLJoints[sSN%NUM_SERVOS_PER_LEG]);
-			Serial.print("(");
-			Serial.print(sOffset, DEC);
-			Serial.println(")");
+        	Serial.print(apszLegs[sSN/NUM_SERVOS_PER_LEG]);
+        	Serial.print(apszLJoints[sSN%NUM_SERVOS_PER_LEG]);
+        	Serial.print("(");
+        	Serial.print(sOffset, DEC);
+        	Serial.println(")");
 
-	    // Now lets wiggle the servo
+        // Now lets wiggle the servo
             g_cSGM.wait(0xffffff);    // wait for any active servos to finish moving...
             g_aservoLegs[sSN].move(1500+sOffset+250, 500);
 
@@ -395,45 +395,45 @@ void FindServoOffsets()
             fNew = false;
         }
 
-	//get user entered data
+    //get user entered data
 	data = Serial.read();
-	//if data received
-	if (data !=-1) 	{
+    //if data received
+	if (data !=-1)     {
             if (data == '$')
-		fExit = true;	// not sure how the keypad will map so give NL, CR, LF... all implies exit
+    	fExit = true;    // not sure how the keypad will map so give NL, CR, LF... all implies exit
 
-	    else if ((data == '+') || (data == '-')) {
-	        if (data == '+')
-		    sOffset += 5;		// increment by 5us
-		else
-		    sOffset -= 5;		// increment by 5us
+        else if ((data == '+') || (data == '-')) {
+            if (data == '+')
+            sOffset += 5;        // increment by 5us
+    	else
+            sOffset -= 5;        // increment by 5us
 
-		Serial.print("    ");
-		Serial.println(sOffset, DEC);
+    	Serial.print("    ");
+    	Serial.println(sOffset, DEC);
         g_asLegOffsets[sSN] = sOffset;
         g_aservoLegs[sSN].move(1500+sOffset, 500);
-	} else if ((data >= '0') && (data <= '5')) {
-		// direct enter of which servo to change
-		fNew = true;
-		sSN = (sSN % NUM_SERVOS_PER_LEG) + (data - '0')*NUM_SERVOS_PER_LEG;
-	    } else if ((data == 'c') && (data == 'C')) {
-		fNew = true;
-		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 0;
-	    } else if ((data == 'c') && (data == 'C')) {
-		fNew = true;
-		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 1;
-	    } else if ((data == 'c') && (data == 'C')) {
-		// direct enter of which servo to change
-		fNew = true;
-		sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 2;
-	    } else if (data == '*') {
-	        // direct enter of which servo to change
-		fNew = true;
-		sSN++;
-		if (sSN == 6*NUM_SERVOS_PER_LEG)
-		    sSN = 0;
-	    }
-	}
+    } else if ((data >= '0') && (data <= '5')) {
+        // direct enter of which servo to change
+    	fNew = true;
+    	sSN = (sSN % NUM_SERVOS_PER_LEG) + (data - '0')*NUM_SERVOS_PER_LEG;
+        } else if ((data == 'c') && (data == 'C')) {
+    	fNew = true;
+    	sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 0;
+        } else if ((data == 'c') && (data == 'C')) {
+    	fNew = true;
+    	sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 1;
+        } else if ((data == 'c') && (data == 'C')) {
+        // direct enter of which servo to change
+    	fNew = true;
+    	sSN = (sSN / NUM_SERVOS_PER_LEG) * NUM_SERVOS_PER_LEG + 2;
+        } else if (data == '*') {
+            // direct enter of which servo to change
+    	fNew = true;
+    	sSN++;
+    	if (sSN == 6*NUM_SERVOS_PER_LEG)
+            sSN = 0;
+        }
+    }
     }
     Serial.print("Find Servo exit ");
     for (sSN=0; sSN < 6*NUM_SERVOS_PER_LEG; sSN++){
@@ -445,13 +445,13 @@ void FindServoOffsets()
 
     //get user entered data
     while (((data = Serial.read()) == -1) || ((data >= 10) && (data <= 15)))
-	;
+    ;
 
     if ((data == 'Y') || (data == 'y')) {
         // Ok they asked for the data to be saved.  We will store the data with a
         // number of servos (u8)at the start, followed by a u8 for a checksum...followed by our offsets array...
         // Currently we store these values starting at EEPROM address 0. May later change...
-	//
+    //
         u8 *pb = (u8*)&g_asLegOffsets;
         u8 bChkSum = 0;  //
         EEPROM.write(0, 6*NUM_SERVOS_PER_LEG);    // Ok lets write out our count of servos

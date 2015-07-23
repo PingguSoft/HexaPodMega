@@ -20,6 +20,9 @@
 //====================================================================
 #ifndef HEX_CFG_CHR3_H
 #define HEX_CFG_CHR3_H
+#include "common.h"
+
+#define CONFIG_NUM_GAITS    6
 
 #define DEBUG
 #define DBG_SERIAL Serial
@@ -180,19 +183,19 @@
 #define HALF_BODY_MIDDLE_WIDTH  50
 #define HALF_BODY_FB_WIDTH      45
 
-#define cRROffsetX 	-HALF_BODY_FB_WIDTH     //Distance X from center of the body to the Right Rear coxa
-#define cRROffsetZ 	HALF_BODY_LENGHT	    //Distance Z from center of the body to the Right Rear coxa
-#define cRMOffsetX 	-HALF_BODY_MIDDLE_WIDTH //Distance X from center of the body to the Right Middle coxa
-#define cRMOffsetZ 	0	                    //Distance Z from center of the body to the Right Middle coxa
-#define cRFOffsetX 	-HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Right Front coxa
-#define cRFOffsetZ 	-HALF_BODY_LENGHT	    //Distance Z from center of the body to the Right Front coxa
+#define cRROffsetX     -HALF_BODY_FB_WIDTH     //Distance X from center of the body to the Right Rear coxa
+#define cRROffsetZ      HALF_BODY_LENGHT	    //Distance Z from center of the body to the Right Rear coxa
+#define cRMOffsetX     -HALF_BODY_MIDDLE_WIDTH //Distance X from center of the body to the Right Middle coxa
+#define cRMOffsetZ      0                       //Distance Z from center of the body to the Right Middle coxa
+#define cRFOffsetX     -HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Right Front coxa
+#define cRFOffsetZ     -HALF_BODY_LENGHT	    //Distance Z from center of the body to the Right Front coxa
 
-#define cLROffsetX 	HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Left Rear coxa
-#define cLROffsetZ 	HALF_BODY_LENGHT	    //Distance Z from center of the body to the Left Rear coxa
-#define cLMOffsetX 	HALF_BODY_MIDDLE_WIDTH	//Distance X from center of the body to the Left Middle coxa
-#define cLMOffsetZ 	0	                    //Distance Z from center of the body to the Left Middle coxa
-#define cLFOffsetX 	HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Left Front coxa
-#define cLFOffsetZ 	-HALF_BODY_LENGHT	    //Distance Z from center of the body to the Left Front coxa
+#define cLROffsetX      HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Left Rear coxa
+#define cLROffsetZ      HALF_BODY_LENGHT	    //Distance Z from center of the body to the Left Rear coxa
+#define cLMOffsetX      HALF_BODY_MIDDLE_WIDTH	//Distance X from center of the body to the Left Middle coxa
+#define cLMOffsetZ      0	                    //Distance Z from center of the body to the Left Middle coxa
+#define cLFOffsetX      HALF_BODY_FB_WIDTH	    //Distance X from center of the body to the Left Front coxa
+#define cLFOffsetZ     -HALF_BODY_LENGHT	    //Distance Z from center of the body to the Left Front coxa
 
 //--------------------------------------------------------------------
 //[START POSITIONS FEET]
@@ -204,10 +207,6 @@
 // Lets try some multi leg positions depending on height settings.
 #define CNT_HEX_INITS       3
 #define MAX_BODY_Y          90
-#ifdef DEFINE_HEX_GLOBALS
-  const u8 TBL_INIT_HEX_XZ[]    PROGMEM = {cHexInitXZ, 99, 86};
-  const u8 TBL_MAX_HEX_BODY_Y[] PROGMEM = { 20, 50, MAX_BODY_Y};
-#endif
 
 #define cRRInitPosX     CHexInitXZCos60      //Start positions of the Right Rear leg
 #define cRRInitPosY     CHexInitY
@@ -240,6 +239,10 @@
 #define cTarsFactorA	70	//4DOF ONLY
 #define cTarsFactorB	60	//4DOF ONLY
 #define cTarsFactorC	50	//4DOF ONLY
+
+#define DEFAULT_GAIT_SPEED  60
+#define DEFAULT_SLOW_GAIT   70
+
 
 #endif //CFG_HEX_H
 
