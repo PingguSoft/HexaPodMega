@@ -159,7 +159,7 @@ private:
     void        balanceBody(void);
     void        getBodyIK (s16 posX, s16 posZ, s16 posY, s16 RotationY, u8 leg, long *x, long *y, long *z);
     u8          getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg);
-    void        checkAngles(void);
+    void        validateAngles(void);
     s16         smoothControl (s16 CtrlMoveInp, s16 CtrlMoveOut, u8 CtrlDivider);
     void        adjustLegPosToBodyHeight(void);
 

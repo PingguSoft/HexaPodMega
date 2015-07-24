@@ -48,86 +48,86 @@
 
 //====================================================================
 //[IO Pins On 2560]
-#define cRRCoxaPin      35  //Rear Right leg Hip Horizontal
-#define cRRFemurPin     36  //Rear Right leg Hip Vertical
-#define cRRTibiaPin     19  //Rear Right leg Knee
-#define cRRTarsPin      1   // Tar
+#define PIN_RR_COXA      35  //Rear Right leg Hip Horizontal
+#define PIN_RR_FEMUR     36  //Rear Right leg Hip Vertical
+#define PIN_RR_TIBIA     19  //Rear Right leg Knee
+#define PIN_RR_TARS      1   // Tar
 
-#define cRMCoxaPin      25  //Middle Right leg Hip Horizontal
-#define cRMFemurPin     33  //Middle Right leg Hip Vertical
-#define cRMTibiaPin     34  //Middle Right leg Knee
-#define cRMTarsPin       1  // Tar
+#define PIN_RM_COXA      25  //Middle Right leg Hip Horizontal
+#define PIN_RM_FEMUR     33  //Middle Right leg Hip Vertical
+#define PIN_RM_TIBIA     34  //Middle Right leg Knee
+#define PIN_RM_TARS       1  // Tar
 
-#define cRFCoxaPin      22  //Front Right leg Hip Horizontal
-#define cRFFemurPin     23  //Front Right leg Hip Vertical
-#define cRFTibiaPin     24   //Front Right leg Knee
-#define cRFTarsPin       1   // Tar
+#define PIN_RF_COXA      22  //Front Right leg Hip Horizontal
+#define PIN_RF_FEMUR     23  //Front Right leg Hip Vertical
+#define PIN_RF_TIBIA     24   //Front Right leg Knee
+#define PIN_RF_TARS       1   // Tar
 
-#define cLRCoxaPin       9   //Rear Left leg Hip Horizontal
-#define cLRFemurPin     10   //Rear Left leg Hip Vertical
-#define cLRTibiaPin     11   //Rear Left leg Knee
-#define cLRTarsPin       1   // Tar
+#define PIN_LR_COXA       9   //Rear Left leg Hip Horizontal
+#define PIN_LR_FEMUR     10   //Rear Left leg Hip Vertical
+#define PIN_LR_TIBIA     11   //Rear Left leg Knee
+#define PIN_LR_TARS       1   // Tar
 
-#define cLMCoxaPin       6  //Middle Left leg Hip Horizontal
-#define cLMFemurPin      7   //Middle Left leg Hip Vertical
-#define cLMTibiaPin      8  //Middle Left leg Knee
-#define cLMTarsPin       1  // Tar = Not working...
+#define PIN_LM_COXA       6  //Middle Left leg Hip Horizontal
+#define PIN_LM_FEMUR      7   //Middle Left leg Hip Vertical
+#define PIN_LM_TIBIA      8  //Middle Left leg Knee
+#define PIN_LM_TARS       1  // Tar = Not working...
 
-#define cLFCoxaPin       2   //Front Left leg Hip Horizontal
-#define cLFFemurPin      3   //Front Left leg Hip Vertical
-#define cLFTibiaPin      5   //Front Left leg Knee
-#define cLFTarsPin       1   // Tar
+#define PIN_LF_COXA       2   //Front Left leg Hip Horizontal
+#define PIN_LF_FEMUR      3   //Front Left leg Hip Vertical
+#define PIN_LF_TIBIA      5   //Front Left leg Knee
+#define PIN_LF_TARS       1   // Tar
 
 //--------------------------------------------------------------------
 //[MIN/MAX ANGLES]
-#define COXA_MinANG    -800
-#define COXA_MaxANG     800
-#define FEMUR_MinANG   -800
-#define FEMUR_MaxANG    800
-#define TIBIA_MinANG   -800
-#define TIBIA_MaxANG    800
+#define COXA_MIN_ANG    -800
+#define COXA_MAX_ANG     800
+#define FEMUR_MIN_ANG   -800
+#define FEMUR_MAX_ANG    800
+#define TIBIA_MIN_ANG   -800
+#define TIBIA_MAX_ANG    800
 
-#define cRRCoxaMin1	    COXA_MinANG	//Mechanical limits of the Right Rear Leg, decimals = 1
-#define cRRCoxaMax1	    COXA_MaxANG
-#define cRRFemurMin1	FEMUR_MinANG
-#define cRRFemurMax1	FEMUR_MaxANG
-#define cRRTibiaMin1	TIBIA_MinANG
-#define cRRTibiaMax1	TIBIA_MaxANG
+#define cRRCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Right Rear Leg, decimals = 1
+#define cRRCoxaMax1	    COXA_MAX_ANG
+#define cRRFemurMin1	FEMUR_MIN_ANG
+#define cRRFemurMax1	FEMUR_MAX_ANG
+#define cRRTibiaMin1	TIBIA_MIN_ANG
+#define cRRTibiaMax1	TIBIA_MAX_ANG
 
-#define cRMCoxaMin1	    COXA_MinANG	//Mechanical limits of the Right Middle Leg, decimals = 1
-#define cRMCoxaMax1	    COXA_MaxANG
-#define cRMFemurMin1	FEMUR_MinANG
-#define cRMFemurMax1	FEMUR_MaxANG
-#define cRMTibiaMin1	TIBIA_MinANG
-#define cRMTibiaMax1	TIBIA_MaxANG
+#define cRMCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Right Middle Leg, decimals = 1
+#define cRMCoxaMax1	    COXA_MAX_ANG
+#define cRMFemurMin1	FEMUR_MIN_ANG
+#define cRMFemurMax1	FEMUR_MAX_ANG
+#define cRMTibiaMin1	TIBIA_MIN_ANG
+#define cRMTibiaMax1	TIBIA_MAX_ANG
 
-#define cRFCoxaMin1	    COXA_MinANG	//Mechanical limits of the Right Front Leg, decimals = 1
-#define cRFCoxaMax1	    COXA_MaxANG
-#define cRFFemurMin1	FEMUR_MinANG
-#define cRFFemurMax1	FEMUR_MaxANG
-#define cRFTibiaMin1	TIBIA_MinANG
-#define cRFTibiaMax1	TIBIA_MaxANG
+#define cRFCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Right Front Leg, decimals = 1
+#define cRFCoxaMax1	    COXA_MAX_ANG
+#define cRFFemurMin1	FEMUR_MIN_ANG
+#define cRFFemurMax1	FEMUR_MAX_ANG
+#define cRFTibiaMin1	TIBIA_MIN_ANG
+#define cRFTibiaMax1	TIBIA_MAX_ANG
 
-#define cLRCoxaMin1	    COXA_MinANG	//Mechanical limits of the Left Rear Leg, decimals = 1
-#define cLRCoxaMax1	    COXA_MaxANG
-#define cLRFemurMin1	FEMUR_MinANG
-#define cLRFemurMax1	FEMUR_MaxANG
-#define cLRTibiaMin1	TIBIA_MinANG
-#define cLRTibiaMax1	TIBIA_MaxANG
+#define cLRCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Left Rear Leg, decimals = 1
+#define cLRCoxaMax1	    COXA_MAX_ANG
+#define cLRFemurMin1	FEMUR_MIN_ANG
+#define cLRFemurMax1	FEMUR_MAX_ANG
+#define cLRTibiaMin1	TIBIA_MIN_ANG
+#define cLRTibiaMax1	TIBIA_MAX_ANG
 
-#define cLMCoxaMin1	    COXA_MinANG	//Mechanical limits of the Left Middle Leg, decimals = 1
-#define cLMCoxaMax1	    COXA_MaxANG
-#define cLMFemurMin1	FEMUR_MinANG
-#define cLMFemurMax1	FEMUR_MaxANG
-#define cLMTibiaMin1	TIBIA_MinANG
-#define cLMTibiaMax1	TIBIA_MaxANG
+#define cLMCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Left Middle Leg, decimals = 1
+#define cLMCoxaMax1	    COXA_MAX_ANG
+#define cLMFemurMin1	FEMUR_MIN_ANG
+#define cLMFemurMax1	FEMUR_MAX_ANG
+#define cLMTibiaMin1	TIBIA_MIN_ANG
+#define cLMTibiaMax1	TIBIA_MAX_ANG
 
-#define cLFCoxaMin1	    COXA_MinANG	//Mechanical limits of the Left Front Leg, decimals = 1
-#define cLFCoxaMax1	    COXA_MaxANG
-#define cLFFemurMin1	FEMUR_MinANG
-#define cLFFemurMax1	FEMUR_MaxANG
-#define cLFTibiaMin1	TIBIA_MinANG
-#define cLFTibiaMax1	TIBIA_MaxANG
+#define cLFCoxaMin1	    COXA_MIN_ANG	//Mechanical limits of the Left Front Leg, decimals = 1
+#define cLFCoxaMax1	    COXA_MAX_ANG
+#define cLFFemurMin1	FEMUR_MIN_ANG
+#define cLFFemurMax1	FEMUR_MAX_ANG
+#define cLFTibiaMin1	TIBIA_MIN_ANG
+#define cLFTibiaMax1	TIBIA_MAX_ANG
 
 
 //--------------------------------------------------------------------

@@ -10,14 +10,14 @@
 
 //Servo Pin numbers - May be SSC-32 or actual pins on main controller, depending on configuration.
 static const u8 TBL_COXA_PIN[] PROGMEM = {
-  cRRCoxaPin,  cRMCoxaPin,  cRFCoxaPin,  cLRCoxaPin,  cLMCoxaPin,  cLFCoxaPin};
+  PIN_RR_COXA,  PIN_RM_COXA,  PIN_RF_COXA,  PIN_LR_COXA,  PIN_LM_COXA,  PIN_LF_COXA};
 static const u8 TBL_FEMUR_PIN[] PROGMEM = {
-  cRRFemurPin, cRMFemurPin, cRFFemurPin, cLRFemurPin, cLMFemurPin, cLFFemurPin};
+  cRRFemurPin, PIN_RM_FEMUR, PIN_RF_FEMUR, PIN_LR_FEMUR, PIN_LM_FEMUR, PIN_LF_FEMUR};
 static const u8 TBL_TIBIA_PIN[] PROGMEM = {
-  cRRTibiaPin, cRMTibiaPin, cRFTibiaPin, cLRTibiaPin, cLMTibiaPin, cLFTibiaPin};
+  PIN_RR_TIBIA, PIN_RM_TIBIA, PIN_RF_TIBIA, PIN_LR_TIBIA, PIN_LM_TIBIA, PIN_LF_TIBIA};
 #ifdef CONFIG_4DOF
 static const u8 TBL_TARS_PIN[] PROGMEM = {
-  cRRTarsPin, cRMTarsPin, cRFTarsPin, cLRTarsPin, cLMTarsPin, cLFTarsPin};
+  PIN_RR_TARS, PIN_RM_TARS, PIN_RF_TARS, PIN_LR_TARS, PIN_LM_TARS, PIN_LF_TARS};
 #endif
 
 // 12 64 0 0 A1 FF 56 FF 0 0 92 FF 0 0 0 0

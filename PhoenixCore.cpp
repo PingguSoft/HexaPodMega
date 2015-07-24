@@ -177,11 +177,6 @@ bool PhoenixCore::mBoolUpsideDown    = FALSE;
 #define TRAVEL_DEAD_ZONE    4       // The deadzone for the analog input from the remote
 #define GP_DIFF_LIMIT       2       // GP=GaitPos testing different limits
 
-
-//--------------------------------------------------------------------
-//[GLOABAL]
-//--------------------------------------------------------------------
-
 // Define our ServoWriter class
 //ServoDriver  g_ServoDriver;      // our global servo driver class
 
@@ -442,7 +437,7 @@ void PhoenixCore::loop(void)
     }
 
     //Check mechanical limits
-    checkAngles();
+    validateAngles();
 
     //Drive Servos
     if (mControlState.fHexCurOn) {
@@ -1106,7 +1101,7 @@ u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg
 //--------------------------------------------------------------------
 //[CHECK ANGLES] Checks the mechanical limits of the servos
 //--------------------------------------------------------------------
-void PhoenixCore::checkAngles(void)
+void PhoenixCore::validateAngles(void)
 {
     for (u8 i = 0; i < 6; i++) {
         mCoxaAngle[i]  = min(max(mCoxaAngle[i], (s16)pgm_read_word(&TBL_COXA_MIN[i])),
