@@ -13,7 +13,8 @@ PhoenixInputSerial::PhoenixInputSerial(void)
 
 void PhoenixInputSerial::init(void)
 {
-    BT_SERIAL.begin(CONFIG_BT_BAUD);
+    //BT_SERIAL.begin(CONFIG_BT_BAUD);
+    printf(F("%s\n"), __PRETTY_FUNCTION__);
 }
 
 //==============================================================================
@@ -24,16 +25,16 @@ u32 PhoenixInputSerial::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
 {
     int cmd;
 
+    *lx = mLX;
+    *ly = mLY;
+    *rx = mRX;
+    *ry = mRY;
+
     if (BT_SERIAL.available() == 0)
         return 0;
 
     cmd = BT_SERIAL.read();
     printf(F("cmd:%c\n"), cmd);
-
-    *lx = mLX;
-    *ly = mLY;
-    *rx = mRX;
-    *ry = mRY;
 
     switch(cmd) {
         case 'w':
@@ -49,20 +50,20 @@ u32 PhoenixInputSerial::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
             return INPUT_SPEED_UP;
 
         case ' ':
-            mLX = 128;
-            mLY = 128;
-            mRX = 128;
-            mRY = 128;
+            *lx = mLX = 128;
+            *ly = mLY = 128;
+            *rx = mRX = 128;
+            *ry = mRY = 128;
             return INPUT_TOGGLE_ON_OFF;
 
         case 'z':
             return INPUT_OPT_SEL;
 
         case '1':
-            return INPUT_OPT_L1;
+            return INPUT_TOGGLE_SHIFT;
 
         case 'q':
-            return INPUT_OPT_L2;
+            return INPUT_TOGGLE_ROTATE;
 
         case '3':
             return INPUT_OPT_R1;

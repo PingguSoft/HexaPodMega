@@ -50,7 +50,7 @@
 	moving      - Returns true if the servo is still moving to it's new location.
     move	     - Move the one servo to a new location...
 
-	New Class cServoGroupMove - used to start a new group move.  There is one instance of this class
+	New Class ServoGroupMove - used to start a new group move.  There is one instance of this class
     	defined ServoGroupMove.
 
 	The methods are:
@@ -72,8 +72,6 @@
 #define usToTicks(_us)    (( clockCyclesPerMicrosecond()* _us) / 8)     // converts microseconds to tick (assumes prescale of 8)  // 12 Aug 2009
 #define ticksToUs(_ticks) (( (unsigned)_ticks * 8)/ clockCyclesPerMicrosecond() ) // converts from ticks back to microseconds
 
-
-cServoGroupMove ServoGroupMove;
 
 
 #define TRIM_DURATION       2                               // compensation ticks to trim adjust for digitalWrite delays // 12 August 2009
@@ -393,18 +391,10 @@ bool ServoEx::moving()
   return (servos[this->servoIndex].ticksDelta != 0) ;
 }
 
-void ServoEx::move(int value, unsigned int MoveTime)
-{
-    // For now just do shorthand of start, write and commit
-	ServoGroupMove.start();
-	write(value);
-	ServoGroupMove.commit(MoveTime);
-}
-
 
 //====================================================================================
 
-void cServoGroupMove::start(void)
+void ServoGroupMove::start(void)
 {
     //
 	if (!GroupMoveActiveCnt) {
@@ -415,7 +405,7 @@ void cServoGroupMove::start(void)
 	GroupMoveActiveCnt++;    // Increment counter to say we are in a group move.
 }
 
-void cServoGroupMove::commit(unsigned int wMoveTime)
+void ServoGroupMove::commit(unsigned int wMoveTime)
 {
     uint8_t oldSREG = SREG;
 	uint8_t
@@ -455,13 +445,13 @@ void cServoGroupMove::commit(unsigned int wMoveTime)
     }
 }
 
-void cServoGroupMove::abort()
+void ServoGroupMove::abort()
 {
 	GroupMoveActiveCnt = 0;    // clear out the counts...
 }
 
 
-uint32_t cServoGroupMove::moving(void)
+uint32_t ServoGroupMove::moving(void)
 {
 	uint8_t i;
 	uint32_t	ulRet = 0;
@@ -474,7 +464,7 @@ uint32_t cServoGroupMove::moving(void)
 	return ulRet;
 }
 
-void cServoGroupMove::wait(uint32_t ulSGMMask)
+void ServoGroupMove::wait(uint32_t ulSGMMask)
 {
 	uint8_t i;
 	for (i=0; (i < ServoCount) && ulSGMMask; i++) {

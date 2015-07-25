@@ -49,7 +49,7 @@
 	moving      - Returns true if the servo is still moving to it's new location.
     move	     - Move the one servo to a new location...
 
-	New Class cServoGroupMove - used to start a new group move.  There is one instance of this class
+	New Class ServoGroupMove - used to start a new group move.  There is one instance of this class
     	defined ServoGroupMove.
 
 	The methods are:
@@ -152,7 +152,7 @@ private:
 };
 
 
-class cServoGroupMove {
+class ServoGroupMove {
   public:
     // Constructor. Set up variables.
     // Warning: currently this is limited to 32 servos...
@@ -166,8 +166,6 @@ class cServoGroupMove {
     void     wait(uint32_t ulSGMMask);
 
 };
-
-extern cServoGroupMove ServoGroupMove;
 
 #endif
 

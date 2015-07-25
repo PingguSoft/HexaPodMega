@@ -14,6 +14,7 @@
 */
 
 #include <stdarg.h>
+#include <EEPROM.h>
 #include "config.h"
 #include "common.h"
 #include "utils.h"
@@ -53,50 +54,108 @@ void printf(const __FlashStringHelper *fmt, ... )
 
 void Utils::makeSound(unsigned long duration,  unsigned int frequency)
 {
-  volatile uint8_t *pin_port;
-  volatile uint8_t pin_mask;
+    volatile uint8_t *pin_port;
+    volatile uint8_t pin_mask;
 
-  long toggle_count = 0;
-  long lusDelayPerHalfCycle;
+    long toggle_count = 0;
+    long lusDelayPerHalfCycle;
 
-  // Set the pinMode as OUTPUT
-  pinMode(PIN_SOUND, OUTPUT);
+    // Set the pinMode as OUTPUT
+    pinMode(PIN_SOUND, OUTPUT);
 
-  pin_port = portOutputRegister(digitalPinToPort(PIN_SOUND));
-  pin_mask = digitalPinToBitMask(PIN_SOUND);
+    pin_port = portOutputRegister(digitalPinToPort(PIN_SOUND));
+    pin_mask = digitalPinToBitMask(PIN_SOUND);
 
-  toggle_count = 2 * frequency * duration / 1000;
-  lusDelayPerHalfCycle = 1000000L/(frequency * 2);
+    toggle_count = 2 * frequency * duration / 1000;
+    lusDelayPerHalfCycle = 1000000L/(frequency * 2);
 
-  // if we are using an 8 bit timer, scan through prescalars to find the best fit
-  while (toggle_count--) {
-    // toggle the pin
-    *pin_port ^= pin_mask;
+    // if we are using an 8 bit timer, scan through prescalars to find the best fit
+    while (toggle_count--) {
+        // toggle the pin
+        *pin_port ^= pin_mask;
 
-    // delay a half cycle
-    delayMicroseconds(lusDelayPerHalfCycle);
-  }
+        // delay a half cycle
+        delayMicroseconds(lusDelayPerHalfCycle);
+    }
   *pin_port &= ~(pin_mask);  // keep pin low after stop
-
 }
 
 void Utils::sound(u8 notes, ...)
 {
-  va_list ap;
-  unsigned int uDur;
-  unsigned int uFreq;
-  va_start(ap, notes);
+    va_list ap;
+    unsigned int uDur;
+    unsigned int uFreq;
+    va_start(ap, notes);
 
-  while (notes > 0) {
-    uDur = va_arg(ap, unsigned int);
-    uFreq = va_arg(ap, unsigned int);
-    Utils::makeSound(uDur, uFreq);
-    notes--;
-  }
-  va_end(ap);
+    while (notes > 0) {
+        uDur = va_arg(ap, unsigned int);
+        uFreq = va_arg(ap, unsigned int);
+        Utils::makeSound(uDur, uFreq);
+        notes--;
+    }
+    va_end(ap);
 }
 #else
 void Utils::sound(u8 cNotes, ...)
 {
 };
 #endif
+
+
+void Utils::dumpEEPROM(u16 addr, u16 cnt)
+{
+    u8  i;
+    u8  b;
+
+    while (cnt) {
+        printf(F("%08x - "), addr);
+
+        for (i = 0; (i < 16) && (i < cnt); i ++) {
+            b = EEPROM.read(addr + i);
+            printf(F("%02x "), b);
+        }
+
+        printf(F(" : "));
+        for (i = 0; (i < 16) && (i < cnt); i ++) {
+            b = EEPROM.read(addr + i);
+            if ((b > 0x1f) && (b < 0x7f))
+                printf(F("%c"), b);
+            else
+                printf(F("."));
+        }
+        printf(F("\n"));
+        addr += i;
+        cnt  -= i;
+    }
+}
+
+u16 Utils::getCmdLineNum(byte **ppszCmdLine)
+{
+    u8  *psz = *ppszCmdLine;
+    u16 w = 0;
+
+    while (*psz == ' ')
+        psz++;
+
+    if ((*psz == '0') && ((*(psz+1) == 'x') || (*(psz+1) == 'X'))) {
+        // Hex mode
+        psz += 2;
+        for (;;) {
+            if ((*psz >= '0') && (*psz <= '9'))
+                w = w * 16 + *psz++ - '0';
+            else if ((*psz >= 'a') && (*psz <= 'f'))
+                w = w * 16 + *psz++ - 'a' + 10;
+            else if ((*psz >= 'A') && (*psz <= 'F'))
+                w = w * 16 + *psz++ - 'A' + 10;
+            else
+                break;
+        }
+    } else {
+        // decimal mode
+        while ((*psz >= '0') && (*psz <= '9'))
+            w = w * 10 + *psz++ - '0';
+    }
+    *ppszCmdLine = psz;
+
+    return w;
+}

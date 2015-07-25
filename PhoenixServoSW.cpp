@@ -29,12 +29,12 @@ static const u8 TBL_TARS_PIN[] PROGMEM = {
 
 // 12 64 0 0 A1 FF 56 FF 0 0 92 FF 0 0 0 0
 static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
-    0,  -95, -170,
-    0, -110,    0,
-    0,  -90,  -35,
+    0, -190, -215,
+    0, -150,    0,
+    0,  -90, -110,
     0,   15, -140,
     0, -130,    0,
-    0, -115,  -45
+    0, -115,  -75
 };
 
 
@@ -54,21 +54,21 @@ void PhoenixServoSW::loadServosConfig(void)
 
     memset(mServoOffsets, 0, sizeof(mServoOffsets));
 
-#if 0
+#if 1
     if (EEPROM.read(0) == 6 * CONFIG_DOF_PER_LEG) {
         printf(F("Load from EEPROM !!\n"));
         for (i=0; i < sizeof(mServoOffsets); i++) {
             *pb = EEPROM.read(i+2);
             bChkSum += *pb++;
         }
-
-        if (bChkSum == EEPROM.read(1))
-            return;    // we have valid data
+        if (bChkSum == EEPROM.read(1)) {
+            printf(F("Offset checksum is okay !!\n"));
+            return;
+        }
     }
 #endif
 
     printf(F("Load default !!\n"));
-
     for (i = 0; i < 6*CONFIG_DOF_PER_LEG; i++) {
         mServoOffsets[i] = (s16)pgm_read_word(&TBL_LEGS_OFFSET[i]);
     }
@@ -80,6 +80,8 @@ void PhoenixServoSW::loadServosConfig(void)
 //--------------------------------------------------------------------
 void PhoenixServoSW::init(void) {
     u8 i;
+
+    printf(F("%s\n"), __PRETTY_FUNCTION__);
 
     mBoolServosAttached = false;
     loadServosConfig();
@@ -235,7 +237,7 @@ void PhoenixServoSW::release(void)
     mBoolServosAttached = false;
 }
 
-#ifdef OPT_TERMINAL_MONITOR
+#ifdef CONFIG_TERMINAL
 //==============================================================================
 // showTerminal: Allow the Terminal monitor to call the servo driver
 //      to allow it to display any additional commands it may have.
@@ -268,8 +270,8 @@ void PhoenixServoSW::setLegs1500ms(void)
 //     	Will use the new servo function to set the actual pwm rate and see
 //    	how well that works...
 //==============================================================================
-static const char *apszLegs[]    PROGMEM = {"RR","RM","RF", "LR", "LM", "LF"};  // Leg Order
-static const char *apszLJoints[] PROGMEM = {" Coxa", " Femur", " Tibia", " tArs"}; // which joint on the leg...
+static const char *apszLegs[]    = {"RR","RM","RF", "LR", "LM", "LF"};  // Leg Order
+static const char *apszLJoints[] = {" Coxa", " Femur", " Tibia", " tArs"}; // which joint on the leg...
 
 void PhoenixServoSW::move(int servo, int val, unsigned int time)
 {
@@ -287,10 +289,10 @@ void PhoenixServoSW::handleServoOffsets(void)
     int ich;
     s16 sOffset;
 
-    if (checkVoltage()) {
+    if (!checkVoltage()) {
         // Voltage is low...
         printf(F("Low Voltage: fix or hit $ to abort\n"));
-        while (checkVoltage()) {
+        while (!checkVoltage()) {
             if (Serial.read() == '$')  return;
         }
     }

@@ -35,6 +35,7 @@ typedef struct {
 
 typedef struct {
     bool        fHexOn;          // Switch to turn on Phoenix
+    bool        fHexOnOld;
 
     //Body position
     COORD3D     c3dBodyPos;
@@ -100,8 +101,6 @@ private:
     // OUTPUTS
     u8          mLedOutput;
 
-    CTRL_STATE  mControlState;
-
     u16         mCurServoMoveTime; // Time for servo updates
     u16         mOldServoMoveTime; // Previous time for the servo updates
 
@@ -148,8 +147,8 @@ private:
     void        doGait(u8 leg, bool fTravelReq);
     void        calcBalOneLeg (u8 leg, long posX, long posZ, long posY);
     void        balanceBody(void);
-    void        getBodyIK (s16 posX, s16 posZ, s16 posY, s16 RotationY, u8 leg, long *x, long *y, long *z);
-    u8          getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg);
+    void        getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY, long *x, long *y, long *z);
+    u8          getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ);
     void        validateAngles(void);
     s16         smoothControl (s16 CtrlMoveInp, s16 CtrlMoveOut, u8 CtrlDivider);
     bool        showTerminal(void);
@@ -165,12 +164,13 @@ public:
         IDX_LM,
         IDX_LF
     };
+    CTRL_STATE  mControlState;
 
     PhoenixCore(void);
 
     void        init(void);
     void        loop(void);
-    CTRL_STATE  getCtrl(void) { return mControlState; }
+    CTRL_STATE  *getCtrl(void) { return &mControlState; }
     void        initCtrl(void);
     void        selectGait(void);
     void        adjustLegPosToBodyHeight(void);

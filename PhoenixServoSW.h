@@ -57,9 +57,10 @@ public:
     virtual bool checkVoltage(void);
     virtual void processBackground(void);
 
-#ifdef OPT_TERMINAL_MONITOR
+#ifdef CONFIG_TERMINAL
     virtual void showTerminal(void);
     virtual bool handleTerminal(u8 *psz, u8 bLen);
+    void move(int servo, int val, unsigned int time);
 #endif
 
 };

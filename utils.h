@@ -35,6 +35,8 @@ private:
 
 public:
     static void sound(u8 notes, ...);
+    static void dumpEEPROM(u16 addr, u16 cnt);
+    static u16  getCmdLineNum(byte **ppszCmdLine);
 };
 
 #endif

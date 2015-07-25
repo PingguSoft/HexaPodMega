@@ -311,7 +311,11 @@ PhoenixCore::PhoenixCore(void)
 
 void PhoenixCore::initCtrl(void)
 {
+    bool temp = mControlState.fHexOnOld;
+
     memset(&mControlState, 0, sizeof(mControlState));
+    mControlState.fHexOnOld = temp;
+
     //Single leg control. Make sure no leg is selected
     mControlState.bSingleLegCurSel = 255; // No Leg selected
     mControlState.bSingleLegOldSel = 255;
@@ -319,6 +323,8 @@ void PhoenixCore::initCtrl(void)
 
 void PhoenixCore::init(void)
 {
+    printf(F("%s\n"), __PRETTY_FUNCTION__);
+
     mServo->init();
     mLedOutput = 0;
 
@@ -404,29 +410,29 @@ void PhoenixCore::loop(void)
     //Do IK for all Right legs
     for (u8 i = 0; i < 3; i++) {
         doBackgroundProcess();
-        getBodyIK(-mLegPosX[i]+mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
+        getBodyIK(i, -mLegPosX[i]+mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
-                  lGaitRotY[i], i,
+                  lGaitRotY[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(mLegPosX[i]-mControlState.c3dBodyPos.x+lBodyX-(lGaitPosX[i] - mTotalTransX),
+        ret = getLegIK(i, mLegPosX[i]-mControlState.c3dBodyPos.x+lBodyX-(lGaitPosX[i] - mTotalTransX),
                        mLegPosY[i]+mControlState.c3dBodyPos.y-lBodyY+lGaitPosY[i] - mTotalTransY,
-                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ, i);
+                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ);
     }
 
     //Do IK for all Left legs
     for (u8 i = 3; i < 6; i++) {
         doBackgroundProcess();
-        getBodyIK(mLegPosX[i]-mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
+        getBodyIK(i, mLegPosX[i]-mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
-                  lGaitRotY[i], i,
+                  lGaitRotY[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(mLegPosX[i]+mControlState.c3dBodyPos.x-lBodyX+lGaitPosX[i] - mTotalTransX,
+        ret = getLegIK(i, mLegPosX[i]+mControlState.c3dBodyPos.x-lBodyX+lGaitPosX[i] - mTotalTransX,
                        mLegPosY[i]+mControlState.c3dBodyPos.y-lBodyY+lGaitPosY[i] - mTotalTransY,
-                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ, i);
+                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ);
     }
 
     if (mBoolUpsideDown) { //Need to set them back for not messing with the smoothControl
@@ -471,7 +477,7 @@ void PhoenixCore::loop(void)
             u32 lTimeWaitEnd;
 
             bExtraCycle--;
-            mBoolWalking = !(bExtraCycle==0);
+            mBoolWalking = !(bExtraCycle == 0);
 
             //Get endtime and calculate wait time
             lTimeWaitEnd = lTimerStart + mOldServoMoveTime;
@@ -481,11 +487,13 @@ void PhoenixCore::loop(void)
                 doBackgroundProcess();
             } while (millis() < lTimeWaitEnd);
 
+/*
             if (mBoolDbgOutput) {
                 printf(F("BRX:%d, Walk:%d, GS:%d\n"), mControlState.c3dBodyRot.x, mBoolWalking, GaitStep);
                 printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_LF], lGaitPosY[IDX_LF], lGaitPosZ[IDX_LF]);
                 printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_RF], lGaitPosY[IDX_RF], lGaitPosZ[IDX_RF]);
             }
+*/
         }
         if (mBoolDbgOutput) {
 //          printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZ[IDX_LF]);
@@ -494,21 +502,24 @@ void PhoenixCore::loop(void)
         mServo->commit(mCurServoMoveTime);
     } else {
         //Turn the bot off - May need to add ajust here...
-        if (!allDown) {
+        if (mControlState.fHexOnOld) {
+            printf(F("RESET LEGS !!!\n"));
             mCurServoMoveTime = 600;
             updateServos();
             mServo->commit(mCurServoMoveTime);
+            delay(600);
         } else {
             mServo->release();
         }
         // We also have a simple debug monitor that allows us to
         // check things. call it here..
-#ifdef OPT_TERMINAL_MONITOR
+#ifdef CONFIG_TERMINAL
         if (showTerminal())
             return;
 #endif
+        delay(20);
     }
-
+    mControlState.fHexOnOld = mControlState.fHexOn;
     mOldServoMoveTime = mCurServoMoveTime;
 }
 
@@ -549,7 +560,7 @@ bool PhoenixCore::checkVoltage(void) {
 
 bool PhoenixCore::ctrlSingleLeg(void)
 {
-    bool allDown;
+    bool allDown = FALSE;
 
     //Check if all legs are down
     allDown =
@@ -561,13 +572,12 @@ bool PhoenixCore::ctrlSingleLeg(void)
         (mLegPosY[IDX_LF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LF]));
 
     if (mControlState.bSingleLegCurSel < 6) {
-        if (mControlState.bSingleLegCurSel!=mControlState.bSingleLegOldSel) {
+        if (mControlState.bSingleLegCurSel != mControlState.bSingleLegOldSel) {
             if (allDown) { //Lift leg a bit when it got selected
                 mLegPosY[mControlState.bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mControlState.bSingleLegCurSel]) - 20;
                 //Store current status
                 mControlState.bSingleLegOldSel = mControlState.bSingleLegCurSel;
-            }
-            else {//Return prev leg back to the init position
+            } else {//Return prev leg back to the init position
                 mLegPosX[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_X[mControlState.bSingleLegOldSel]);
                 mLegPosY[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mControlState.bSingleLegOldSel]);
                 mLegPosZ[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Z[mControlState.bSingleLegOldSel]);
@@ -737,9 +747,9 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
 {
     //Clear values under the CONFIG_TRAVEL_DEAD_ZONE
     if (!fTravelReq) {
-        mControlState.c3dTravelLen.x=0;
-        mControlState.c3dTravelLen.z=0;
-        mControlState.c3dTravelLen.y=0;//doGait NOT in motion, return to home position
+        mControlState.c3dTravelLen.x = 0;
+        mControlState.c3dTravelLen.z = 0;
+        mControlState.c3dTravelLen.y = 0;//doGait NOT in motion, return to home position
     }
 
     //Leg middle up position OK
@@ -814,7 +824,7 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
         GaitStep++;
         if (GaitStep > StepsInGait)
             GaitStep = 1;
-        }
+    }
 }
 
 
@@ -886,7 +896,7 @@ void PhoenixCore::balanceBody(void)
 //lBodyX         - Output Position X of feet with Rotation
 //lBodyY         - Output Position Y of feet with Rotation
 //lBodyZ         - Output Position Z of feet with Rotation
-void PhoenixCore::getBodyIK (s16 posX, s16 posZ, s16 posY, s16 RotationY, u8 leg, long *x, long *y, long *z)
+void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY, long *x, long *y, long *z)
 {
     s16            sinA4;          //Sin buffer for BodyRotX calculations
     s16            cosA4;          //Cos buffer for BodyRotX calculations
@@ -909,20 +919,20 @@ void PhoenixCore::getBodyIK (s16 posX, s16 posZ, s16 posY, s16 RotationY, u8 leg
 
     //First calculate sinus and cosinus for each rotation:
     sincos(mControlState.c3dBodyRot.x+mTotalXBal1, &sinG4, &cosG4);
-    sincos(mControlState.c3dBodyRot.z+mTotalZBal1, &sinG4, &cosG4);
+    sincos(mControlState.c3dBodyRot.z+mTotalZBal1, &sinB4, &cosB4);
 
     if (mBoolUpsideDown)
-        sincos(-mControlState.c3dBodyRot.y + (-RotationY * DEC_EXP_1) + mTotalYBal1, &sinG4, &cosG4) ;
+        sincos(-mControlState.c3dBodyRot.y + (-RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
     else
-        sincos(mControlState.c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinG4, &cosG4) ;
+        sincos(mControlState.c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
 
     //Calcualtion of rotation matrix:
     *x = ((long)CPR_X*DEC_EXP_2 - ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 - (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4
         + (long)CPR_Y*DEC_EXP_2*sinB4/DEC_EXP_4 ))/DEC_EXP_2;
-    *y = ((long)CPR_Z*DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 + (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4
+    *z = ((long)CPR_Z*DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 + (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4
         + (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4 - (long)CPR_Z*DEC_EXP_2*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4
         - (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*sinG4/DEC_EXP_4 ))/DEC_EXP_2;
-    *z = ((long)CPR_Y  *DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 - (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4*sinB4/DEC_EXP_4
+    *y = ((long)CPR_Y  *DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 - (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4*sinB4/DEC_EXP_4
         + (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*sinG4/DEC_EXP_4 + (long)CPR_Z*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4
         + (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*cosG4/DEC_EXP_4 ))/DEC_EXP_2;
 }
@@ -939,7 +949,7 @@ void PhoenixCore::getBodyIK (s16 posX, s16 posZ, s16 posY, s16 RotationY, u8 leg
 //mTibiaAngle           - Output Angle of Tibia in degrees
 //mCoxaAngle            - Output Angle of Coxa in degrees
 //--------------------------------------------------------------------
-u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg)
+u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 {
     u32    IKSW2;            //Length between Shoulder and Wrist, decimals = 2
     u32    IKA14;            //Angle of the line S>W with respect to the ground in radians, decimals = 4
@@ -1149,7 +1159,7 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
 
 }
 
-#ifdef OPT_TERMINAL_MONITOR
+#ifdef CONFIG_TERMINAL
 extern void handleEEPROM(u8 *pszCmdLine);
 
 //==============================================================================
@@ -1169,7 +1179,7 @@ bool PhoenixCore::showTerminal(void)
         printf(F("E - Dump EEPROM\n"));
 
         // Let the Servo driver show it's own set of commands...
-        //g_ServoDriver.showTerminal();
+        mServo->showTerminal();
         mBoolShowDbgPrompt = false;
     }
 
@@ -1205,7 +1215,7 @@ bool PhoenixCore::showTerminal(void)
                 break;
 
             default:
-                //g_ServoDriver.handleTerminal(szCmdLine, ich);
+                mServo->handleTerminal(szCmdLine, ich);
                 break;
         }
     }

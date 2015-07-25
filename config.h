@@ -32,12 +32,9 @@
 #define BT_SERIAL  Serial
 
 #ifdef DBG_SERIAL
-    #define CONFIG_TERMINAL             // Only allow this to be defined if we have a debug serial port
+//    #define CONFIG_TERMINAL             // Only allow this to be defined if we have a debug serial port
 #endif
 
-#ifdef CONFIG_TERMINAL
-    #define CONFIG_SERVO_OFFSETS      // Only useful if terminal monitor is enabled
-#endif
 
 
 #define PIN_STATUS_LED  30
