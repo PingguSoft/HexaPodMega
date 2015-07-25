@@ -33,9 +33,9 @@
 #include <pins_arduino.h>
 #include <avr/pgmspace.h>
 #include "PhoenixCore.h"
-//#include "phoenix_driver_ServoEx.h"
+#include "PhoenixServoSW.h"
 
-#define DoBackgroundProcess()
+#define doBackgroundProcess()
 
 #define BALANCE_DIV_FACTOR  6    //;Other values than 6 can be used, testing...CAUTION!! At your own risk ;)
 
@@ -59,7 +59,7 @@ static const u8 TBL_ACOS[] PROGMEM = {
     59,59,58,58,58,57,57,57,56,56,55,55,55,54,54,53,53,53,52,52,51,51,51,50,50,49,49,48,48,47,47,47,
     46,46,45,45,44,44,43,43,42,42,41,41,40,40,39,39,38,37,37,36,36,35,34,34,33,33,32,31,31,30,29,28,
     28,27,26,25,24,23,23,23,23,22,22,22,22,21,21,21,21,20,20,20,19,19,19,19,18,18,18,17,17,17,17,16,
-    16,16,15,15,15,14,14,13,13,13,12,12,11,11,10,10,9,9,8,7,6,6,5,3,0 
+    16,16,15,15,15,14,14,13,13,13,12,12,11,11,10,10,9,9,8,7,6,6,5,3,0
 };
 
 //Sin table 90 deg, persision 0.5 deg [180 values]
@@ -74,7 +74,7 @@ static const u16 TBL_SIN[] PROGMEM = {
     8703, 8746, 8788, 8829, 8870, 8910, 8949, 8987, 9025, 9063, 9099, 9135, 9170, 9205, 9238, 9271, 9304,
     9335, 9366, 9396, 9426, 9455, 9483, 9510, 9537, 9563, 9588, 9612, 9636, 9659, 9681, 9702, 9723, 9743,
     9762, 9781, 9799, 9816, 9832, 9848, 9862, 9876, 9890, 9902, 9914, 9925, 9935, 9945, 9953, 9961, 9969,
-    9975, 9981, 9986, 9990, 9993, 9996, 9998, 9999, 10000 
+    9975, 9981, 9986, 9990, 9993, 9996, 9998, 9999, 10000
 };
 
 
@@ -97,7 +97,7 @@ static const u16 TBL_SIN[] PROGMEM = {
 #endif
 
 // Servo TARS offsets
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
 #ifdef OFFSET_RR_TARS_HORN   // per leg configuration
     static const s16 TBL_OFFSET_TARS_HORN[] PROGMEM = {
         OFFSET_RR_TARS_HORN,
@@ -127,7 +127,7 @@ static const s16 TBL_TIBIA_MIN[] PROGMEM ={
 static const s16 TBL_TIBIA_MAX[] PROGMEM = {
   cRRTibiaMax1, cRMTibiaMax1, cRFTibiaMax1, cLRTibiaMax1, cLMTibiaMax1, cLFTibiaMax1};
 
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
     static const s16 TBL_TARS_MIN[] PROGMEM = {
       cRRTarsMin1, cRMTarsMin1, cRFTarsMin1, cLRTarsMin1, cLMTarsMin1, cLFTarsMin1};
     static const s16 TBL_TARS_MAX[] PROGMEM = {
@@ -142,7 +142,7 @@ static const u8 TBL_FEMUR_LENGTH[] PROGMEM = {
   cRRFemurLength, cRMFemurLength, cRFFemurLength, cLRFemurLength, cLMFemurLength, cLFFemurLength};
 static const u8 TBL_TIBIA_LENGTH[] PROGMEM = {
   cRRTibiaLength, cRMTibiaLength, cRFTibiaLength, cLRTibiaLength, cLMTibiaLength, cLFTibiaLength};
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
 static const u8 TBL_TARS_LENGTH[] PROGMEM = {
   cRRTarsLength, cRMTarsLength, cRFTarsLength, cLRTarsLength, cLMTarsLength, cLFTarsLength};
 #endif
@@ -174,7 +174,7 @@ bool PhoenixCore::mBoolUpsideDown    = FALSE;
 
 //--------------------------------------------------------------------
 //[REMOTE]
-#define TRAVEL_DEAD_ZONE    4       // The deadzone for the analog input from the remote
+
 #define GP_DIFF_LIMIT       2       // GP=GaitPos testing different limits
 
 // Define our ServoWriter class
@@ -224,8 +224,8 @@ void sincos(s16 angleDeg1, s16 *sin4, s16 *cos4)
 long arccos(s16 cos4)
 {
     bool fNegVal;
-    s16  angleRad4;
-  
+    s16  angleRad4 = 0;
+
     //Check for negative value
     if (cos4 < 0) {
         cos4 = -cos4;
@@ -266,7 +266,7 @@ u32 isqrt32 (u32 n)
 
     while (place > remainder)
         place = place >> 2;
-    
+
     while (place) {
         if (remainder >= root + place) {
             remainder = remainder - root - place;
@@ -304,15 +304,26 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
     return atan4;
 }
 
-void PhoenixCore::init()
+PhoenixCore::PhoenixCore(void)
 {
-    //g_ServoDriver.Init();
-    delay(10);
+    mServo = new PhoenixServoSW();
+}
+
+void PhoenixCore::initCtrl(void)
+{
+    memset(&mControlState, 0, sizeof(mControlState));
+    //Single leg control. Make sure no leg is selected
+    mControlState.bSingleLegCurSel = 255; // No Leg selected
+    mControlState.bSingleLegOldSel = 255;
+}
+
+void PhoenixCore::init(void)
+{
+    mServo->init();
     mLedOutput = 0;
 
-    //Tars Init Positions
-    for (u8 i = 0; i < 6; i++ )
-    {
+    //Tars init Positions
+    for (u8 i = 0; i < 6; i++ ) {
         mLegPosX[i] = (s16)pgm_read_word(&TBL_INT_POS_X[i]);    //Set start positions for each leg
         mLegPosY[i] = (s16)pgm_read_word(&TBL_INT_POS_Y[i]);
         mLegPosZ[i] = (s16)pgm_read_word(&TBL_INT_POS_Z[i]);
@@ -328,8 +339,6 @@ void PhoenixCore::init()
     mControlState.sLegLiftHeight = 50;
     GaitStep = 1;
     selectGait();
-
-    //g_InputController.Init();
 
     // Servo Driver
     mCurServoMoveTime = 150;
@@ -347,13 +356,10 @@ void PhoenixCore::loop(void)
 
     //Start time
     lTimerStart = millis();
-    DoBackgroundProcess();
+    doBackgroundProcess();
 
-    checkVoltage();        // check our voltages...
-    //if (!g_fLowVoltageShutdown) {
-    //    g_InputController.ControlInput();
-    //}
-    updateLEDs();        // Write Outputs
+    checkVoltage();
+    updateLEDs();
 
     if (mBoolUpsideDown){
         mControlState.c3dTravelLen.x = -mControlState.c3dTravelLen.x;
@@ -362,20 +368,13 @@ void PhoenixCore::loop(void)
         mControlState.c3dBodyRot.z = -mControlState.c3dBodyRot.z;
     }
 
-#ifdef OPT_GPPLAYER
-    //GP Player
-    //g_ServoDriver.GPPlayer();
-    if (//g_ServoDriver.FIsGPSeqActive())
-        return;  // go back to process the next message
-#endif
-
     //Single leg control
     allDown = ctrlSingleLeg();
-    DoBackgroundProcess();
+    doBackgroundProcess();
 
     //doGait
     doGaitSeq();
-    DoBackgroundProcess();
+    doBackgroundProcess();
 
     //Balance calculations
     mTotalTransX = 0;     //reset values used for calculation of balance
@@ -387,14 +386,14 @@ void PhoenixCore::loop(void)
 
     if (mControlState.fBalanceMode) {
         for (u8 i = 0; i < 3; i++) {    // balance calculations for all Right legs
-            DoBackgroundProcess();
+            doBackgroundProcess();
             calcBalOneLeg(i, -mLegPosX[i]+lGaitPosX[i],
                           mLegPosZ[i]+lGaitPosZ[i],
                           (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
         }
 
         for (u8 i = 3; i < 6; i++) {    // balance calculations for all Right legs
-            DoBackgroundProcess();
+            doBackgroundProcess();
             calcBalOneLeg(i, mLegPosX[i]+lGaitPosX[i],
                           mLegPosZ[i]+lGaitPosZ[i],
                           (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
@@ -404,7 +403,7 @@ void PhoenixCore::loop(void)
 
     //Do IK for all Right legs
     for (u8 i = 0; i < 3; i++) {
-        DoBackgroundProcess();
+        doBackgroundProcess();
         getBodyIK(-mLegPosX[i]+mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
@@ -418,7 +417,7 @@ void PhoenixCore::loop(void)
 
     //Do IK for all Left legs
     for (u8 i = 3; i < 6; i++) {
-        DoBackgroundProcess();
+        doBackgroundProcess();
         getBodyIK(mLegPosX[i]-mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
@@ -429,7 +428,7 @@ void PhoenixCore::loop(void)
                        mLegPosY[i]+mControlState.c3dBodyPos.y-lBodyY+lGaitPosY[i] - mTotalTransY,
                        mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ, i);
     }
-    
+
     if (mBoolUpsideDown) { //Need to set them back for not messing with the smoothControl
         mControlState.c3dBodyPos.x = -mControlState.c3dBodyPos.x;
         mControlState.c3dSingleLeg.x = -mControlState.c3dSingleLeg.x;
@@ -440,15 +439,10 @@ void PhoenixCore::loop(void)
     validateAngles();
 
     //Drive Servos
-    if (mControlState.fHexCurOn) {
-        if (!mControlState.fHexOldOn) {
-            digitalWrite(PIN_STATUS_LED, 1);
-            Utils::sound(3, 60, 2000, 80, 2250, 100, 2500);
-        }
-
+    if (mControlState.fHexOn) {
         //Calculate Servo Move time
-        if ((abs(mControlState.c3dTravelLen.x)>TRAVEL_DEAD_ZONE) || (abs(mControlState.c3dTravelLen.z)>TRAVEL_DEAD_ZONE) ||
-            (abs(mControlState.c3dTravelLen.y*2)>TRAVEL_DEAD_ZONE)) {
+        if ((abs(mControlState.c3dTravelLen.x)>CONFIG_TRAVEL_DEAD_ZONE) || (abs(mControlState.c3dTravelLen.z)>CONFIG_TRAVEL_DEAD_ZONE) ||
+            (abs(mControlState.c3dTravelLen.y*2)>CONFIG_TRAVEL_DEAD_ZONE)) {
             mCurServoMoveTime = NomGaitSpeed + (mControlState.bInputTimeDelay*2) + mControlState.wSpeedControl;
             //Add aditional delay when Balance mode is on
             if (mControlState.fBalanceMode)
@@ -459,7 +453,7 @@ void PhoenixCore::loop(void)
         // note we broke up the servo driver into start/commit that way we can output all of the servo information
         // before we wait and only have the termination information to output after the wait.  That way we hopefully
         // be more accurate with our timings...
-        DoBackgroundProcess();
+        doBackgroundProcess();
         updateServos();
 
         // See if we need to sync our processor with the servo driver while walking to ensure the prev is completed
@@ -475,7 +469,7 @@ void PhoenixCore::loop(void)
         }
         if (bExtraCycle > 0){
             u32 lTimeWaitEnd;
-            
+
             bExtraCycle--;
             mBoolWalking = !(bExtraCycle==0);
 
@@ -484,9 +478,9 @@ void PhoenixCore::loop(void)
 
             do {
                 // Wait the appropriate time, call any background process while waiting...
-                DoBackgroundProcess();
+                doBackgroundProcess();
             } while (millis() < lTimeWaitEnd);
-          
+
             if (mBoolDbgOutput) {
                 printf(F("BRX:%d, Walk:%d, GS:%d\n"), mControlState.c3dBodyRot.x, mBoolWalking, GaitStep);
                 printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_LF], lGaitPosY[IDX_LF], lGaitPosZ[IDX_LF]);
@@ -497,43 +491,38 @@ void PhoenixCore::loop(void)
 //          printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZ[IDX_LF]);
         }
         // Only do commit if we are actually doing something...
-        //g_ServoDriver.CommitServoDriver(mCurServoMoveTime);
+        mServo->commit(mCurServoMoveTime);
     } else {
         //Turn the bot off - May need to add ajust here...
-        if (mControlState.fHexOldOn || (allDown == 0)) {
+        if (!allDown) {
             mCurServoMoveTime = 600;
             updateServos();
-            //g_ServoDriver.CommitServoDriver(mCurServoMoveTime);
-            Utils::sound(3, 100, 2500, 80, 2250, 60, 2000);
-            delay(600);
-            digitalWrite(PIN_STATUS_LED, 0);
+            mServo->commit(mCurServoMoveTime);
         } else {
-            //g_ServoDriver.FreeServos();
+            mServo->release();
         }
         // We also have a simple debug monitor that allows us to
         // check things. call it here..
 #ifdef OPT_TERMINAL_MONITOR
-        if (TerminalMonitor())
-          return;
+        if (showTerminal())
+            return;
 #endif
-        delay(20);  // give a pause between times we call if nothing is happening
     }
 
     mOldServoMoveTime = mCurServoMoveTime;
-    mControlState.fHexOldOn = mControlState.fHexCurOn;
 }
 
 
 void PhoenixCore::updateServos(void)
 {
-  // First call off to the init...
-  //g_ServoDriver.BeginServoUpdate();    // Start the update
+    // First call off to the init...
+    mServo->start();
 
     for (u8 i = 0; i < 6; i++) {
-#ifdef CONFIG_4DOF
-    //g_ServoDriver.OutputServoInfoForLeg(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i], mTarsAngle[i]);
+#if (CONFIG_DOF_PER_LEG == 4)
+        mServo->write(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i], mTarsAngle[i]);
 #else
-    //g_ServoDriver.OutputServoInfoForLeg(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i]);
+        mServo->write(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i]);
 #endif
   }
 }
@@ -541,7 +530,7 @@ void PhoenixCore::updateServos(void)
 void PhoenixCore::updateLEDs(void)
 {
     u8 status;
-    
+
     status = mLedOutput & BV(LED_EYES);
 #ifdef PIN_LED_EYE
     digitalWrite(PIN_LED_EYE, status);
@@ -549,43 +538,21 @@ void PhoenixCore::updateLEDs(void)
 }
 
 bool PhoenixCore::checkVoltage(void) {
-#ifdef VOLT_TURN_OFF
-    u16     volt;
-    bool    on = TRUE;
-    
-    // Moved to Servo Driver - BUGBUG: Need to do when I merge back...
-    //    volt = analogRead(PIN_ANALOG_VOLT); // Battery voltage
-    //    volt = ((long)volt*1955)/1000;
-    volt = VOLT_TURN_ON; //g_ServoDriver.GetBatteryVoltage();
-
-    printf(F("VOLT:%d\n"), volt);
-    if ((volt < VOLT_TURN_OFF) || (volt >= 1999)) {
-        if (mVoltWarnBeepCnt < 5) {
-            mVoltWarnBeepCnt++;
-            Utils::sound( 1, 45, 2000);
-            delay(2000);
-        } else {
-            printf(F("volt went low, turn off robot :%d\n"), volt);
-            memset(&mControlState, 0, sizeof(mControlState));
-            mControlState.bSingleLegCurSel = 255;
-            on = FALSE;
-            mVoltWarnBeepCnt = 0;
-            mControlState.fHexCurOn = false;
-        }
+    if (!mServo->checkVoltage()) {
+        printf(F("volt went low, turn off robot !!!\n"));
+        initCtrl();
+        Utils::sound( 1, 45, 2000);
+        return FALSE;
     }
-    return on;
-#else
     return TRUE;
-#endif
 }
-
 
 bool PhoenixCore::ctrlSingleLeg(void)
 {
     bool allDown;
-    
+
     //Check if all legs are down
-    allDown = 
+    allDown =
         (mLegPosY[IDX_RF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RF])) &&
         (mLegPosY[IDX_RM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RM])) &&
         (mLegPosY[IDX_RR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RR])) &&
@@ -647,7 +614,7 @@ void PhoenixCore::selectGait(void)
     StepsInGait = 12;
     NomGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
-    
+
   case 1:
     //Tripod 8 steps
     GaitLegNr[IDX_LR] = 5;
@@ -665,7 +632,7 @@ void PhoenixCore::selectGait(void)
     StepsInGait = 8;
     NomGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
-    
+
   case 2:
     //Triple Tripod 12 step
     GaitLegNr[IDX_RF] = 3;
@@ -683,7 +650,7 @@ void PhoenixCore::selectGait(void)
     StepsInGait = 12;
     NomGaitSpeed = DEFAULT_GAIT_SPEED;
     break;
-    
+
   case 3:
     // Triple Tripod 16 steps, use 5 lifted positions
     GaitLegNr[IDX_RF] = 4;
@@ -701,7 +668,7 @@ void PhoenixCore::selectGait(void)
     StepsInGait = 16;
     NomGaitSpeed = DEFAULT_GAIT_SPEED;
     break;
-    
+
   case 4:
     //Wave 24 steps
     GaitLegNr[IDX_LR] = 1;
@@ -720,7 +687,7 @@ void PhoenixCore::selectGait(void)
     StepsInGait = 24;
     NomGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
-    
+
   case 5:
     //Tripod 6 steps
     GaitLegNr[IDX_LR] = 4;
@@ -747,11 +714,11 @@ void PhoenixCore::selectGait(void)
 void PhoenixCore::doGaitSeq(void)
 {
     bool fTravelReq;
-    
+
     //Check if the doGait is in motion
-    fTravelReq = (abs(mControlState.c3dTravelLen.x) > TRAVEL_DEAD_ZONE) || 
-        (abs(mControlState.c3dTravelLen.z) > TRAVEL_DEAD_ZONE) ||
-        (abs(mControlState.c3dTravelLen.y) > TRAVEL_DEAD_ZONE) || 
+    fTravelReq = (abs(mControlState.c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) ||
+        (abs(mControlState.c3dTravelLen.z) > CONFIG_TRAVEL_DEAD_ZONE) ||
+        (abs(mControlState.c3dTravelLen.y) > CONFIG_TRAVEL_DEAD_ZONE) ||
         (mControlState.bForceGaitStepCnt != 0) || mBoolWalking;
 
     //Calculate doGait sequence
@@ -768,7 +735,7 @@ void PhoenixCore::doGaitSeq(void)
 //[GAIT]
 void PhoenixCore::doGait(u8 leg, bool fTravelReq)
 {
-    //Clear values under the TRAVEL_DEAD_ZONE
+    //Clear values under the CONFIG_TRAVEL_DEAD_ZONE
     if (!fTravelReq) {
         mControlState.c3dTravelLen.x=0;
         mControlState.c3dTravelLen.z=0;
@@ -778,18 +745,18 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
     //Leg middle up position OK
     //doGait in motion
 
-    if ( (fTravelReq && (NrLiftedPos == 1 || NrLiftedPos == 3 || NrLiftedPos == 5) && GaitStep == GaitLegNr[leg]) || 
-         (!fTravelReq && GaitStep == GaitLegNr[leg] && 
+    if ( (fTravelReq && (NrLiftedPos == 1 || NrLiftedPos == 3 || NrLiftedPos == 5) && GaitStep == GaitLegNr[leg]) ||
+         (!fTravelReq && GaitStep == GaitLegNr[leg] &&
           ((abs(lGaitPosX[leg] )> 2) || (abs(lGaitPosZ[leg] )> 2) || (abs(lGaitRotY[leg]) > 2)) ) ) { //Up
         lGaitPosX[leg] = 0;
         lGaitPosY[leg] = -mControlState.sLegLiftHeight;
         lGaitPosZ[leg] = 0;
         lGaitRotY[leg] = 0;
     }
-    
+
     //Optional Half heigth Rear (2, 3, 5 lifted positions)
     else if (fTravelReq &&
-              ( (NrLiftedPos == 2 && GaitStep == GaitLegNr[leg]) || 
+              ( (NrLiftedPos == 2 && GaitStep == GaitLegNr[leg]) ||
                 (NrLiftedPos >= 3 && (GaitStep == GaitLegNr[leg] - 1 || GaitStep == GaitLegNr[leg] + (StepsInGait - 1))) ) ) {
         lGaitPosX[leg] = -mControlState.c3dTravelLen.x/LiftDivFactor;
         lGaitPosY[leg] = -3*mControlState.sLegLiftHeight/(3+HalfLiftHeigth);     //Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
@@ -799,7 +766,7 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
 
     // _A_
     // Optional Half heigth front (2, 3, 5 lifted positions)
-    else if (fTravelReq && (NrLiftedPos >= 2) && 
+    else if (fTravelReq && (NrLiftedPos >= 2) &&
              (GaitStep == GaitLegNr[leg] + 1 || GaitStep == GaitLegNr[leg] - (StepsInGait - 1))) {
         lGaitPosX[leg] = mControlState.c3dTravelLen.x/LiftDivFactor;
         lGaitPosY[leg] = -3*mControlState.sLegLiftHeight/(3+HalfLiftHeigth); // Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
@@ -816,7 +783,7 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
     }
 
     //Optional Half heigth Front 5 LiftedPos (5 lifted positions)
-    else if (fTravelReq && (NrLiftedPos == 5) && 
+    else if (fTravelReq && (NrLiftedPos == 5) &&
              (GaitStep == GaitLegNr[leg] + 2 || GaitStep == GaitLegNr[leg] - (StepsInGait - 2))) {
         lGaitPosX[leg] = mControlState.c3dTravelLen.x/2;
         lGaitPosY[leg] = -mControlState.sLegLiftHeight/2;
@@ -978,7 +945,7 @@ u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg
     u32    IKA14;            //Angle of the line S>W with respect to the ground in radians, decimals = 4
     u32    IKA24;            //Angle of the line S>W with respect to the femur in radians, decimals = 4
     s16            IKFeetPosXZ;    //Diagonal direction from Input X and Z
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
     // these were shorts...
     long            TarsOffsetXZ;    //Vector value \ ;
     long            TarsOffsetY;     //Vector value / The 2 DOF IK calcs (femur and tibia) are based upon these vectors
@@ -1004,8 +971,8 @@ u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg
 
     //Length between the Coxa and tars [foot]
     IKFeetPosXZ = hyp2XY / DEC_EXP_2;
-    
-#ifdef CONFIG_4DOF
+
+#if (CONFIG_DOF_PER_LEG == 4)
     // Some legs may have the 4th DOF and some may not, so handle this here...
     //Calc the TarsToGroundAngle1:
     if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[leg])) {    // We allow mix of 3 and 4 DOF legs...
@@ -1051,7 +1018,7 @@ u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg
     Temp2 = (long)(2*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg]))*DEC_EXP_2 * (u32)IKSW2;
     T3 = Temp1 / (Temp2/DEC_EXP_4);
     IKA24 = arccos (T3 );
-    
+
     //IKFemurAngle
     if (mBoolUpsideDown)
         mFemurAngle[leg] = (long)(IKA14 + IKA24) * 180 / 3141 - 900 + OFFSET_FEMUR_HORN(leg);//Inverted, up side down
@@ -1076,7 +1043,7 @@ u8 PhoenixCore::getLegIK (s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ, u8 leg
 #endif
 #endif
 
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
     //Tars angle
     if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[leg])) {    // We allow mix of 3 and 4 DOF legs...
         mTarsAngle[leg] = (TarsToGroundAngle1 + mFemurAngle[leg] - mTibiaAngle[leg])
@@ -1110,7 +1077,7 @@ void PhoenixCore::validateAngles(void)
             (s16)pgm_read_word(&TBL_FEMUR_MAX[i]));
         mTibiaAngle[i] = min(max(mTibiaAngle[i], (s16)pgm_read_word(&TBL_TIBIA_MIN[i])),
             (s16)pgm_read_word(&TBL_TIBIA_MAX[i]));
-#ifdef CONFIG_4DOF
+#if (CONFIG_DOF_PER_LEG == 4)
         if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[i])) {    // We allow mix of 3 and 4 DOF legs...
             mTarsAngle[i] = min(max(mTarsAngle[i], (s16)pgm_read_word(&TBL_TARS_MIN[i])),
                 (s16)pgm_read_word(&TBL_TARS_MAX[i]));
@@ -1150,7 +1117,7 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
 #ifdef CNT_HEX_INITS
     s16 sin4;
     s16 cos4;
-  
+
     // Lets see which of our units we should use...
     // Note: We will also limit our body height here...
     if (mControlState.c3dBodyPos.y > (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[CNT_HEX_INITS - 1]))
@@ -1164,7 +1131,7 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
             break;
         }
     }
-    
+
     if (i != oldLegInitIdx) {
         oldLegInitIdx = i;  // remember the current index...
         //now lets see what happens when we change the leg positions...
@@ -1183,176 +1150,104 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
 }
 
 #ifdef OPT_TERMINAL_MONITOR
-extern void DumpEEPROMCmd(u8 *pszCmdLine);
+extern void handleEEPROM(u8 *pszCmdLine);
 
 //==============================================================================
-// TerminalMonitor - Simple background task checks to see if the user is asking
+// showTerminal - Simple background task checks to see if the user is asking
 //    us to do anything, like update debug levels ore the like.
 //==============================================================================
-bool TerminalMonitor(void)
+bool PhoenixCore::showTerminal(void)
 {
-  u8 szCmdLine[20];  // currently pretty simple command lines...
-  u8 ich;
-  int ch;
-  // See if we need to output a prompt.
-  if (mBoolShowDbgPrompt) {
-    printf(F("Arduino Phoenix Monitor\n"));
-    printf(F("D - Toggle debug on or off\n"));
-    printf(F("E - Dump EEPROM\n"));
+    u8  szCmdLine[20];
+    u8  ich;
+    int ch;
 
-    // Let the Servo driver show it's own set of commands...
-    //g_ServoDriver.ShowTerminalCommandList();
-    mBoolShowDbgPrompt = false;
-  }
+    // See if we need to output a prompt.
+    if (mBoolShowDbgPrompt) {
+        printf(F("Arduino Phoenix Monitor\n"));
+        printf(F("D - Toggle debug on or off\n"));
+        printf(F("E - Dump EEPROM\n"));
 
-  // First check to see if there is any characters to process.
-  if ((ich = DBG_SERIAL.available())) {
-    ich = 0;
-    // For now assume we receive a packet of data from serial monitor, as the user has
-    // to click the send button...
-    for (ich=0; ich < sizeof(szCmdLine); ich++) {
-      ch = DBG_SERIAL.read();        // get the next character
-      if ((ch == -1) || ((ch >= 10) && (ch <= 15)))
-        break;
-      szCmdLine[ich] = ch;
+        // Let the Servo driver show it's own set of commands...
+        //g_ServoDriver.showTerminal();
+        mBoolShowDbgPrompt = false;
+    }
+
+    ich = DBG_SERIAL.available();
+    if (ich == 0)
+        return false;
+
+    for (ich = 0; ich < sizeof(szCmdLine) - 1; ich++) {
+        ch = DBG_SERIAL.read();
+        if ((ch == -1) || ((ch >= 10) && (ch <= 15)))
+            break;
+        szCmdLine[ich] = ch;
     }
     szCmdLine[ich] = '\0';    // go ahead and null terminate it...
     printf(F("Serial Cmd Line:%s !!\n"), szCmdLine);
 
-    // So see what are command is.
     if (ich == 0) {
-      mBoolShowDbgPrompt = true;
-    }
-    else if ((ich == 1) && ((szCmdLine[0] == 'd') || (szCmdLine[0] == 'D'))) {
-      mBoolDbgOutput = !mBoolDbgOutput;
-      if (mBoolDbgOutput)
-        printf(F("Debug is on\n"));
-      else
-        printf(F("Debug is off\n"));
-    }
-    else if (((szCmdLine[0] == 'e') || (szCmdLine[0] == 'E'))) {
-      DumpEEPROMCmd(szCmdLine);
-    }
-    else
-    {
-      //g_ServoDriver.ProcessTerminalCommand(szCmdLine, ich);
-    }
+        mBoolShowDbgPrompt = true;
+    } else {
+        switch(szCmdLine[0]) {
+            case 'd':
+            case 'D':
+                 mBoolDbgOutput = !mBoolDbgOutput;
+                if (mBoolDbgOutput)
+                    printf(F("Debug is on\n"));
+                else
+                    printf(F("Debug is off\n"));
+                break;
 
+            case 'e':
+            case 'E':
+                handleEEPROM(szCmdLine);
+                break;
+
+            default:
+                //g_ServoDriver.handleTerminal(szCmdLine, ich);
+                break;
+        }
+    }
     return true;
-  }
-  return false;
 }
 
 //--------------------------------------------------------------------
-// DumpEEPROM
+// handleEEPROM
 //--------------------------------------------------------------------
-u8 g_bEEPromDumpMode = 0;  // assume mode 0 - hex dump
-word g_wEEPromDumpStart = 0;  // where to start dumps from
-u8 g_bEEPromDumpCnt = 16;  // how much to dump at a time
+void PhoenixCore::handleEEPROM(u8 *pszCmdLine)
+{
+    static u16 mAddrEEPROM = 0;
+    u16 cnt = 16;
 
-void DumpEEPROM() {
-  u8 i;
-  word wDumpCnt = g_bEEPromDumpCnt;
-
-  while (wDumpCnt) {
-    printf(F("%04x - "), g_wEEPromDumpStart);
-
-    // First in Hex
-    for (i = 0; (i < 16) && (i < wDumpCnt); i ++) {
-      u8 b;
-      b = EEPROM.read(g_wEEPromDumpStart+i);
-      printf(F("%02x ", b);
-    }
-    // Next in Ascii
-    printf(F(" : "));
-    for (i = 0; (i < 16) && (i < wDumpCnt); i ++) {
-      u8 b;
-      b = EEPROM.read(g_wEEPromDumpStart+i);
-      if ((b > 0x1f) && (b < 0x7f))
-        printf(F("%c", b);
-      else
-        printf(F("."));
-    }
-    printf(F("\n"));
-    g_wEEPromDumpStart += i;  // how many u8s we output
-    wDumpCnt -= i;            // How many more to go...
-  }
-
-}
-//--------------------------------------------------------------------
-// GetCmdLineNum - passed pointer to pointer so we can update...
-//--------------------------------------------------------------------
-word GetCmdLineNum(u8 **ppszCmdLine) {
-  u8 *psz = *ppszCmdLine;
-  word w = 0;
-
-  // Ignore any blanks
-  while (*psz == ' ')
-    psz++;
-
-  // See if Hex value passed in
-  if ((*psz == '0') && ((*(psz+1) == 'x') || (*(psz+1) == 'X'))) {
-    // Hex mode
-    psz += 2;  // get over 0x
-    for (;;) {
-      if ((*psz >= '0') && (*psz <= '9'))
-        w = w * 16 + *psz++ - '0';
-      else if ((*psz >= 'a') && (*psz <= 'f'))
-        w = w * 16 + *psz++ - 'a' + 10;
-      else if ((*psz >= 'A') && (*psz <= 'F'))
-        w = w * 16 + *psz++ - 'A' + 10;
-      else
-        break;
-    }
-
-  }
-  else {
-    // decimal mode
-    while ((*psz >= '0') && (*psz <= '9'))
-      w = w * 10 + *psz++ - '0';
-  }
-  *ppszCmdLine = psz;    // update command line pointer
-  return w;
-
-}
-
-//--------------------------------------------------------------------
-// DumpEEPROMCmd
-//--------------------------------------------------------------------
-void DumpEEPROMCmd(u8 *pszCmdLine) {
-  // first u8 can be H for hex or W for words...
-  if (!*++pszCmdLine)  // Need to get past the command letter first...
-    DumpEEPROM();
-  else if ((*pszCmdLine == 'h') || (*pszCmdLine == 'H'))
-    g_bEEPromDumpMode = 0;
-  else if ((*pszCmdLine == 'w') || (*pszCmdLine == 'W'))
-    g_bEEPromDumpMode = 0;
-
-  else {
-    // First argument should be the start location to dump
-    g_wEEPromDumpStart = GetCmdLineNum(&pszCmdLine);
-
-    // If the next u8 is an "=" may try to do updates...
-    if (*pszCmdLine == '=') {
-      // make sure we don't get stuck in a loop...
-      u8 *psz = pszCmdLine;
-      word w;
-      while (*psz) {
-        w = GetCmdLineNum(&psz);
-        if (psz == pszCmdLine)
-          break;  // not valid stuff so bail!
-        pszCmdLine = psz;  // remember how far we got...
-
-        EEPROM.write(g_wEEPromDumpStart++, w & 0xff);
-    }
-  }
+    // first u8 can be H for hex or W for words...
+    if (!*++pszCmdLine)  // Need to get past the command letter first...
+        Utils::dumpEEPROM(mAddrEEPROM, cnt);
     else {
-      if (*pszCmdLine == ' ') { // A blank assume we have a count...
-        g_bEEPromDumpCnt = GetCmdLineNum(&pszCmdLine);
-      }
-      }
-    DumpEEPROM();
+        // First argument should be the start location to dump
+        mAddrEEPROM = Utils::getCmdLineNum(&pszCmdLine);
+
+        // If the next u8 is an "=" may try to do updates...
+        if (*pszCmdLine == '=') {
+            // make sure we don't get stuck in a loop...
+            u8 *psz = pszCmdLine;
+            word w;
+            while (*psz) {
+                w = Utils::getCmdLineNum(&psz);
+                if (psz == pszCmdLine)
+                break;  // not valid stuff so bail!
+                pszCmdLine = psz;  // remember how far we got...
+
+                EEPROM.write(mAddrEEPROM++, w & 0xff);
+            }
+        }
+        else {
+            if (*pszCmdLine == ' ') { // A blank assume we have a count...
+                cnt = Utils::getCmdLineNum(&pszCmdLine);
+            }
+        }
+        Utils::dumpEEPROM(mAddrEEPROM, cnt);
     }
-    }
+}
 #endif
 

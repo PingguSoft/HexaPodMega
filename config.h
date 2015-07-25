@@ -22,27 +22,35 @@
 #define HEX_CFG_CHR3_H
 #include "common.h"
 
-#define CONFIG_NUM_GAITS    6
+#define CONFIG_DOF_PER_LEG      3
+#define CONFIG_NUM_LEGS         6
+#define CONFIG_NUM_GAITS        6
+#define CONFIG_TRAVEL_DEAD_ZONE 4
 
-#define DEBUG
+#define CONFIG_DEBUG
 #define DBG_SERIAL Serial
 #define BT_SERIAL  Serial
 
 #ifdef DBG_SERIAL
-//  #define OPT_TERMINAL_MONITOR        // Only allow this to be defined if we have a debug serial port
+    #define CONFIG_TERMINAL             // Only allow this to be defined if we have a debug serial port
 #endif
 
-#ifdef OPT_TERMINAL_MONITOR
-    #define OPT_FIND_SERVO_OFFSETS      // Only useful if terminal monitor is enabled
+#ifdef CONFIG_TERMINAL
+    #define CONFIG_SERVO_OFFSETS      // Only useful if terminal monitor is enabled
 #endif
+
 
 #define PIN_STATUS_LED  30
 #define PIN_SOUND       37
-#define BAUD_BT         115200
-#define BAUD_DEBUG      115200
+#define CONFIG_BT_BAUD         115200
+#define CONFIG_DEBUG_BAUD      115200
 
 // Define Analog pin and minimum voltage that we will allow the servos to run
 #define PIN_ANALOG_VOLT 0       // Use our Analog pin jumper here...
+#ifndef CONFIG_VOLT_R1
+    #define CONFIG_VOLT_R1      30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
+    #define CONFIG_VOLT_R2      10  // VD Resistor 2
+#endif
 #define VOLT_TURN_OFF   470     // 4.7v
 #define VOLT_TURN_ON    550     // 5.5V - optional part to say if voltage goes back up, turn it back on...
 
