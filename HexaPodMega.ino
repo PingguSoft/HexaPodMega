@@ -35,6 +35,7 @@
 #include "PhoenixCore.h"
 #include "PhoenixInput.h"
 #include "PhoenixInputSerial.h"
+#include "PhoenixInputMSP.h"
 
 enum {
     MODE_WALK = 0,
@@ -70,7 +71,8 @@ void setup()
 #endif
 
     core  = new PhoenixCore();
-    input = new PhoenixInputSerial();
+    //input = new PhoenixInputSerial();
+    input = new PhoenixInputMSP();
 
 	core->init();
 	input->init();

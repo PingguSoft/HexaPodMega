@@ -29,7 +29,7 @@
 
 #define CONFIG_DEBUG
 #define DBG_SERIAL Serial
-#define BT_SERIAL  Serial
+#define BT_SERIAL  Serial3
 
 #ifdef DBG_SERIAL
 //    #define CONFIG_TERMINAL             // Only allow this to be defined if we have a debug serial port

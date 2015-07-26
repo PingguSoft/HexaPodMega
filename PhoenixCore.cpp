@@ -35,8 +35,6 @@
 #include "PhoenixCore.h"
 #include "PhoenixServoSW.h"
 
-#define doBackgroundProcess()
-
 #define BALANCE_DIV_FACTOR  6    //;Other values than 6 can be used, testing...CAUTION!! At your own risk ;)
 
 //--------------------------------------------------------------------
@@ -307,6 +305,7 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
 PhoenixCore::PhoenixCore(void)
 {
     mServo = new PhoenixServoSW();
+    mCommitTime = 0;
 }
 
 void PhoenixCore::initCtrl(void)
@@ -362,7 +361,15 @@ void PhoenixCore::loop(void)
 
     //Start time
     lTimerStart = millis();
-    doBackgroundProcess();
+
+    if (mCommitTime != 0) {
+        if (lTimerStart >= mCommitTime) {
+            mServo->commit(mCurServoMoveTime);
+            mCommitTime = 0;
+        } else {
+            return;
+        }
+    }
 
     checkVoltage();
     updateLEDs();
@@ -376,11 +383,9 @@ void PhoenixCore::loop(void)
 
     //Single leg control
     allDown = ctrlSingleLeg();
-    doBackgroundProcess();
 
     //doGait
     doGaitSeq();
-    doBackgroundProcess();
 
     //Balance calculations
     mTotalTransX = 0;     //reset values used for calculation of balance
@@ -392,14 +397,12 @@ void PhoenixCore::loop(void)
 
     if (mControlState.fBalanceMode) {
         for (u8 i = 0; i < 3; i++) {    // balance calculations for all Right legs
-            doBackgroundProcess();
             calcBalOneLeg(i, -mLegPosX[i]+lGaitPosX[i],
                           mLegPosZ[i]+lGaitPosZ[i],
                           (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
         }
 
         for (u8 i = 3; i < 6; i++) {    // balance calculations for all Right legs
-            doBackgroundProcess();
             calcBalOneLeg(i, mLegPosX[i]+lGaitPosX[i],
                           mLegPosZ[i]+lGaitPosZ[i],
                           (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
@@ -409,7 +412,6 @@ void PhoenixCore::loop(void)
 
     //Do IK for all Right legs
     for (u8 i = 0; i < 3; i++) {
-        doBackgroundProcess();
         getBodyIK(i, -mLegPosX[i]+mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
@@ -423,7 +425,6 @@ void PhoenixCore::loop(void)
 
     //Do IK for all Left legs
     for (u8 i = 3; i < 6; i++) {
-        doBackgroundProcess();
         getBodyIK(i, mLegPosX[i]-mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
                   mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
                   mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
@@ -459,11 +460,10 @@ void PhoenixCore::loop(void)
         // note we broke up the servo driver into start/commit that way we can output all of the servo information
         // before we wait and only have the termination information to output after the wait.  That way we hopefully
         // be more accurate with our timings...
-        doBackgroundProcess();
         updateServos();
 
         // See if we need to sync our processor with the servo driver while walking to ensure the prev is completed
-        //before sending the next one
+        // before sending the next one
         // Finding any incident of GaitPos/Rot <>0:
         for (u8 i = 0; i < 6; i++) {
             if ( (lGaitPosX[i] > GP_DIFF_LIMIT) || (lGaitPosX[i] < -GP_DIFF_LIMIT) ||
@@ -474,18 +474,14 @@ void PhoenixCore::loop(void)
             }
         }
         if (bExtraCycle > 0){
-            u32 lTimeWaitEnd;
+            //u32 lTimeWaitEnd;
 
             bExtraCycle--;
-            mBoolWalking = !(bExtraCycle == 0);
+            mBoolWalking = (bExtraCycle != 0);
 
             //Get endtime and calculate wait time
-            lTimeWaitEnd = lTimerStart + mOldServoMoveTime;
-
-            do {
-                // Wait the appropriate time, call any background process while waiting...
-                doBackgroundProcess();
-            } while (millis() < lTimeWaitEnd);
+            //lTimeWaitEnd = lTimerStart + mOldServoMoveTime;
+            mCommitTime = lTimerStart + mOldServoMoveTime;
 
 /*
             if (mBoolDbgOutput) {
@@ -494,12 +490,17 @@ void PhoenixCore::loop(void)
                 printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_RF], lGaitPosY[IDX_RF], lGaitPosZ[IDX_RF]);
             }
 */
+        } else {
+            // commit immediately
+            mServo->commit(mCurServoMoveTime);
         }
+
         if (mBoolDbgOutput) {
 //          printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZ[IDX_LF]);
         }
+
         // Only do commit if we are actually doing something...
-        mServo->commit(mCurServoMoveTime);
+        // mServo->commit(mCurServoMoveTime);
     } else {
         //Turn the bot off - May need to add ajust here...
         if (mControlState.fHexOnOld) {
@@ -522,7 +523,6 @@ void PhoenixCore::loop(void)
     mControlState.fHexOnOld = mControlState.fHexOn;
     mOldServoMoveTime = mCurServoMoveTime;
 }
-
 
 void PhoenixCore::updateServos(void)
 {
