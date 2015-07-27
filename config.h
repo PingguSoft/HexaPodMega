@@ -27,32 +27,31 @@
 #define CONFIG_NUM_GAITS        6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
-#define CONFIG_DEBUG
-#define DBG_SERIAL Serial
-#define BT_SERIAL  Serial3
+#define CONFIG_DBG_SERIAL   Serial
+#define CONFIG_CTRL_SERIAL  Serial3
 
-#ifdef DBG_SERIAL
-//    #define CONFIG_TERMINAL             // Only allow this to be defined if we have a debug serial port
+#ifdef CONFIG_DBG_SERIAL
+//    #define CONFIG_TERMINAL
 #endif
 
-
-
-#define PIN_STATUS_LED  30
-#define PIN_SOUND       37
 #define CONFIG_BT_BAUD         115200
 #define CONFIG_DEBUG_BAUD      115200
 
-// Define Analog pin and minimum voltage that we will allow the servos to run
-#define PIN_ANALOG_VOLT 0       // Use our Analog pin jumper here...
-#ifndef CONFIG_VOLT_R1
-    #define CONFIG_VOLT_R1      30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
-    #define CONFIG_VOLT_R2      10  // VD Resistor 2
-#endif
-#define VOLT_TURN_OFF   470     // 4.7v
-#define VOLT_TURN_ON    550     // 5.5V - optional part to say if voltage goes back up, turn it back on...
+#define CONFIG_VOLT_R1  30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
+#define CONFIG_VOLT_R2  10  // VD Resistor 2
+
+#define CONFIG_VOLT_OFF 470 // 4.7v
+#define CONFIG_VOLT_ON  550 // 5.5V - optional part to say if voltage goes back up, turn it back on...
+
 
 //====================================================================
 //[IO Pins On 2560]
+#define PIN_STATUS_LED  30
+#define PIN_SOUND       37
+
+// Define Analog pin and minimum voltage that we will allow the servos to run
+#define PIN_ANALOG_VOLT 0       // Use our Analog pin jumper here...
+
 #define PIN_RR_COXA      35  //Rear Right leg Hip Horizontal
 #define PIN_RR_FEMUR     36  //Rear Right leg Hip Vertical
 #define PIN_RR_TIBIA     19  //Rear Right leg Knee

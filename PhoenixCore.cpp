@@ -113,61 +113,61 @@ static const u16 TBL_SIN[] PROGMEM = {
 
 // min max tables
 static const s16 TBL_COXA_MIN[] PROGMEM = {
-  cRRCoxaMin1,  cRMCoxaMin1,  cRFCoxaMin1,  cLRCoxaMin1,  cLMCoxaMin1,  cLFCoxaMin1};
+    cRRCoxaMin1,  cRMCoxaMin1,  cRFCoxaMin1,  cLRCoxaMin1,  cLMCoxaMin1,  cLFCoxaMin1};
 static const s16 TBL_COXA_MAX[] PROGMEM = {
-  cRRCoxaMax1,  cRMCoxaMax1,  cRFCoxaMax1,  cLRCoxaMax1,  cLMCoxaMax1,  cLFCoxaMax1};
+    cRRCoxaMax1,  cRMCoxaMax1,  cRFCoxaMax1,  cLRCoxaMax1,  cLMCoxaMax1,  cLFCoxaMax1};
 static const s16 TBL_FEMUR_MIN[] PROGMEM ={
-  cRRFemurMin1, cRMFemurMin1, cRFFemurMin1, cLRFemurMin1, cLMFemurMin1, cLFFemurMin1};
+    cRRFemurMin1, cRMFemurMin1, cRFFemurMin1, cLRFemurMin1, cLMFemurMin1, cLFFemurMin1};
 static const s16 TBL_FEMUR_MAX[] PROGMEM ={
-  cRRFemurMax1, cRMFemurMax1, cRFFemurMax1, cLRFemurMax1, cLMFemurMax1, cLFFemurMax1};
+    cRRFemurMax1, cRMFemurMax1, cRFFemurMax1, cLRFemurMax1, cLMFemurMax1, cLFFemurMax1};
 static const s16 TBL_TIBIA_MIN[] PROGMEM ={
-  cRRTibiaMin1, cRMTibiaMin1, cRFTibiaMin1, cLRTibiaMin1, cLMTibiaMin1, cLFTibiaMin1};
+    cRRTibiaMin1, cRMTibiaMin1, cRFTibiaMin1, cLRTibiaMin1, cLMTibiaMin1, cLFTibiaMin1};
 static const s16 TBL_TIBIA_MAX[] PROGMEM = {
-  cRRTibiaMax1, cRMTibiaMax1, cRFTibiaMax1, cLRTibiaMax1, cLMTibiaMax1, cLFTibiaMax1};
+    cRRTibiaMax1, cRMTibiaMax1, cRFTibiaMax1, cLRTibiaMax1, cLMTibiaMax1, cLFTibiaMax1};
 
 #if (CONFIG_DOF_PER_LEG == 4)
-    static const s16 TBL_TARS_MIN[] PROGMEM = {
-      cRRTarsMin1, cRMTarsMin1, cRFTarsMin1, cLRTarsMin1, cLMTarsMin1, cLFTarsMin1};
-    static const s16 TBL_TARS_MAX[] PROGMEM = {
-      cRRTarsMax1, cRMTarsMax1, cRFTarsMax1, cLRTarsMax1, cLMTarsMax1, cLFTarsMax1};
+static const s16 TBL_TARS_MIN[] PROGMEM = {
+    cRRTarsMin1, cRMTarsMin1, cRFTarsMin1, cLRTarsMin1, cLMTarsMin1, cLFTarsMin1};
+static const s16 TBL_TARS_MAX[] PROGMEM = {
+    cRRTarsMax1, cRMTarsMax1, cRFTarsMax1, cLRTarsMax1, cLMTarsMax1, cLFTarsMax1};
 #endif
 
 
 // leg length tables
 static const u8 TBL_COXA_LENGTH[] PROGMEM = {
-  cRRCoxaLength,  cRMCoxaLength,  cRFCoxaLength,  cLRCoxaLength,  cLMCoxaLength,  cLFCoxaLength};
+    cRRCoxaLength,  cRMCoxaLength,  cRFCoxaLength,  cLRCoxaLength,  cLMCoxaLength,  cLFCoxaLength};
 static const u8 TBL_FEMUR_LENGTH[] PROGMEM = {
-  cRRFemurLength, cRMFemurLength, cRFFemurLength, cLRFemurLength, cLMFemurLength, cLFFemurLength};
+    cRRFemurLength, cRMFemurLength, cRFFemurLength, cLRFemurLength, cLMFemurLength, cLFFemurLength};
 static const u8 TBL_TIBIA_LENGTH[] PROGMEM = {
-  cRRTibiaLength, cRMTibiaLength, cRFTibiaLength, cLRTibiaLength, cLMTibiaLength, cLFTibiaLength};
+    cRRTibiaLength, cRMTibiaLength, cRFTibiaLength, cLRTibiaLength, cLMTibiaLength, cLFTibiaLength};
 #if (CONFIG_DOF_PER_LEG == 4)
 static const u8 TBL_TARS_LENGTH[] PROGMEM = {
-  cRRTarsLength, cRMTarsLength, cRFTarsLength, cLRTarsLength, cLMTarsLength, cLFTarsLength};
+    cRRTarsLength, cRMTarsLength, cRFTarsLength, cLRTarsLength, cLMTarsLength, cLFTarsLength};
 #endif
 
 
 // Body Offsets [distance between the center of the body and the center of the coxa]
 static const s16 TBL_OFFSET_X[] PROGMEM = {
-  cRROffsetX, cRMOffsetX, cRFOffsetX, cLROffsetX, cLMOffsetX, cLFOffsetX};
+    cRROffsetX, cRMOffsetX, cRFOffsetX, cLROffsetX, cLMOffsetX, cLFOffsetX};
 static const s16 TBL_OFFSET_Z[] PROGMEM = {
-  cRROffsetZ, cRMOffsetZ, cRFOffsetZ, cLROffsetZ, cLMOffsetZ, cLFOffsetZ};
+    cRROffsetZ, cRMOffsetZ, cRFOffsetZ, cLROffsetZ, cLMOffsetZ, cLFOffsetZ};
 
 // Default leg angle
 static const s16 TBL_COXA_ANGLE[] PROGMEM = {
-  cRRCoxaAngle1, cRMCoxaAngle1, cRFCoxaAngle1, cLRCoxaAngle1, cLMCoxaAngle1, cLFCoxaAngle1};
+    cRRCoxaAngle1, cRMCoxaAngle1, cRFCoxaAngle1, cLRCoxaAngle1, cLMCoxaAngle1, cLFCoxaAngle1};
 
 // Start positions for the leg
 static const s16 TBL_INT_POS_X[] PROGMEM = {
-  cRRInitPosX, cRMInitPosX, cRFInitPosX, cLRInitPosX, cLMInitPosX, cLFInitPosX};
+    cRRInitPosX, cRMInitPosX, cRFInitPosX, cLRInitPosX, cLMInitPosX, cLFInitPosX};
 static const s16 TBL_INT_POS_Y[] PROGMEM = {
-  cRRInitPosY, cRMInitPosY, cRFInitPosY, cLRInitPosY, cLMInitPosY, cLFInitPosY};
+    cRRInitPosY, cRMInitPosY, cRFInitPosY, cLRInitPosY, cLMInitPosY, cLFInitPosY};
 static const s16 TBL_INT_POS_Z[] PROGMEM = {
-  cRRInitPosZ, cRMInitPosZ, cRFInitPosZ, cLRInitPosZ, cLMInitPosZ, cLFInitPosZ};
+    cRRInitPosZ, cRMInitPosZ, cRFInitPosZ, cLRInitPosZ, cLMInitPosZ, cLFInitPosZ};
 
 
 // Define some globals for debug information
 bool PhoenixCore::mBoolShowDbgPrompt = FALSE;
-bool PhoenixCore::mBoolDbgOutput     = TRUE;
+bool PhoenixCore::mBoolDbgOutput     = FALSE;
 bool PhoenixCore::mBoolUpsideDown    = FALSE;
 
 //--------------------------------------------------------------------
@@ -302,22 +302,23 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
     return atan4;
 }
 
-PhoenixCore::PhoenixCore(void)
+PhoenixCore::PhoenixCore(CTRL_STATE *state)
 {
     mServo = new PhoenixServoSW();
     mCommitTime = 0;
+    mPtrCtrlState = state;
 }
 
 void PhoenixCore::initCtrl(void)
 {
-    bool temp = mControlState.fHexOnOld;
+    bool temp = mPtrCtrlState->fHexOnOld;
 
-    memset(&mControlState, 0, sizeof(mControlState));
-    mControlState.fHexOnOld = temp;
+    memset(mPtrCtrlState, 0, sizeof(CTRL_STATE));
+    mPtrCtrlState->fHexOnOld = temp;
 
     //Single leg control. Make sure no leg is selected
-    mControlState.bSingleLegCurSel = 255; // No Leg selected
-    mControlState.bSingleLegOldSel = 255;
+    mPtrCtrlState->bSingleLegCurSel = 255; // No Leg selected
+    mPtrCtrlState->bSingleLegOldSel = 255;
 }
 
 void PhoenixCore::init(void)
@@ -328,22 +329,19 @@ void PhoenixCore::init(void)
     mLedOutput = 0;
 
     //Tars init Positions
-    for (u8 i = 0; i < 6; i++ ) {
-        mLegPosX[i] = (s16)pgm_read_word(&TBL_INT_POS_X[i]);    //Set start positions for each leg
-        mLegPosY[i] = (s16)pgm_read_word(&TBL_INT_POS_Y[i]);
-        mLegPosZ[i] = (s16)pgm_read_word(&TBL_INT_POS_Z[i]);
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++ ) {
+        mLegPosXs[i] = (s16)pgm_read_word(&TBL_INT_POS_X[i]);    //Set start positions for each leg
+        mLegPosYs[i] = (s16)pgm_read_word(&TBL_INT_POS_Y[i]);
+        mLegPosZs[i] = (s16)pgm_read_word(&TBL_INT_POS_Z[i]);
     }
 
-    memset(&mControlState, 0, sizeof(mControlState));
-    //Single leg control. Make sure no leg is selected
-    mControlState.bSingleLegCurSel = 255; // No Leg selected
-    mControlState.bSingleLegOldSel = 255;
+    initCtrl();
 
     //doGait
-    mControlState.bGaitType = 1;  // 0; Devon wanted
-    mControlState.sLegLiftHeight = 50;
-    GaitStep = 1;
-    selectGait();
+    mPtrCtrlState->bGaitType = 1;  // 0; Devon wanted
+    mPtrCtrlState->sLegLiftHeight = 50;
+    mGaitStep = 1;
+    selectGait(mPtrCtrlState->bGaitType);
 
     // Servo Driver
     mCurServoMoveTime = 150;
@@ -360,10 +358,10 @@ void PhoenixCore::loop(void)
     u8              ret;
 
     //Start time
-    lTimerStart = millis();
+    mTimerStart = millis();
 
     if (mCommitTime != 0) {
-        if (lTimerStart >= mCommitTime) {
+        if (mTimerStart >= mCommitTime) {
             mServo->commit(mCurServoMoveTime);
             mCommitTime = 0;
         } else {
@@ -375,10 +373,10 @@ void PhoenixCore::loop(void)
     updateLEDs();
 
     if (mBoolUpsideDown){
-        mControlState.c3dTravelLen.x = -mControlState.c3dTravelLen.x;
-        mControlState.c3dBodyPos.x = -mControlState.c3dBodyPos.x;
-        mControlState.c3dSingleLeg.x = -mControlState.c3dSingleLeg.x;
-        mControlState.c3dBodyRot.z = -mControlState.c3dBodyRot.z;
+        mPtrCtrlState->c3dTravelLen.x = -mPtrCtrlState->c3dTravelLen.x;
+        mPtrCtrlState->c3dBodyPos.x = -mPtrCtrlState->c3dBodyPos.x;
+        mPtrCtrlState->c3dSingleLeg.x = -mPtrCtrlState->c3dSingleLeg.x;
+        mPtrCtrlState->c3dBodyRot.z = -mPtrCtrlState->c3dBodyRot.z;
     }
 
     //Single leg control
@@ -395,67 +393,69 @@ void PhoenixCore::loop(void)
     mTotalYBal1  = 0;
     mTotalZBal1  = 0;
 
-    if (mControlState.fBalanceMode) {
+    if (mPtrCtrlState->fBalanceMode) {
         for (u8 i = 0; i < 3; i++) {    // balance calculations for all Right legs
-            calcBalOneLeg(i, -mLegPosX[i]+lGaitPosX[i],
-                          mLegPosZ[i]+lGaitPosZ[i],
-                          (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
+            calcBalOneLeg(i, -mLegPosXs[i]+mGaitPosXs[i],
+                          mLegPosZs[i]+mGaitPosZs[i],
+                          (mLegPosYs[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+mGaitPosYs[i]);
         }
 
         for (u8 i = 3; i < 6; i++) {    // balance calculations for all Right legs
-            calcBalOneLeg(i, mLegPosX[i]+lGaitPosX[i],
-                          mLegPosZ[i]+lGaitPosZ[i],
-                          (mLegPosY[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+lGaitPosY[i]);
+            calcBalOneLeg(i, mLegPosXs[i]+mGaitPosXs[i],
+                          mLegPosZs[i]+mGaitPosZs[i],
+                          (mLegPosYs[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+mGaitPosYs[i]);
         }
         balanceBody();
     }
 
     //Do IK for all Right legs
     for (u8 i = 0; i < 3; i++) {
-        getBodyIK(i, -mLegPosX[i]+mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
-                  mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
-                  mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
-                  lGaitRotY[i],
+        getBodyIK(i,
+                  -mLegPosXs[i]+mPtrCtrlState->c3dBodyPos.x+mGaitPosXs[i] - mTotalTransX,
+                  mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z+mGaitPosZs[i] - mTotalTransZ,
+                  mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y+mGaitPosYs[i] - mTotalTransY,
+                  mGaitRotYs[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(i, mLegPosX[i]-mControlState.c3dBodyPos.x+lBodyX-(lGaitPosX[i] - mTotalTransX),
-                       mLegPosY[i]+mControlState.c3dBodyPos.y-lBodyY+lGaitPosY[i] - mTotalTransY,
-                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ);
+        ret = getLegIK(i, mLegPosXs[i]-mPtrCtrlState->c3dBodyPos.x+lBodyX-(mGaitPosXs[i] - mTotalTransX),
+                       mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y-lBodyY+mGaitPosYs[i] - mTotalTransY,
+                       mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z-lBodyZ+mGaitPosZs[i] - mTotalTransZ);
     }
 
     //Do IK for all Left legs
-    for (u8 i = 3; i < 6; i++) {
-        getBodyIK(i, mLegPosX[i]-mControlState.c3dBodyPos.x+lGaitPosX[i] - mTotalTransX,
-                  mLegPosZ[i]+mControlState.c3dBodyPos.z+lGaitPosZ[i] - mTotalTransZ,
-                  mLegPosY[i]+mControlState.c3dBodyPos.y+lGaitPosY[i] - mTotalTransY,
-                  lGaitRotY[i],
+    for (u8 i = 3; i < CONFIG_NUM_LEGS; i++) {
+        getBodyIK(i,
+                  mLegPosXs[i]-mPtrCtrlState->c3dBodyPos.x+mGaitPosXs[i] - mTotalTransX,
+                  mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z+mGaitPosZs[i] - mTotalTransZ,
+                  mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y+mGaitPosYs[i] - mTotalTransY,
+                  mGaitRotYs[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(i, mLegPosX[i]+mControlState.c3dBodyPos.x-lBodyX+lGaitPosX[i] - mTotalTransX,
-                       mLegPosY[i]+mControlState.c3dBodyPos.y-lBodyY+lGaitPosY[i] - mTotalTransY,
-                       mLegPosZ[i]+mControlState.c3dBodyPos.z-lBodyZ+lGaitPosZ[i] - mTotalTransZ);
+        ret = getLegIK(i, mLegPosXs[i]+mPtrCtrlState->c3dBodyPos.x-lBodyX+mGaitPosXs[i] - mTotalTransX,
+                       mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y-lBodyY+mGaitPosYs[i] - mTotalTransY,
+                       mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z-lBodyZ+mGaitPosZs[i] - mTotalTransZ);
     }
 
     if (mBoolUpsideDown) { //Need to set them back for not messing with the smoothControl
-        mControlState.c3dBodyPos.x = -mControlState.c3dBodyPos.x;
-        mControlState.c3dSingleLeg.x = -mControlState.c3dSingleLeg.x;
-        mControlState.c3dBodyRot.z = -mControlState.c3dBodyRot.z;
+        mPtrCtrlState->c3dBodyPos.x = -mPtrCtrlState->c3dBodyPos.x;
+        mPtrCtrlState->c3dSingleLeg.x = -mPtrCtrlState->c3dSingleLeg.x;
+        mPtrCtrlState->c3dBodyRot.z = -mPtrCtrlState->c3dBodyRot.z;
     }
 
     //Check mechanical limits
     validateAngles();
 
     //Drive Servos
-    if (mControlState.fHexOn) {
+    if (mPtrCtrlState->fHexOn) {
         //Calculate Servo Move time
-        if ((abs(mControlState.c3dTravelLen.x)>CONFIG_TRAVEL_DEAD_ZONE) || (abs(mControlState.c3dTravelLen.z)>CONFIG_TRAVEL_DEAD_ZONE) ||
-            (abs(mControlState.c3dTravelLen.y*2)>CONFIG_TRAVEL_DEAD_ZONE)) {
-            mCurServoMoveTime = NomGaitSpeed + (mControlState.bInputTimeDelay*2) + mControlState.wSpeedControl;
+        if ((abs(mPtrCtrlState->c3dTravelLen.x)>CONFIG_TRAVEL_DEAD_ZONE) || (abs(mPtrCtrlState->c3dTravelLen.z)>CONFIG_TRAVEL_DEAD_ZONE) ||
+            (abs(mPtrCtrlState->c3dTravelLen.y*2)>CONFIG_TRAVEL_DEAD_ZONE)) {
+            mCurServoMoveTime = mNormGaitSpeed + (mPtrCtrlState->bInputTimeDelay*2) + mPtrCtrlState->wSpeedControl;
             //Add aditional delay when Balance mode is on
-            if (mControlState.fBalanceMode)
+            if (mPtrCtrlState->fBalanceMode)
                 mCurServoMoveTime = mCurServoMoveTime + 100;
         } else //Movement speed excl. Walking
-            mCurServoMoveTime = 200 + mControlState.wSpeedControl;
+            mCurServoMoveTime = 200 + mPtrCtrlState->wSpeedControl;
 
         // note we broke up the servo driver into start/commit that way we can output all of the servo information
         // before we wait and only have the termination information to output after the wait.  That way we hopefully
@@ -465,45 +465,35 @@ void PhoenixCore::loop(void)
         // See if we need to sync our processor with the servo driver while walking to ensure the prev is completed
         // before sending the next one
         // Finding any incident of GaitPos/Rot <>0:
-        for (u8 i = 0; i < 6; i++) {
-            if ( (lGaitPosX[i] > GP_DIFF_LIMIT) || (lGaitPosX[i] < -GP_DIFF_LIMIT) ||
-                 (lGaitPosZ[i] > GP_DIFF_LIMIT) || (lGaitPosZ[i] < -GP_DIFF_LIMIT) ||
-                 (lGaitRotY[i] > GP_DIFF_LIMIT) || (lGaitRotY[i] < -GP_DIFF_LIMIT)) {
-                bExtraCycle = NrLiftedPos + 1;//For making sure that we are using timed move until all legs are down
+        for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+            if ( (mGaitPosXs[i] > GP_DIFF_LIMIT) || (mGaitPosXs[i] < -GP_DIFF_LIMIT) ||
+                 (mGaitPosZs[i] > GP_DIFF_LIMIT) || (mGaitPosZs[i] < -GP_DIFF_LIMIT) ||
+                 (mGaitRotYs[i] > GP_DIFF_LIMIT) || (mGaitRotYs[i] < -GP_DIFF_LIMIT)) {
+                mExtraCycle = mNrLiftedPos + 1;//For making sure that we are using timed move until all legs are down
                 break;
             }
         }
-        if (bExtraCycle > 0){
-            //u32 lTimeWaitEnd;
+        if (mExtraCycle > 0) {
+            mExtraCycle--;
+            mBoolWalking = (mExtraCycle != 0);
+            mCommitTime  = mTimerStart + mOldServoMoveTime;
 
-            bExtraCycle--;
-            mBoolWalking = (bExtraCycle != 0);
-
-            //Get endtime and calculate wait time
-            //lTimeWaitEnd = lTimerStart + mOldServoMoveTime;
-            mCommitTime = lTimerStart + mOldServoMoveTime;
-
-/*
             if (mBoolDbgOutput) {
-                printf(F("BRX:%d, Walk:%d, GS:%d\n"), mControlState.c3dBodyRot.x, mBoolWalking, GaitStep);
-                printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_LF], lGaitPosY[IDX_LF], lGaitPosZ[IDX_LF]);
-                printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), lGaitPosX[IDX_RF], lGaitPosY[IDX_RF], lGaitPosZ[IDX_RF]);
+                printf(F("BRX:%d, Walk:%d, GS:%d\n"), mPtrCtrlState->c3dBodyRot.x, mBoolWalking, mGaitStep);
+                printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_LF], mGaitPosYs[IDX_LF], mGaitPosZs[IDX_LF]);
+                printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_RF], mGaitPosYs[IDX_RF], mGaitPosZs[IDX_RF]);
             }
-*/
         } else {
             // commit immediately
             mServo->commit(mCurServoMoveTime);
         }
 
         if (mBoolDbgOutput) {
-//          printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZ[IDX_LF]);
+            printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZs[IDX_LF]);
         }
-
-        // Only do commit if we are actually doing something...
-        // mServo->commit(mCurServoMoveTime);
     } else {
         //Turn the bot off - May need to add ajust here...
-        if (mControlState.fHexOnOld) {
+        if (mPtrCtrlState->fHexOnOld) {
             printf(F("RESET LEGS !!!\n"));
             mCurServoMoveTime = 600;
             updateServos();
@@ -520,7 +510,7 @@ void PhoenixCore::loop(void)
 #endif
         delay(20);
     }
-    mControlState.fHexOnOld = mControlState.fHexOn;
+    mPtrCtrlState->fHexOnOld = mPtrCtrlState->fHexOn;
     mOldServoMoveTime = mCurServoMoveTime;
 }
 
@@ -529,11 +519,11 @@ void PhoenixCore::updateServos(void)
     // First call off to the init...
     mServo->start();
 
-    for (u8 i = 0; i < 6; i++) {
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
 #if (CONFIG_DOF_PER_LEG == 4)
-        mServo->write(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i], mTarsAngle[i]);
+        mServo->write(i, mCoxaAngles[i], mFemurAngles[i], mTibiaAngles[i], mTarsAngles[i]);
 #else
-        mServo->write(i, mCoxaAngle[i], mFemurAngle[i], mTibiaAngle[i]);
+        mServo->write(i, mCoxaAngles[i], mFemurAngles[i], mTibiaAngles[i]);
 #endif
   }
 }
@@ -564,157 +554,157 @@ bool PhoenixCore::ctrlSingleLeg(void)
 
     //Check if all legs are down
     allDown =
-        (mLegPosY[IDX_RF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RF])) &&
-        (mLegPosY[IDX_RM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RM])) &&
-        (mLegPosY[IDX_RR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RR])) &&
-        (mLegPosY[IDX_LR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LR])) &&
-        (mLegPosY[IDX_LM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LM])) &&
-        (mLegPosY[IDX_LF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LF]));
+        (mLegPosYs[IDX_RF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RF])) &&
+        (mLegPosYs[IDX_RM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RM])) &&
+        (mLegPosYs[IDX_RR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RR])) &&
+        (mLegPosYs[IDX_LR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LR])) &&
+        (mLegPosYs[IDX_LM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LM])) &&
+        (mLegPosYs[IDX_LF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LF]));
 
-    if (mControlState.bSingleLegCurSel < 6) {
-        if (mControlState.bSingleLegCurSel != mControlState.bSingleLegOldSel) {
+    if (mPtrCtrlState->bSingleLegCurSel < CONFIG_NUM_LEGS) {
+        if (mPtrCtrlState->bSingleLegCurSel != mPtrCtrlState->bSingleLegOldSel) {
             if (allDown) { //Lift leg a bit when it got selected
-                mLegPosY[mControlState.bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mControlState.bSingleLegCurSel]) - 20;
+                mLegPosYs[mPtrCtrlState->bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mPtrCtrlState->bSingleLegCurSel]) - 20;
                 //Store current status
-                mControlState.bSingleLegOldSel = mControlState.bSingleLegCurSel;
+                mPtrCtrlState->bSingleLegOldSel = mPtrCtrlState->bSingleLegCurSel;
             } else {//Return prev leg back to the init position
-                mLegPosX[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_X[mControlState.bSingleLegOldSel]);
-                mLegPosY[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mControlState.bSingleLegOldSel]);
-                mLegPosZ[mControlState.bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Z[mControlState.bSingleLegOldSel]);
+                mLegPosXs[mPtrCtrlState->bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_X[mPtrCtrlState->bSingleLegOldSel]);
+                mLegPosYs[mPtrCtrlState->bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mPtrCtrlState->bSingleLegOldSel]);
+                mLegPosZs[mPtrCtrlState->bSingleLegOldSel] = (s16)pgm_read_word(&TBL_INT_POS_Z[mPtrCtrlState->bSingleLegOldSel]);
             }
         }
-        else if (!mControlState.fSingleLegHold) {
-            //mLegPosY[mControlState.bSingleLegCurSel] = mLegPosY[mControlState.bSingleLegCurSel]+mControlState.c3dSingleLeg.y;
-            mLegPosY[mControlState.bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mControlState.bSingleLegCurSel])+mControlState.c3dSingleLeg.y;// Using DIY remote Zenta prefer it this way
-            mLegPosX[mControlState.bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_X[mControlState.bSingleLegCurSel])+mControlState.c3dSingleLeg.x;
-            mLegPosZ[mControlState.bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Z[mControlState.bSingleLegCurSel])+mControlState.c3dSingleLeg.z;
+        else if (!mPtrCtrlState->fSingleLegHold) {
+            //mLegPosYs[mPtrCtrlState->bSingleLegCurSel] = mLegPosYs[mPtrCtrlState->bSingleLegCurSel]+mPtrCtrlState->c3dSingleLeg.y;
+            mLegPosYs[mPtrCtrlState->bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Y[mPtrCtrlState->bSingleLegCurSel])+mPtrCtrlState->c3dSingleLeg.y;// Using DIY remote Zenta prefer it this way
+            mLegPosXs[mPtrCtrlState->bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_X[mPtrCtrlState->bSingleLegCurSel])+mPtrCtrlState->c3dSingleLeg.x;
+            mLegPosZs[mPtrCtrlState->bSingleLegCurSel] = (s16)pgm_read_word(&TBL_INT_POS_Z[mPtrCtrlState->bSingleLegCurSel])+mPtrCtrlState->c3dSingleLeg.z;
         }
     } else {//All legs to init position
         if (!allDown) {
-            for(u8 i = 0; i < 6; i++) {
-                mLegPosX[i] = (s16)pgm_read_word(&TBL_INT_POS_X[i]);
-                mLegPosY[i] = (s16)pgm_read_word(&TBL_INT_POS_Y[i]);
-                mLegPosZ[i] = (s16)pgm_read_word(&TBL_INT_POS_Z[i]);
+            for(u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+                mLegPosXs[i] = (s16)pgm_read_word(&TBL_INT_POS_X[i]);
+                mLegPosYs[i] = (s16)pgm_read_word(&TBL_INT_POS_Y[i]);
+                mLegPosZs[i] = (s16)pgm_read_word(&TBL_INT_POS_Z[i]);
             }
         }
-        if (mControlState.bSingleLegOldSel != 255)
-            mControlState.bSingleLegOldSel = 255;
+        if (mPtrCtrlState->bSingleLegOldSel != 255)
+            mPtrCtrlState->bSingleLegOldSel = 255;
     }
     return allDown;
 }
 
-void PhoenixCore::selectGait(void)
+void PhoenixCore::selectGait(u8 bGaitType)
 {
   //doGait selector
-  switch (mControlState.bGaitType)  {
+  switch (bGaitType)  {
   case 0:
     //Ripple doGait 12 steps
-    GaitLegNr[IDX_LR] = 1;
-    GaitLegNr[IDX_RF] = 3;
-    GaitLegNr[IDX_LM] = 5;
-    GaitLegNr[IDX_RR] = 7;
-    GaitLegNr[IDX_LF] = 9;
-    GaitLegNr[IDX_RM] = 11;
+    mGaitLegInits[IDX_LR] = 1;
+    mGaitLegInits[IDX_RF] = 3;
+    mGaitLegInits[IDX_LM] = 5;
+    mGaitLegInits[IDX_RR] = 7;
+    mGaitLegInits[IDX_LF] = 9;
+    mGaitLegInits[IDX_RM] = 11;
 
-    NrLiftedPos = 3;
-    FrontDownPos = 2;
-    LiftDivFactor = 2;
-    HalfLiftHeigth = 3;
-    TLDivFactor = 8;
-    StepsInGait = 12;
-    NomGaitSpeed = DEFAULT_SLOW_GAIT;
+    mNrLiftedPos = 3;
+    mFrontDownPos = 2;
+    mLiftDivFactor = 2;
+    mHalfLiftHeight = 3;
+    mTLDivFactor = 8;
+    mStepsInGait = 12;
+    mNormGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
 
   case 1:
     //Tripod 8 steps
-    GaitLegNr[IDX_LR] = 5;
-    GaitLegNr[IDX_RF] = 1;
-    GaitLegNr[IDX_LM] = 1;
-    GaitLegNr[IDX_RR] = 1;
-    GaitLegNr[IDX_LF] = 5;
-    GaitLegNr[IDX_RM] = 5;
+    mGaitLegInits[IDX_LR] = 5;
+    mGaitLegInits[IDX_RF] = 1;
+    mGaitLegInits[IDX_LM] = 1;
+    mGaitLegInits[IDX_RR] = 1;
+    mGaitLegInits[IDX_LF] = 5;
+    mGaitLegInits[IDX_RM] = 5;
 
-    NrLiftedPos = 3;
-    FrontDownPos = 2;
-    LiftDivFactor = 2;
-    HalfLiftHeigth = 3;
-    TLDivFactor = 4;
-    StepsInGait = 8;
-    NomGaitSpeed = DEFAULT_SLOW_GAIT;
+    mNrLiftedPos = 3;
+    mFrontDownPos = 2;
+    mLiftDivFactor = 2;
+    mHalfLiftHeight = 3;
+    mTLDivFactor = 4;
+    mStepsInGait = 8;
+    mNormGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
 
   case 2:
     //Triple Tripod 12 step
-    GaitLegNr[IDX_RF] = 3;
-    GaitLegNr[IDX_LM] = 4;
-    GaitLegNr[IDX_RR] = 5;
-    GaitLegNr[IDX_LF] = 9;
-    GaitLegNr[IDX_RM] = 10;
-    GaitLegNr[IDX_LR] = 11;
+    mGaitLegInits[IDX_RF] = 3;
+    mGaitLegInits[IDX_LM] = 4;
+    mGaitLegInits[IDX_RR] = 5;
+    mGaitLegInits[IDX_LF] = 9;
+    mGaitLegInits[IDX_RM] = 10;
+    mGaitLegInits[IDX_LR] = 11;
 
-    NrLiftedPos = 3;
-    FrontDownPos = 2;
-    LiftDivFactor = 2;
-    HalfLiftHeigth = 3;
-    TLDivFactor = 8;
-    StepsInGait = 12;
-    NomGaitSpeed = DEFAULT_GAIT_SPEED;
+    mNrLiftedPos = 3;
+    mFrontDownPos = 2;
+    mLiftDivFactor = 2;
+    mHalfLiftHeight = 3;
+    mTLDivFactor = 8;
+    mStepsInGait = 12;
+    mNormGaitSpeed = DEFAULT_GAIT_SPEED;
     break;
 
   case 3:
     // Triple Tripod 16 steps, use 5 lifted positions
-    GaitLegNr[IDX_RF] = 4;
-    GaitLegNr[IDX_LM] = 5;
-    GaitLegNr[IDX_RR] = 6;
-    GaitLegNr[IDX_LF] = 12;
-    GaitLegNr[IDX_RM] = 13;
-    GaitLegNr[IDX_LR] = 14;
+    mGaitLegInits[IDX_RF] = 4;
+    mGaitLegInits[IDX_LM] = 5;
+    mGaitLegInits[IDX_RR] = 6;
+    mGaitLegInits[IDX_LF] = 12;
+    mGaitLegInits[IDX_RM] = 13;
+    mGaitLegInits[IDX_LR] = 14;
 
-    NrLiftedPos = 5;
-    FrontDownPos = 3;
-    LiftDivFactor = 4;
-    HalfLiftHeigth = 1;
-    TLDivFactor = 10;
-    StepsInGait = 16;
-    NomGaitSpeed = DEFAULT_GAIT_SPEED;
+    mNrLiftedPos = 5;
+    mFrontDownPos = 3;
+    mLiftDivFactor = 4;
+    mHalfLiftHeight = 1;
+    mTLDivFactor = 10;
+    mStepsInGait = 16;
+    mNormGaitSpeed = DEFAULT_GAIT_SPEED;
     break;
 
   case 4:
     //Wave 24 steps
-    GaitLegNr[IDX_LR] = 1;
-    GaitLegNr[IDX_RF] = 21;
-    GaitLegNr[IDX_LM] = 5;
+    mGaitLegInits[IDX_LR] = 1;
+    mGaitLegInits[IDX_RF] = 21;
+    mGaitLegInits[IDX_LM] = 5;
 
-    GaitLegNr[IDX_RR] = 13;
-    GaitLegNr[IDX_LF] = 9;
-    GaitLegNr[IDX_RM] = 17;
+    mGaitLegInits[IDX_RR] = 13;
+    mGaitLegInits[IDX_LF] = 9;
+    mGaitLegInits[IDX_RM] = 17;
 
-    NrLiftedPos = 3;
-    FrontDownPos = 2;
-    LiftDivFactor = 2;
-    HalfLiftHeigth = 3;
-    TLDivFactor = 20;
-    StepsInGait = 24;
-    NomGaitSpeed = DEFAULT_SLOW_GAIT;
+    mNrLiftedPos = 3;
+    mFrontDownPos = 2;
+    mLiftDivFactor = 2;
+    mHalfLiftHeight = 3;
+    mTLDivFactor = 20;
+    mStepsInGait = 24;
+    mNormGaitSpeed = DEFAULT_SLOW_GAIT;
     break;
 
   case 5:
     //Tripod 6 steps
-    GaitLegNr[IDX_LR] = 4;
-    GaitLegNr[IDX_RF] = 1;
-    GaitLegNr[IDX_LM] = 1;
+    mGaitLegInits[IDX_LR] = 4;
+    mGaitLegInits[IDX_RF] = 1;
+    mGaitLegInits[IDX_LM] = 1;
 
-    GaitLegNr[IDX_RR] = 1;
-    GaitLegNr[IDX_LF] = 4;
-    GaitLegNr[IDX_RM] = 4;
+    mGaitLegInits[IDX_RR] = 1;
+    mGaitLegInits[IDX_LF] = 4;
+    mGaitLegInits[IDX_RM] = 4;
 
-    NrLiftedPos = 2;
-    FrontDownPos = 1;
-    LiftDivFactor = 2;
-    HalfLiftHeigth = 1;
-    TLDivFactor = 4;
-    StepsInGait = 6;
-    NomGaitSpeed = DEFAULT_GAIT_SPEED;
+    mNrLiftedPos = 2;
+    mFrontDownPos = 1;
+    mLiftDivFactor = 2;
+    mHalfLiftHeight = 1;
+    mTLDivFactor = 4;
+    mStepsInGait = 6;
+    mNormGaitSpeed = DEFAULT_GAIT_SPEED;
     break;
   }
 }
@@ -726,19 +716,19 @@ void PhoenixCore::doGaitSeq(void)
     bool fTravelReq;
 
     //Check if the doGait is in motion
-    fTravelReq = (abs(mControlState.c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) ||
-        (abs(mControlState.c3dTravelLen.z) > CONFIG_TRAVEL_DEAD_ZONE) ||
-        (abs(mControlState.c3dTravelLen.y) > CONFIG_TRAVEL_DEAD_ZONE) ||
-        (mControlState.bForceGaitStepCnt != 0) || mBoolWalking;
+    fTravelReq = (abs(mPtrCtrlState->c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) ||
+        (abs(mPtrCtrlState->c3dTravelLen.z) > CONFIG_TRAVEL_DEAD_ZONE) ||
+        (abs(mPtrCtrlState->c3dTravelLen.y) > CONFIG_TRAVEL_DEAD_ZONE) ||
+        (mPtrCtrlState->bForcemGaitStepCnt != 0) || mBoolWalking;
 
     //Calculate doGait sequence
-    for (u8 i = 0; i < 6; i++) { // for all legs
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) { // for all legs
         doGait(i, fTravelReq);
     }
 
     // If we have a force count decrement it now...
-    if (mControlState.bForceGaitStepCnt)
-        mControlState.bForceGaitStepCnt--;
+    if (mPtrCtrlState->bForcemGaitStepCnt)
+        mPtrCtrlState->bForcemGaitStepCnt--;
 }
 
 //--------------------------------------------------------------------
@@ -747,83 +737,83 @@ void PhoenixCore::doGait(u8 leg, bool fTravelReq)
 {
     //Clear values under the CONFIG_TRAVEL_DEAD_ZONE
     if (!fTravelReq) {
-        mControlState.c3dTravelLen.x = 0;
-        mControlState.c3dTravelLen.z = 0;
-        mControlState.c3dTravelLen.y = 0;//doGait NOT in motion, return to home position
+        mPtrCtrlState->c3dTravelLen.x = 0;
+        mPtrCtrlState->c3dTravelLen.z = 0;
+        mPtrCtrlState->c3dTravelLen.y = 0;//doGait NOT in motion, return to home position
     }
 
     //Leg middle up position OK
     //doGait in motion
 
-    if ( (fTravelReq && (NrLiftedPos == 1 || NrLiftedPos == 3 || NrLiftedPos == 5) && GaitStep == GaitLegNr[leg]) ||
-         (!fTravelReq && GaitStep == GaitLegNr[leg] &&
-          ((abs(lGaitPosX[leg] )> 2) || (abs(lGaitPosZ[leg] )> 2) || (abs(lGaitRotY[leg]) > 2)) ) ) { //Up
-        lGaitPosX[leg] = 0;
-        lGaitPosY[leg] = -mControlState.sLegLiftHeight;
-        lGaitPosZ[leg] = 0;
-        lGaitRotY[leg] = 0;
+    if ( (fTravelReq && (mNrLiftedPos == 1 || mNrLiftedPos == 3 || mNrLiftedPos == 5) && mGaitStep == mGaitLegInits[leg]) ||
+         (!fTravelReq && mGaitStep == mGaitLegInits[leg] &&
+          ((abs(mGaitPosXs[leg] )> 2) || (abs(mGaitPosZs[leg] )> 2) || (abs(mGaitRotYs[leg]) > 2)) ) ) { //Up
+        mGaitPosXs[leg] = 0;
+        mGaitPosYs[leg] = -mPtrCtrlState->sLegLiftHeight;
+        mGaitPosZs[leg] = 0;
+        mGaitRotYs[leg] = 0;
     }
 
     //Optional Half heigth Rear (2, 3, 5 lifted positions)
     else if (fTravelReq &&
-              ( (NrLiftedPos == 2 && GaitStep == GaitLegNr[leg]) ||
-                (NrLiftedPos >= 3 && (GaitStep == GaitLegNr[leg] - 1 || GaitStep == GaitLegNr[leg] + (StepsInGait - 1))) ) ) {
-        lGaitPosX[leg] = -mControlState.c3dTravelLen.x/LiftDivFactor;
-        lGaitPosY[leg] = -3*mControlState.sLegLiftHeight/(3+HalfLiftHeigth);     //Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
-        lGaitPosZ[leg] = -mControlState.c3dTravelLen.z/LiftDivFactor;
-        lGaitRotY[leg] = -mControlState.c3dTravelLen.y/LiftDivFactor;
+              ( (mNrLiftedPos == 2 && mGaitStep == mGaitLegInits[leg]) ||
+                (mNrLiftedPos >= 3 && (mGaitStep == mGaitLegInits[leg] - 1 || mGaitStep == mGaitLegInits[leg] + (mStepsInGait - 1))) ) ) {
+        mGaitPosXs[leg] = -mPtrCtrlState->c3dTravelLen.x/mLiftDivFactor;
+        mGaitPosYs[leg] = -3*mPtrCtrlState->sLegLiftHeight/(3+mHalfLiftHeight);     //Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
+        mGaitPosZs[leg] = -mPtrCtrlState->c3dTravelLen.z/mLiftDivFactor;
+        mGaitRotYs[leg] = -mPtrCtrlState->c3dTravelLen.y/mLiftDivFactor;
     }
 
     // _A_
     // Optional Half heigth front (2, 3, 5 lifted positions)
-    else if (fTravelReq && (NrLiftedPos >= 2) &&
-             (GaitStep == GaitLegNr[leg] + 1 || GaitStep == GaitLegNr[leg] - (StepsInGait - 1))) {
-        lGaitPosX[leg] = mControlState.c3dTravelLen.x/LiftDivFactor;
-        lGaitPosY[leg] = -3*mControlState.sLegLiftHeight/(3+HalfLiftHeigth); // Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
-        lGaitPosZ[leg] = mControlState.c3dTravelLen.z/LiftDivFactor;
-        lGaitRotY[leg] = mControlState.c3dTravelLen.y/LiftDivFactor;
+    else if (fTravelReq && (mNrLiftedPos >= 2) &&
+             (mGaitStep == mGaitLegInits[leg] + 1 || mGaitStep == mGaitLegInits[leg] - (mStepsInGait - 1))) {
+        mGaitPosXs[leg] = mPtrCtrlState->c3dTravelLen.x/mLiftDivFactor;
+        mGaitPosYs[leg] = -3*mPtrCtrlState->sLegLiftHeight/(3+mHalfLiftHeight); // Easier to shift between div factor: /1 (3/3), /2 (3/6) and 3/4
+        mGaitPosZs[leg] = mPtrCtrlState->c3dTravelLen.z/mLiftDivFactor;
+        mGaitRotYs[leg] = mPtrCtrlState->c3dTravelLen.y/mLiftDivFactor;
     }
 
     //Optional Half heigth Rear 5 LiftedPos (5 lifted positions)
-    else if (fTravelReq && (NrLiftedPos == 5 && (GaitStep == GaitLegNr[leg] - 2))) {
-        lGaitPosX[leg] = -mControlState.c3dTravelLen.x/2;
-        lGaitPosY[leg] = -mControlState.sLegLiftHeight/2;
-        lGaitPosZ[leg] = -mControlState.c3dTravelLen.z/2;
-        lGaitRotY[leg] = -mControlState.c3dTravelLen.y/2;
+    else if (fTravelReq && (mNrLiftedPos == 5 && (mGaitStep == mGaitLegInits[leg] - 2))) {
+        mGaitPosXs[leg] = -mPtrCtrlState->c3dTravelLen.x/2;
+        mGaitPosYs[leg] = -mPtrCtrlState->sLegLiftHeight/2;
+        mGaitPosZs[leg] = -mPtrCtrlState->c3dTravelLen.z/2;
+        mGaitRotYs[leg] = -mPtrCtrlState->c3dTravelLen.y/2;
     }
 
     //Optional Half heigth Front 5 LiftedPos (5 lifted positions)
-    else if (fTravelReq && (NrLiftedPos == 5) &&
-             (GaitStep == GaitLegNr[leg] + 2 || GaitStep == GaitLegNr[leg] - (StepsInGait - 2))) {
-        lGaitPosX[leg] = mControlState.c3dTravelLen.x/2;
-        lGaitPosY[leg] = -mControlState.sLegLiftHeight/2;
-        lGaitPosZ[leg] = mControlState.c3dTravelLen.z/2;
-        lGaitRotY[leg] = mControlState.c3dTravelLen.y/2;
+    else if (fTravelReq && (mNrLiftedPos == 5) &&
+             (mGaitStep == mGaitLegInits[leg] + 2 || mGaitStep == mGaitLegInits[leg] - (mStepsInGait - 2))) {
+        mGaitPosXs[leg] = mPtrCtrlState->c3dTravelLen.x/2;
+        mGaitPosYs[leg] = -mPtrCtrlState->sLegLiftHeight/2;
+        mGaitPosZs[leg] = mPtrCtrlState->c3dTravelLen.z/2;
+        mGaitRotYs[leg] = mPtrCtrlState->c3dTravelLen.y/2;
     }
     //_B_
     //Leg front down position //bug here?  From _A_ to _B_ there should only be one gaitstep, not 2!
-    //For example, where is the case of GaitStep==GaitLegNr[leg]+2 executed when NRLiftedPos=3?
-    else if ((GaitStep == GaitLegNr[leg] + FrontDownPos || GaitStep == GaitLegNr[leg] - (StepsInGait-FrontDownPos)) &&
-        lGaitPosY[leg] < 0) {
-        lGaitPosX[leg] = mControlState.c3dTravelLen.x/2;
-        lGaitPosZ[leg] = mControlState.c3dTravelLen.z/2;
-        lGaitRotY[leg] = mControlState.c3dTravelLen.y/2;
-        lGaitPosY[leg] = 0;
+    //For example, where is the case of mGaitStep==mGaitLegInits[leg]+2 executed when NRLiftedPos=3?
+    else if ((mGaitStep == mGaitLegInits[leg] + mFrontDownPos || mGaitStep == mGaitLegInits[leg] - (mStepsInGait-mFrontDownPos)) &&
+        mGaitPosYs[leg] < 0) {
+        mGaitPosXs[leg] = mPtrCtrlState->c3dTravelLen.x/2;
+        mGaitPosZs[leg] = mPtrCtrlState->c3dTravelLen.z/2;
+        mGaitRotYs[leg] = mPtrCtrlState->c3dTravelLen.y/2;
+        mGaitPosYs[leg] = 0;
     }
 
     //Move body forward
     else {
-        lGaitPosX[leg] = lGaitPosX[leg] - (mControlState.c3dTravelLen.x/TLDivFactor);
-        lGaitPosY[leg] = 0;
-        lGaitPosZ[leg] = lGaitPosZ[leg] - (mControlState.c3dTravelLen.z/TLDivFactor);
-        lGaitRotY[leg] = lGaitRotY[leg] - (mControlState.c3dTravelLen.y/TLDivFactor);
+        mGaitPosXs[leg] = mGaitPosXs[leg] - (mPtrCtrlState->c3dTravelLen.x/mTLDivFactor);
+        mGaitPosYs[leg] = 0;
+        mGaitPosZs[leg] = mGaitPosZs[leg] - (mPtrCtrlState->c3dTravelLen.z/mTLDivFactor);
+        mGaitRotYs[leg] = mGaitRotYs[leg] - (mPtrCtrlState->c3dTravelLen.y/mTLDivFactor);
     }
 
     //Advance to the next step
     if (leg == 5)  {  //The last leg in this step
-        GaitStep++;
-        if (GaitStep > StepsInGait)
-            GaitStep = 1;
+        mGaitStep++;
+        if (mGaitStep > mStepsInGait)
+            mGaitStep = 1;
     }
 }
 
@@ -840,7 +830,7 @@ void PhoenixCore::calcBalOneLeg (u8 leg, long posX, long posZ, long posY)
     //Calculating totals from center of the body to the feet
     CPR_Z = (s16)pgm_read_word(&TBL_OFFSET_Z[leg]) + posZ;
     CPR_X = (s16)pgm_read_word(&TBL_OFFSET_X[leg]) + posX;
-    CPR_Y = 150 + posY;        // using the value 150 to lower the centerpoint of rotation 'mControlState.c3dBodyPos.y +
+    CPR_Y = 150 + posY;        // using the value 150 to lower the centerpoint of rotation 'mPtrCtrlState->c3dBodyPos.y +
 
     mTotalTransY += (long)posY;
     mTotalTransZ += (long)CPR_Z;
@@ -860,9 +850,9 @@ void PhoenixCore::calcBalOneLeg (u8 leg, long posX, long posZ, long posY)
 //[balanceBody]
 void PhoenixCore::balanceBody(void)
 {
-    mTotalTransZ = mTotalTransZ/BALANCE_DIV_FACTOR ;
-    mTotalTransX = mTotalTransX/BALANCE_DIV_FACTOR;
-    mTotalTransY = mTotalTransY/BALANCE_DIV_FACTOR;
+    mTotalTransZ = mTotalTransZ / BALANCE_DIV_FACTOR ;
+    mTotalTransX = mTotalTransX / BALANCE_DIV_FACTOR;
+    mTotalTransY = mTotalTransY / BALANCE_DIV_FACTOR;
 
     if (mTotalYBal1 > 0)        //Rotate balance circle by +/- 180 deg
         mTotalYBal1 -=  1800;
@@ -876,9 +866,9 @@ void PhoenixCore::balanceBody(void)
         mTotalXBal1 += 3600;
 
     //Balance rotation
-    mTotalYBal1 = -mTotalYBal1/BALANCE_DIV_FACTOR;
-    mTotalXBal1 = -mTotalXBal1/BALANCE_DIV_FACTOR;
-    mTotalZBal1 = mTotalZBal1/BALANCE_DIV_FACTOR;
+    mTotalYBal1 = -mTotalYBal1 / BALANCE_DIV_FACTOR;
+    mTotalXBal1 = -mTotalXBal1 / BALANCE_DIV_FACTOR;
+    mTotalZBal1 =  mTotalZBal1 / BALANCE_DIV_FACTOR;
 }
 
 //--------------------------------------------------------------------
@@ -909,22 +899,22 @@ void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY,
     s16            CPR_Z;          //Final Z value for centerpoint of rotation
 
     //Calculating totals from center of the body to the feet
-    CPR_X = (s16)pgm_read_word(&TBL_OFFSET_X[leg])+posX + mControlState.c3dBodyRotOff.x;
-    CPR_Y = posY + mControlState.c3dBodyRotOff.y;         //Define centerpoint for rotation along the Y-axis
-    CPR_Z = (s16)pgm_read_word(&TBL_OFFSET_Z[leg]) + posZ + mControlState.c3dBodyRotOff.z;
+    CPR_X = (s16)pgm_read_word(&TBL_OFFSET_X[leg])+posX + mPtrCtrlState->c3dBodyRotOff.x;
+    CPR_Y = posY + mPtrCtrlState->c3dBodyRotOff.y;         //Define centerpoint for rotation along the Y-axis
+    CPR_Z = (s16)pgm_read_word(&TBL_OFFSET_Z[leg]) + posZ + mPtrCtrlState->c3dBodyRotOff.z;
 
     //Successive global rotation matrix:
     //Math shorts for rotation: Alfa [A] = Xrotate, Beta [B] = Zrotate, Gamma [G] = Yrotate
     //Sinus Alfa = SinA, cosinus Alfa = cosA. and so on...
 
     //First calculate sinus and cosinus for each rotation:
-    sincos(mControlState.c3dBodyRot.x+mTotalXBal1, &sinG4, &cosG4);
-    sincos(mControlState.c3dBodyRot.z+mTotalZBal1, &sinB4, &cosB4);
+    sincos(mPtrCtrlState->c3dBodyRot.x+mTotalXBal1, &sinG4, &cosG4);
+    sincos(mPtrCtrlState->c3dBodyRot.z+mTotalZBal1, &sinB4, &cosB4);
 
     if (mBoolUpsideDown)
-        sincos(-mControlState.c3dBodyRot.y + (-RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
+        sincos(-mPtrCtrlState->c3dBodyRot.y + (-RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
     else
-        sincos(mControlState.c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
+        sincos(mPtrCtrlState->c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
 
     //Calcualtion of rotation matrix:
     *x = ((long)CPR_X*DEC_EXP_2 - ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 - (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4
@@ -945,9 +935,9 @@ void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY,
 //IKSolution            - Output true if the solution is possible
 //IKSolutionWarning     - Output true if the solution is NEARLY possible
 //IKSolutionError    - Output true if the solution is NOT possible
-//mFemurAngle           - Output Angle of Femur in degrees
-//mTibiaAngle           - Output Angle of Tibia in degrees
-//mCoxaAngle            - Output Angle of Coxa in degrees
+//mFemurAngles           - Output Angle of Femur in degrees
+//mTibiaAngles           - Output Angle of Tibia in degrees
+//mCoxaAngles            - Output Angle of Coxa in degrees
 //--------------------------------------------------------------------
 u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 {
@@ -970,14 +960,16 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
     long            Temp1;
     long            Temp2;
     long            T3;
-    s16             sin4;
-    s16             cos4;
     long            hyp2XY;
     u8              ret;
+#if (CONFIG_DOF_PER_LEG == 4)    
+    s16             sin4;
+    s16             cos4;
+#endif
 
     //Calculate IKCoxaAngle and IKFeetPosXZ
     s16 atan4 = arctan2 (IKFeetPosX, IKFeetPosZ, &hyp2XY);
-    mCoxaAngle[leg] = (((long)atan4*180) / 3141) + (s16)pgm_read_word(&TBL_COXA_ANGLE[leg]);
+    mCoxaAngles[leg] = (((long)atan4*180) / 3141) + (s16)pgm_read_word(&TBL_COXA_ANGLE[leg]);
 
     //Length between the Coxa and tars [foot]
     IKFeetPosXZ = hyp2XY / DEC_EXP_2;
@@ -1031,9 +1023,9 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 
     //IKFemurAngle
     if (mBoolUpsideDown)
-        mFemurAngle[leg] = (long)(IKA14 + IKA24) * 180 / 3141 - 900 + OFFSET_FEMUR_HORN(leg);//Inverted, up side down
+        mFemurAngles[leg] = (long)(IKA14 + IKA24) * 180 / 3141 - 900 + OFFSET_FEMUR_HORN(leg);//Inverted, up side down
     else
-        mFemurAngle[leg] = -(long)(IKA14 + IKA24) * 180 / 3141 + 900 + OFFSET_FEMUR_HORN(leg);//Normal
+        mFemurAngles[leg] = -(long)(IKA14 + IKA24) * 180 / 3141 + 900 + OFFSET_FEMUR_HORN(leg);//Normal
 
     //IKTibiaAngle
     Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) + ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])))*DEC_EXP_4 - ((long)IKSW2*IKSW2));
@@ -1042,21 +1034,21 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 
 #ifdef OPT_WALK_UPSIDE_DOWN
     if (mBoolUpsideDown)
-        mTibiaAngle[leg] = (1800-(long)angleRad4*180/3141);//Full range tibia, wrong side (up side down)
+        mTibiaAngles[leg] = (1800-(long)angleRad4*180/3141);//Full range tibia, wrong side (up side down)
     else
-        mTibiaAngle[leg] = -(1800-(long)angleRad4*180/3141);//Full range tibia, right side (up side up)
+        mTibiaAngles[leg] = -(1800-(long)angleRad4*180/3141);//Full range tibia, right side (up side up)
 #else
 #ifdef PHANTOMX_V2     // BugBug:: cleaner way?
-    mTibiaAngle[leg] = -(1450-(long)angleRad4*180/3141); //!!!!!!!!!!!!145 instead of 1800
+    mTibiaAngles[leg] = -(1450-(long)angleRad4*180/3141); //!!!!!!!!!!!!145 instead of 1800
 #else
-    mTibiaAngle[leg] = -(900-(long)angleRad4*180/3141);
+    mTibiaAngles[leg] = -(900-(long)angleRad4*180/3141);
 #endif
 #endif
 
 #if (CONFIG_DOF_PER_LEG == 4)
     //Tars angle
     if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[leg])) {    // We allow mix of 3 and 4 DOF legs...
-        mTarsAngle[leg] = (TarsToGroundAngle1 + mFemurAngle[leg] - mTibiaAngle[leg])
+        mTarsAngles[leg] = (TarsToGroundAngle1 + mFemurAngles[leg] - mTibiaAngles[leg])
         + OFFSET_TARS_HORN(leg);
     }
 #endif
@@ -1080,16 +1072,16 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 //--------------------------------------------------------------------
 void PhoenixCore::validateAngles(void)
 {
-    for (u8 i = 0; i < 6; i++) {
-        mCoxaAngle[i]  = min(max(mCoxaAngle[i], (s16)pgm_read_word(&TBL_COXA_MIN[i])),
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+        mCoxaAngles[i]  = min(max(mCoxaAngles[i], (s16)pgm_read_word(&TBL_COXA_MIN[i])),
             (s16)pgm_read_word(&TBL_COXA_MAX[i]));
-        mFemurAngle[i] = min(max(mFemurAngle[i], (s16)pgm_read_word(&TBL_FEMUR_MIN[i])),
+        mFemurAngles[i] = min(max(mFemurAngles[i], (s16)pgm_read_word(&TBL_FEMUR_MIN[i])),
             (s16)pgm_read_word(&TBL_FEMUR_MAX[i]));
-        mTibiaAngle[i] = min(max(mTibiaAngle[i], (s16)pgm_read_word(&TBL_TIBIA_MIN[i])),
+        mTibiaAngles[i] = min(max(mTibiaAngles[i], (s16)pgm_read_word(&TBL_TIBIA_MIN[i])),
             (s16)pgm_read_word(&TBL_TIBIA_MAX[i]));
 #if (CONFIG_DOF_PER_LEG == 4)
         if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[i])) {    // We allow mix of 3 and 4 DOF legs...
-            mTarsAngle[i] = min(max(mTarsAngle[i], (s16)pgm_read_word(&TBL_TARS_MIN[i])),
+            mTarsAngles[i] = min(max(mTarsAngles[i], (s16)pgm_read_word(&TBL_TARS_MIN[i])),
                 (s16)pgm_read_word(&TBL_TARS_MAX[i]));
         }
 #endif
@@ -1130,13 +1122,13 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
 
     // Lets see which of our units we should use...
     // Note: We will also limit our body height here...
-    if (mControlState.c3dBodyPos.y > (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[CNT_HEX_INITS - 1]))
-        mControlState.c3dBodyPos.y =  (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[CNT_HEX_INITS - 1]);
+    if (mPtrCtrlState->c3dBodyPos.y > (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[CNT_HEX_INITS - 1]))
+        mPtrCtrlState->c3dBodyPos.y =  (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[CNT_HEX_INITS - 1]);
 
     u8    i;
     u16   XZLength1 = pgm_read_byte(&TBL_INIT_HEX_XZ[CNT_HEX_INITS - 1]);
     for (i = 0; i < (CNT_HEX_INITS-1); i++) {    // Don't need to look at last entry as we already init to assume this one...
-        if (mControlState.c3dBodyPos.y <= (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[i])) {
+        if (mPtrCtrlState->c3dBodyPos.y <= (s16)pgm_read_byte(&TBL_MAX_HEX_BODY_Y[i])) {
             XZLength1 = pgm_read_byte(&TBL_INIT_HEX_XZ[i]);
             break;
         }
@@ -1145,23 +1137,21 @@ void PhoenixCore::adjustLegPosToBodyHeight(void)
     if (i != oldLegInitIdx) {
         oldLegInitIdx = i;  // remember the current index...
         //now lets see what happens when we change the leg positions...
-        for (u8 i = 0; i < 6; i++) {
-            printf(F("leg:%d (%d, %d) -> "), i, mLegPosX[i], mLegPosZ[i]);
+        for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+            printf(F("leg:%d (%d, %d) -> "), i, mLegPosXs[i], mLegPosZs[i]);
             sincos((s16)pgm_read_word(&TBL_COXA_ANGLE[i]), &sin4, &cos4);
-            mLegPosX[i] = ((long)((long)cos4 * XZLength1))/DEC_EXP_4;  //Set start positions for each leg
-            mLegPosZ[i] = -((long)((long)sin4 * XZLength1))/DEC_EXP_4;
-            printf(F("(%d, %d)\n"), mLegPosX[i], mLegPosZ[i]);
+            mLegPosXs[i] = ((long)((long)cos4 * XZLength1))/DEC_EXP_4;  //Set start positions for each leg
+            mLegPosZs[i] = -((long)((long)sin4 * XZLength1))/DEC_EXP_4;
+            printf(F("(%d, %d)\n"), mLegPosXs[i], mLegPosZs[i]);
         }
         // Make sure we cycle through one gait to have the legs all move into their new locations...
-        mControlState.bForceGaitStepCnt = StepsInGait;
+        mPtrCtrlState->bForcemGaitStepCnt = mStepsInGait;
     }
 #endif // CNT_HEX_INITS
 
 }
 
 #ifdef CONFIG_TERMINAL
-extern void handleEEPROM(u8 *pszCmdLine);
-
 //==============================================================================
 // showTerminal - Simple background task checks to see if the user is asking
 //    us to do anything, like update debug levels ore the like.
@@ -1183,12 +1173,12 @@ bool PhoenixCore::showTerminal(void)
         mBoolShowDbgPrompt = false;
     }
 
-    ich = DBG_SERIAL.available();
+    ich = CONFIG_DBG_SERIAL.available();
     if (ich == 0)
         return false;
 
     for (ich = 0; ich < sizeof(szCmdLine) - 1; ich++) {
-        ch = DBG_SERIAL.read();
+        ch = CONFIG_DBG_SERIAL.read();
         if ((ch == -1) || ((ch >= 10) && (ch <= 15)))
             break;
         szCmdLine[ich] = ch;

@@ -22,7 +22,7 @@
 // Bit vector from bit position
 #define BV(bit) (1 << (bit))
 
-#ifdef __DEBUG_PRINTF__
+#ifdef CONFIG_DBG_SERIAL
     void printf(char *fmt, ... );
     void printf(const __FlashStringHelper *fmt, ... );
 #else

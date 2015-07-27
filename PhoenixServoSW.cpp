@@ -109,13 +109,13 @@ u16 PhoenixServoSW::getBattVolt(void) {
 }
 
 bool PhoenixServoSW::checkVoltage(void) {
-#if 0 //def VOLT_TURN_OFF
+#if 0 //def CONFIG_VOLT_OFF
     u16     volt;
     bool    on = TRUE;
 
     volt = getBattVolt();
     printf(F("VOLT:%d\n"), volt);
-    if ((volt < VOLT_TURN_OFF) || (volt >= 1999)) {
+    if ((volt < CONFIG_VOLT_OFF) || (volt >= 1999)) {
         if (mVoltWarnBeepCnt < 5) {
             mVoltWarnBeepCnt++;
         } else {

@@ -19,9 +19,10 @@
 #include "config.h"
 #include "utils.h"
 #include "PhoenixInput.h"
-#include "SerialProtocol.h"
 
-class PhoenixInputMSP : public PhoenixInput
+#define MAX_PACKET_SIZE 32
+
+class PhoenixInputBTCon : public PhoenixInput
 {
 private:
     // stick
@@ -29,10 +30,43 @@ private:
     u8        mLY;
     u8        mRX;
     u8        mRY;
-    SerialProtocol  mMSP;
-public:
+    u8        mButtons;
+    u8        mOldButtons;
 
-    PhoenixInputMSP(void);
+    typedef enum
+    {
+        STATE_IDLE,
+        STATE_HEADER_START,
+        STATE_HEADER_M,
+        STATE_HEADER_ARROW,
+        STATE_HEADER_SIZE,
+        STATE_HEADER_CMD
+    } STATE_T;
+    //
+
+    // variables
+    u8   mRxPacket[MAX_PACKET_SIZE];
+
+    u8   mState;
+    u8   mOffset;
+    u8   mDataSize;
+    u8   mCheckSum;
+    u8   mCmd;
+
+    u8   handleRX(void);
+    void sendResponse(bool ok, u8 cmd, u8 *data, u8 size);
+    void evalCommand(u8 cmd, u8 *data, u8 size);
+    
+public:
+    typedef enum {
+        MSP_SET_USER_BUTTON = 51,
+        MSP_IDENT  = 100,
+        MSP_STATUS = 101,
+        MSP_ANALOG = 110,
+        MSP_SET_RAW_RC = 200,
+    } MSP_T;
+
+    PhoenixInputBTCon(void);
 
     virtual void init(void);
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);

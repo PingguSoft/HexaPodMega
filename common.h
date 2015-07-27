@@ -42,6 +42,4 @@ typedef uint64_t u64;
 #define FALSE   0
 #endif
 
-#define __DEBUG_PRINTF__
-
 #endif

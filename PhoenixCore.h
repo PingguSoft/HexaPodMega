@@ -34,7 +34,7 @@ typedef struct {
 
 
 typedef struct {
-    bool        fHexOn;          // Switch to turn on Phoenix
+    bool        fHexOn;             // Switch to turn on Phoenix
     bool        fHexOnOld;
 
     //Body position
@@ -61,7 +61,7 @@ typedef struct {
     //[TIMING]
     u8	    	bInputTimeDelay;    // Delay that depends on the input to get the "sneaking" effect
     u16	        wSpeedControl;      // Adjustible Delay
-    u8          bForceGaitStepCnt;  // new to allow us to force a step even when not moving
+    u8          bForcemGaitStepCnt;  // new to allow us to force a step even when not moving
 } CTRL_STATE;
 
 class PhoenixCore
@@ -86,17 +86,17 @@ private:
     static bool mBoolUpsideDown;
 
     // ANGLES
-    s16         mCoxaAngle[CONFIG_NUM_LEGS];    //Actual Angle of the horizontal hip, decimals = 1
-    s16         mFemurAngle[CONFIG_NUM_LEGS];   //Actual Angle of the vertical hip, decimals = 1
-    s16         mTibiaAngle[CONFIG_NUM_LEGS];   //Actual Angle of the knee, decimals = 1
+    s16         mCoxaAngles[CONFIG_NUM_LEGS];    //Actual Angle of the horizontal hip, decimals = 1
+    s16         mFemurAngles[CONFIG_NUM_LEGS];   //Actual Angle of the vertical hip, decimals = 1
+    s16         mTibiaAngles[CONFIG_NUM_LEGS];   //Actual Angle of the knee, decimals = 1
 #if (CONFIG_DOF_PER_LEG == 4)
-    s16         mTarsAngle[CONFIG_NUM_LEGS];      //Actual Angle of the knee, decimals = 1
+    s16         mTarsAngles[CONFIG_NUM_LEGS];      //Actual Angle of the knee, decimals = 1
 #endif
 
     // POSITIONS SINGLE LEG CONTROL
-    s16         mLegPosX[CONFIG_NUM_LEGS];    //Actual X Posion of the Leg
-    s16         mLegPosY[CONFIG_NUM_LEGS];    //Actual Y Posion of the Leg
-    s16         mLegPosZ[CONFIG_NUM_LEGS];    //Actual Z Posion of the Leg
+    s16         mLegPosXs[CONFIG_NUM_LEGS];    //Actual X Posion of the Leg
+    s16         mLegPosYs[CONFIG_NUM_LEGS];    //Actual Y Posion of the Leg
+    s16         mLegPosZs[CONFIG_NUM_LEGS];    //Actual Z Posion of the Leg
 
     // OUTPUTS
     u8          mLedOutput;
@@ -117,29 +117,28 @@ private:
     s32         mTotalZBal1;
 
     //[gait]
-    s16		    NomGaitSpeed;        //Nominal speed of the gait
-    s16         TLDivFactor;         //Number of steps that a leg is on the floor while walking
-    s16         NrLiftedPos;         //Number of positions that a single leg is lifted [1-3]
-    u8          LiftDivFactor;       //Normaly: 2, when NrLiftedPos=5: 4
-    u8          FrontDownPos;        //Where the leg should be put down to ground
-    bool        HalfLiftHeigth;      //If TRUE the outer positions of the ligted legs will be half height
-    u8          StepsInGait;         //Number of steps in gait
-    u8          GaitStep;            //Actual doGait step
-    u8          GaitLegNr[CONFIG_NUM_LEGS];        //init position of the leg
+    s16		    mNormGaitSpeed;        //Nominal speed of the gait
+    s16         mTLDivFactor;         //Number of steps that a leg is on the floor while walking
+    s16         mNrLiftedPos;         //Number of positions that a single leg is lifted [1-3]
+    u8          mLiftDivFactor;       //Normaly: 2, when mNrLiftedPos=5: 4
+    u8          mFrontDownPos;        //Where the leg should be put down to ground
+    u8          mHalfLiftHeight;      //If TRUE the outer positions of the ligted legs will be half height
+    u8          mStepsInGait;         //Number of steps in gait
+    u8          mGaitStep;            //Actual doGait step
+    u8          mGaitLegInits[CONFIG_NUM_LEGS];        //init position of the leg
 
-    s32         lGaitPosX[CONFIG_NUM_LEGS];         //Array containing Relative X position corresponding to the Gait
-    s32         lGaitPosY[CONFIG_NUM_LEGS];         //Array containing Relative Y position corresponding to the Gait
-    s32         lGaitPosZ[CONFIG_NUM_LEGS];         //Array containing Relative Z position corresponding to the Gait
-    s32         lGaitRotY[CONFIG_NUM_LEGS];         //Array containing Relative Y rotation corresponding to the Gait
+    s32         mGaitPosXs[CONFIG_NUM_LEGS];         //Array containing Relative X position corresponding to the Gait
+    s32         mGaitPosYs[CONFIG_NUM_LEGS];         //Array containing Relative Y position corresponding to the Gait
+    s32         mGaitPosZs[CONFIG_NUM_LEGS];         //Array containing Relative Z position corresponding to the Gait
+    s32         mGaitRotYs[CONFIG_NUM_LEGS];         //Array containing Relative Y rotation corresponding to the Gait
 
-    u8          bExtraCycle;          // Forcing some extra timed cycles for avoiding "end of gait bug"
+    u8          mExtraCycle;          // Forcing some extra timed cycles for avoiding "end of gait bug"
 
     //[TIMING]
-    u32         lTimerStart;    //Start time of the calculation cycles
-    u32         lTimerEnd;        //End time of the calculation cycles
-    u8          CycleTime;        //Total Cycle time
+    u32         mTimerStart;    //Start time of the calculation cycles
 
     PhoenixServo  *mServo;
+    CTRL_STATE    *mPtrCtrlState;    
 
     void        updateServos(void);
     void        updateLEDs(void);
@@ -166,15 +165,13 @@ public:
         IDX_LM,
         IDX_LF
     };
-    CTRL_STATE  mControlState;
 
-    PhoenixCore(void);
+    PhoenixCore(CTRL_STATE *state);
 
     void        init(void);
     void        loop(void);
-    CTRL_STATE  *getCtrl(void) { return &mControlState; }
     void        initCtrl(void);
-    void        selectGait(void);
+    void        selectGait(u8 bGaitType);
     void        adjustLegPosToBodyHeight(void);
 };
 

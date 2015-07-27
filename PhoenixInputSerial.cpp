@@ -13,7 +13,7 @@ PhoenixInputSerial::PhoenixInputSerial(void)
 
 void PhoenixInputSerial::init(void)
 {
-    //BT_SERIAL.begin(CONFIG_BT_BAUD);
+    //CONFIG_CTRL_SERIAL.begin(CONFIG_BT_BAUD);
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 }
 
@@ -30,10 +30,10 @@ u32 PhoenixInputSerial::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     *rx = mRX;
     *ry = mRY;
 
-    if (BT_SERIAL.available() == 0)
+    if (CONFIG_CTRL_SERIAL.available() == 0)
         return 0;
 
-    cmd = BT_SERIAL.read();
+    cmd = CONFIG_CTRL_SERIAL.read();
     printf(F("cmd:%c\n"), cmd);
 
     switch(cmd) {

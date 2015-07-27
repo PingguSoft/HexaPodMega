@@ -19,7 +19,7 @@
 #include "common.h"
 #include "utils.h"
 
-#ifdef __DEBUG_PRINTF__
+#ifdef CONFIG_DBG_SERIAL
 void printf(char *fmt, ... )
 {
     char buf[128]; // resulting string limited to 128 chars
@@ -27,7 +27,7 @@ void printf(char *fmt, ... )
     va_start (args, fmt );
     vsnprintf(buf, 128, fmt, args);
     va_end (args);
-    DBG_SERIAL.print(buf);
+    CONFIG_DBG_SERIAL.print(buf);
 }
 
 void printf(const __FlashStringHelper *fmt, ... )
@@ -41,7 +41,7 @@ void printf(const __FlashStringHelper *fmt, ... )
     vsnprintf(buf, sizeof(buf), (const char *)fmt, args); // for the rest of the world
 #endif
     va_end(args);
-    DBG_SERIAL.print(buf);
+    CONFIG_DBG_SERIAL.print(buf);
 }
 #endif
 
@@ -51,7 +51,6 @@ void printf(const __FlashStringHelper *fmt, ... )
 //            to a speaker for some simple sounds.
 //==============================================================================
 #ifdef PIN_SOUND
-
 void Utils::makeSound(unsigned long duration,  unsigned int frequency)
 {
     volatile uint8_t *pin_port;
