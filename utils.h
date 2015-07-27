@@ -17,7 +17,7 @@
 #define _UTILS_H_
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#include "Common.h"
+#include "config.h"
 
 // Bit vector from bit position
 #define BV(bit) (1 << (bit))

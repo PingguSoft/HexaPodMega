@@ -135,3 +135,8 @@ u32 PhoenixInputSerial::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     return 0;
 }
 
+u8 PhoenixInputSerial::getBodyHeight(void)
+{
+    return 0;
+}
+

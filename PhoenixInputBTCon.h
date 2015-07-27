@@ -56,13 +56,14 @@ private:
     u8   handleRX(void);
     void sendResponse(bool ok, u8 cmd, u8 *data, u8 size);
     void evalCommand(u8 cmd, u8 *data, u8 size);
-    
+
 public:
     typedef enum {
         MSP_SET_USER_BUTTON = 51,
         MSP_IDENT  = 100,
         MSP_STATUS = 101,
         MSP_ANALOG = 110,
+        MSP_MISC   = 114,
         MSP_SET_RAW_RC = 200,
     } MSP_T;
 
@@ -70,6 +71,7 @@ public:
 
     virtual void init(void);
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);
+    virtual u8   getBodyHeight(void);
 };
 
 #endif

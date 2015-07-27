@@ -10,6 +10,7 @@ PhoenixInputBTCon::PhoenixInputBTCon(void)
     mRX = 128;
     mRY = 128;
     mState = STATE_IDLE;
+    mOldButtons = 0;
 }
 
 void PhoenixInputBTCon::init(void)
@@ -43,8 +44,8 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
 {
     static  u8 batt = 0;
     static u16 wmCycleTime = 0;
-    
-    u8  buf[12];
+
+    u8  buf[22];
     u16 *rc;
 
     memset(&buf, 0, sizeof(buf));
@@ -65,13 +66,30 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             sendResponse(true, cmd, buf, 7);
             break;
 
+        case MSP_MISC:
+            rc = (u16*)buf;
+            rc[2] = 2000;
+            rc[3] = 1000;
+            rc[4] = 1000;
+            buf[18] = 100;
+            buf[19] = 110;
+            buf[20] = 105;
+            buf[21] = 100;
+            sendResponse(true, cmd, buf, 22);
+            break;
+
         case MSP_SET_RAW_RC:
             rc = (u16*)data;
-            
-            mLX = min(255, (*rc++ - 1000) * 10 / 39);   // 1000 -> 255 range, roll
-            mLY = min(255, (*rc++ - 1000) * 10 / 39);   // 1000 -> 255 range, pitch
-            mRX = min(255, (*rc++ - 1000) * 10 / 39);   // 1000 -> 255 range, yaw
-            mRY = min(255, (*rc++ - 1000) * 10 / 39);   // 1000 -> 255 range, throttle
+
+            mLX = min(255, (*rc - 1000) * 10 / 39);   // 1000 -> 255 range, roll
+            rc++;
+            mLY = min(255, (*rc - 1000) * 10 / 39);   // 1000 -> 255 range, pitch
+            mLY = 255 - mLY;
+            rc++;
+            mRX = min(255, (*rc - 1000) * 10 / 39);   // 1000 -> 255 range, yaw
+            rc++;
+            mRY = min(255, (*rc - 1000) * 10 / 39);   // 1000 -> 255 range, throttle
+            rc++;
 
             mButtons &= 0xf0;
             for (u8 i = 0; i < 4; i++) {                // AUX1 - AUX4
@@ -82,7 +100,8 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             break;
 
         case MSP_SET_USER_BUTTON:
-            mButtons &= 0xf0;
+            printf(F("SW:%d\n"), *data);
+            mButtons &= 0x0f;
             mButtons |= (*data << 4);                   // SW BUTTON 5 - 8
             sendResponse(true, cmd, buf, 0);
             break;
@@ -157,29 +176,38 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     *lx = mLX;
     *ly = mLY;
     *rx = mRX;
-    *ry = mRY;
+    *ry = 0;
 
     cmd = handleRX();
     if (cmd == 0)
         return 0;
 
-    printf(F("cmd:%d\n"), cmd);
+//    printf(F("cmd:%d\n"), cmd);
 
     switch(cmd) {
         case MSP_SET_USER_BUTTON:
             diff = mButtons ^ mOldButtons;
+            printf(F("Button Toggle1:%02x => %02x [%02x]\n"), mOldButtons, mButtons, diff);
             mOldButtons = mButtons;
             return diff;
-            
+
         case MSP_SET_RAW_RC:
             *lx = mLX;
             *ly = mLY;
             *rx = mRX;
-            *ry = mRY;
+            *ry = 0;
             diff = mButtons ^ mOldButtons;
+            if (diff)
+                printf(F("Button Toggle2:%02x => %02x [%02x]\n"), mOldButtons, mButtons, diff);
             mOldButtons = mButtons;
             return INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG | diff;
     }
     return 0;
 }
 
+
+u8 PhoenixInputBTCon::getBodyHeight(void)
+{
+    u16 temp = MAX_BODY_Y * mRY / 255;
+    return (INPUT_HEIGHT_SUPPORTED | min(127, temp));
+}

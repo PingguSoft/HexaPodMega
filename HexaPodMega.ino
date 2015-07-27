@@ -91,8 +91,11 @@ void loop()
 
 	dwButton = input->get(&lx, &ly, &rx, &ry);
 
-    if (BUTTON_PRESSED(dwButton, INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG))
-        printf(F("LX:%3d, LY:%3d, RX:%3d, RY:%3d\n"), lx, ly, rx, ry);
+//    if (BUTTON_PRESSED(dwButton, INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG))
+//        printf(F("LX:%3d, LY:%3d, RX:%3d, RY:%3d\n"), lx, ly, rx, ry);
+
+    if (!dwButton)
+        goto loop_exit;
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_ON_OFF)) {
     	if (ctrlState.fHexOn) {
@@ -114,6 +117,12 @@ void loop()
 
     if (!ctrlState.fHexOn)
         goto loop_exit;
+
+    // Switch between Walk method 1 && Walk method 2
+    if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_WALK)) { // R3 Button Test
+        Utils::sound(1, 50, 2000);
+        mBoolWalk = !mBoolWalk;
+    }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_SHIFT)) {
         Utils::sound( 1, 50, 2000);
@@ -174,20 +183,26 @@ void loop()
         fAdjustLegPositions = TRUE;
     }
 
-    if (BUTTON_PRESSED(dwButton, INPUT_BODY_UP)) {
-        mBodyYOffset += 10;
+    if (input->getBodyHeight() & INPUT_HEIGHT_SUPPORTED) {
+        mBodyYOffset = input->getBodyHeight() & INPUT_HEIGHT_MASK;
         if (mBodyYOffset > MAX_BODY_Y)
-            mBodyYOffset = MAX_BODY_Y;
+                mBodyYOffset = MAX_BODY_Y;
         fAdjustLegPositions = TRUE;
-    }
+    } else {
+        if (BUTTON_PRESSED(dwButton, INPUT_BODY_UP)) {
+            mBodyYOffset += 10;
+            if (mBodyYOffset > MAX_BODY_Y)
+                mBodyYOffset = MAX_BODY_Y;
+            fAdjustLegPositions = TRUE;
+        }
 
-    if (BUTTON_PRESSED(dwButton, INPUT_BODY_DOWN) && mBodyYOffset) {
-        if (mBodyYOffset > 10)
-            mBodyYOffset -= 10;
-        else
-            mBodyYOffset = 0;      // constrain don't go less than zero.
-
-        fAdjustLegPositions = TRUE;
+        if (BUTTON_PRESSED(dwButton, INPUT_BODY_DOWN) && mBodyYOffset) {
+            if (mBodyYOffset > 10)
+                mBodyYOffset -= 10;
+            else
+                mBodyYOffset = 0;      // constrain don't go less than zero.
+            fAdjustLegPositions = TRUE;
+        }
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_SPEED_UP)) {
@@ -238,12 +253,6 @@ void loop()
             mBoolDblTravel = !mBoolDblTravel;
         }
 
-        // Switch between Walk method 1 && Walk method 2
-        if (BUTTON_PRESSED(dwButton, INPUT_OPT_R3)) { // R3 Button Test
-            Utils::sound(1, 50, 2000);
-            mBoolWalk = !mBoolWalk;
-        }
-
         //Walking
         if (mBoolWalk)  //(Walk Methode)
             ctrlState.c3dTravelLen.z = (ry - 128); //Right Stick Up/Down
@@ -251,11 +260,12 @@ void loop()
             ctrlState.c3dTravelLen.x = -(lx - 128);
             ctrlState.c3dTravelLen.z = (ly - 128);
         }
-
+/*
         if (!mBoolDblTravel) {  //(Double travel length)
             ctrlState.c3dTravelLen.x = ctrlState.c3dTravelLen.x/2;
             ctrlState.c3dTravelLen.z = ctrlState.c3dTravelLen.z/2;
         }
+*/
         ctrlState.c3dTravelLen.y = -(rx - 128)/4; //Right Stick Left/Right
     }
 

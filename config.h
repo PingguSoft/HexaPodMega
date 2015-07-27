@@ -31,7 +31,7 @@
 #define CONFIG_CTRL_SERIAL  Serial3
 
 #ifdef CONFIG_DBG_SERIAL
-//    #define CONFIG_TERMINAL
+    #define CONFIG_TERMINAL
 #endif
 
 #define CONFIG_BT_BAUD         115200
