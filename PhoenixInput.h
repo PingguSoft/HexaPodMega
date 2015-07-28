@@ -25,19 +25,17 @@
 #define INPUT_TOGGLE_ROTATE         0x00008
 #define INPUT_TOGGLE_SINGLE_LEG     0x00010
 #define INPUT_TOGGLE_BALANCE        0x00020
-#define INPUT_TOGGLE_BODY_HEIGHT    0x00040
-#define INPUT_OPT_R1                0x00080
-#define INPUT_OPT_R2                0x00100
-#define INPUT_OPT_R3                0x00200
-#define INPUT_OPT_L1                0x00400
-#define INPUT_OPT_L2                0x00800
-#define INPUT_OPT_SEL               0x01000
-#define INPUT_BODY_UP               0x02000
-#define INPUT_BODY_DOWN             0x04000
-#define INPUT_SPEED_UP              0x08000
-#define INPUT_SPEED_DOWN            0x10000
-#define INPUT_LEFT_ANALOG           0x20000
-#define INPUT_RIGHT_ANALOG          0x40000
+#define INPUT_SPEED_DOWN            0x00040
+#define INPUT_SPEED_UP              0x00080
+
+#define INPUT_OPT_SEL               0x00100
+#define INPUT_OPT_R2                0x00200
+#define INPUT_OPT_R1                0x00400
+#define INPUT_BODY_UP               0x01000
+#define INPUT_BODY_DOWN             0x02000
+#define INPUT_TOGGLE_BODY_HEIGHT    0x04000
+#define INPUT_LEFT_ANALOG           0x10000
+#define INPUT_RIGHT_ANALOG          0x20000
 
 #define INPUT_HEIGHT_SUPPORTED      0x80
 #define INPUT_HEIGHT_MASK           0x7f

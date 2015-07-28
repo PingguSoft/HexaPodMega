@@ -91,7 +91,7 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             mRY = min(255, (*rc - 1000) * 10 / 39);   // 1000 -> 255 range, throttle
             rc++;
 
-            mButtons &= 0xf0;
+            mButtons &= 0xfff0;
             for (u8 i = 0; i < 4; i++) {                // AUX1 - AUX4
                 if (*rc++ > 1700) {
                     mButtons |= (1 << i);
@@ -101,8 +101,8 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
 
         case MSP_SET_USER_BUTTON:
             printf(F("SW:%d\n"), *data);
-            mButtons &= 0x0f;
-            mButtons |= (*data << 4);                   // SW BUTTON 5 - 8
+            mButtons &= 0x000f;
+            mButtons |= (*data << 4);                   // SW BUTTON 5 - 10
             sendResponse(true, cmd, buf, 0);
             break;
     }
@@ -171,23 +171,21 @@ u8 PhoenixInputBTCon::handleRX(void)
 u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
 {
     u8  cmd;
-    u8  diff;
+    u16 diff;
 
     *lx = mLX;
     *ly = mLY;
     *rx = mRX;
-    *ry = 0;
+    *ry = 128;
 
     cmd = handleRX();
     if (cmd == 0)
         return 0;
 
-//    printf(F("cmd:%d\n"), cmd);
-
     switch(cmd) {
         case MSP_SET_USER_BUTTON:
             diff = mButtons ^ mOldButtons;
-            printf(F("Button Toggle1:%02x => %02x [%02x]\n"), mOldButtons, mButtons, diff);
+            printf(F("Button Toggle1:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
             mOldButtons = mButtons;
             return diff;
 
@@ -195,10 +193,10 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
             *lx = mLX;
             *ly = mLY;
             *rx = mRX;
-            *ry = 0;
+            *ry = 128;
             diff = mButtons ^ mOldButtons;
             if (diff)
-                printf(F("Button Toggle2:%02x => %02x [%02x]\n"), mOldButtons, mButtons, diff);
+                printf(F("Button Toggle2:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
             mOldButtons = mButtons;
             return INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG | diff;
     }

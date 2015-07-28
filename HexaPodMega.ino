@@ -301,10 +301,9 @@ void loop()
     }
     ctrlState.bInputTimeDelay = 128 - max( max(abs(lx - 128), abs(ly - 128)),
                                              abs(rx - 128));
-
-loop_exit:
     ctrlState.c3dBodyPos.y = min(max(mBodyYOffset + mBodyYShift,  0), MAX_BODY_Y);
 
+loop_exit:
     if (fAdjustLegPositions)
         core->adjustLegPosToBodyHeight();    // Put main workings into main program file
 

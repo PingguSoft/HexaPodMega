@@ -30,8 +30,8 @@ private:
     u8        mLY;
     u8        mRX;
     u8        mRY;
-    u8        mButtons;
-    u8        mOldButtons;
+    u16       mButtons;
+    u16       mOldButtons;
 
     typedef enum
     {
