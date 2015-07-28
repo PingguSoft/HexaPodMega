@@ -27,7 +27,7 @@ private:
 public:
     virtual void init(void);
     virtual void start(void);
-    virtual void commit(word wMoveTime);
+    virtual void commit(u16 wMoveTime);
     virtual void release(void);
 #if (CONFIG_DOF_PER_LEG == 4)
     virtual void write(u8 LegIndex, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1, s16 sTarsAngle1);

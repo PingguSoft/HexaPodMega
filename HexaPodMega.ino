@@ -223,18 +223,23 @@ void loop()
     //[Walk functions]
     if (mModeControl == MODE_WALK) {
         //Switch gates
-        if (BUTTON_PRESSED(dwButton, INPUT_OPT_SEL) &&
-          abs(ctrlState.c3dTravelLen.x) < CONFIG_TRAVEL_DEAD_ZONE &&
-          abs(ctrlState.c3dTravelLen.z) < CONFIG_TRAVEL_DEAD_ZONE &&
-          abs(ctrlState.c3dTravelLen.y*2) < CONFIG_TRAVEL_DEAD_ZONE) {
-            ctrlState.bGaitType = ctrlState.bGaitType + 1;    // Go to the next gait...
-            if (ctrlState.bGaitType < CONFIG_NUM_GAITS) {            // Make sure we did not exceed number of gaits...
-                Utils::sound( 1, 50, 2000);
+        if (BUTTON_PRESSED(dwButton, INPUT_OPT_SEL)) {
+            printf(F("x:%d, y:%d, z:%d\n"), ctrlState.c3dTravelLen.x, ctrlState.c3dTravelLen.y, ctrlState.c3dTravelLen.z);
+            if (abs(ctrlState.c3dTravelLen.x) < CONFIG_TRAVEL_DEAD_ZONE &&
+                abs(ctrlState.c3dTravelLen.z) < CONFIG_TRAVEL_DEAD_ZONE &&
+                abs(ctrlState.c3dTravelLen.y*2) < CONFIG_TRAVEL_DEAD_ZONE) {
+                ctrlState.bGaitType = ctrlState.bGaitType + 1;    // Go to the next gait...
+                if (ctrlState.bGaitType < CONFIG_NUM_GAITS) {            // Make sure we did not exceed number of gaits...
+                    Utils::sound( 1, 50, 2000);
+                } else {
+                    Utils::sound(2, 50, 2000, 50, 2250);
+                    ctrlState.bGaitType = 0;
+                }
+                core->selectGait(ctrlState.bGaitType);
+                printf(F("GAIT:%d\n"), ctrlState.bGaitType);
             } else {
-                Utils::sound(2, 50, 2000, 50, 2250);
-                ctrlState.bGaitType = 0;
+                printf(F("GAIT can not be changed:%d\n"), ctrlState.bGaitType);
             }
-            core->selectGait(ctrlState.bGaitType);
         }
 
         // Double leg lift height
