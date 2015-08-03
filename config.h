@@ -28,14 +28,19 @@
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
 #define CONFIG_DBG_SERIAL   Serial
+#define CONFIG_DEBUG_BAUD   115200
+
 #define CONFIG_CTRL_SERIAL  Serial3
+#define CONFIG_CTRL_BAUD    115200
+
+#define CONFIG_CTRL_TYPE_SERIAL 0
+#define CONFIG_CTRL_TYPE_BTCON  1
+#define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
 
 #ifdef CONFIG_DBG_SERIAL
     #define CONFIG_TERMINAL
 #endif
-
-#define CONFIG_BT_BAUD         115200
-#define CONFIG_DEBUG_BAUD      115200
 
 #define CONFIG_VOLT_R1  30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
 #define CONFIG_VOLT_R2  10  // VD Resistor 2

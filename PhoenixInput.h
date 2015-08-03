@@ -20,17 +20,16 @@
 #include "utils.h"
 
 #define INPUT_TOGGLE_ON_OFF         0x00001
-#define INPUT_TOGGLE_WALK           0x00002
-#define INPUT_TOGGLE_SHIFT          0x00004
-#define INPUT_TOGGLE_ROTATE         0x00008
-#define INPUT_TOGGLE_SINGLE_LEG     0x00010
-#define INPUT_TOGGLE_BALANCE        0x00020
-#define INPUT_SPEED_DOWN            0x00040
-#define INPUT_SPEED_UP              0x00080
-
-#define INPUT_OPT_SEL               0x00100
-#define INPUT_OPT_R2                0x00200
-#define INPUT_OPT_R1                0x00400
+#define INPUT_TOGGLE_SHIFT          0x00002
+#define INPUT_TOGGLE_ROTATE         0x00004
+#define INPUT_TOGGLE_SINGLE_LEG     0x00008
+#define INPUT_TOGGLE_BALANCE        0x00010
+#define INPUT_SPEED_DOWN            0x00020
+#define INPUT_SPEED_UP              0x00040
+#define INPUT_OPT_SEL               0x00080
+#define INPUT_OPT_R2                0x00100
+#define INPUT_OPT_R1                0x00200
+#define INPUT_TOGGLE_WALK           0x00400
 #define INPUT_BODY_UP               0x01000
 #define INPUT_BODY_DOWN             0x02000
 #define INPUT_TOGGLE_BODY_HEIGHT    0x04000
@@ -44,9 +43,11 @@ class PhoenixInput
 {
 private:
 
+protected:
+    u8  (*mCallback)(u8 cmd, u8 *data, u8 size, u8 *res);
 
 public:
-    virtual void init(void);
+    virtual void init(u8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);
     virtual u8   getBodyHeight(void);
 };

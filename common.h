@@ -17,7 +17,10 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#if ARDUINO > 99
 #include <Arduino.h>
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
@@ -25,9 +28,11 @@
 typedef int8_t   s8;
 typedef int16_t  s16;
 typedef int32_t  s32;
+#ifndef __USBAPI__
 typedef uint8_t  u8;
-//typedef uint16_t u16;
+typedef uint16_t u16;
 typedef uint32_t u32;
+#endif
 typedef uint64_t u64;
 
 #ifndef NULL

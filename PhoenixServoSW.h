@@ -24,15 +24,14 @@
 class PhoenixServoSW : public PhoenixServo
 {
 private:
-    ServoEx         mServoLegs[6 * CONFIG_DOF_PER_LEG];        // Define the servo objects...
-    s16             mServoOffsets[6 * CONFIG_DOF_PER_LEG];
+    ServoEx         mServoLegs[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];        // Define the servo objects...
+    s16             mServoOffsets[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     ServoGroupMove  mSGM;
     bool            mBoolServosAttached;
 
     u16             mVoltBuf[8];
     u16             mVoltSum;
     u8              mVoltIdx;
-    u8              mVoltWarnBeepCnt;
 
     void loadServosConfig(void);
     void attachServos(void);
@@ -52,10 +51,7 @@ public:
 #else
     virtual void write(u8 LegIndex, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1);
 #endif
-
     virtual u16  getBattVolt(void);
-    virtual bool checkVoltage(void);
-    virtual void processBackground(void);
 
 #ifdef CONFIG_TERMINAL
     virtual void showTerminal(void);

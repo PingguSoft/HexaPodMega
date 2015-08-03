@@ -36,8 +36,6 @@ public:
 #endif
 
     virtual u16  getBattVolt(void);
-    virtual bool checkVoltage(void);
-    virtual void processBackground(void);
 
 #ifdef CONFIG_TERMINAL
     virtual void showTerminal(void);

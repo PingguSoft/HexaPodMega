@@ -43,11 +43,11 @@
    writeMicroseconds() - Sets the servo pulse width in microseconds
    read()      - Gets the last written servo pulse width as an angle between 0 and 180.
    readMicroseconds()   - Gets the last written servo pulse width in microseconds. (was read_us() in first release)
-   attached()  - Returns true if there is a servo attached.
+   attached()  - Returns TRUE if there is a servo attached.
    detach()    - Stops an attached servos from pulsing its i/o pin.
 
    New methods:
-	moving      - Returns true if the servo is still moving to it's new location.
+	moving      - Returns TRUE if the servo is still moving to it's new location.
     move	     - Move the one servo to a new location...
 
 	New Class ServoGroupMove - used to start a new group move.  There is one instance of this class
@@ -104,7 +104,7 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
     *TCNTn = 0; // channel set to -1 indicated that refresh interval completed so reset the timer
   else{
 	pservo = &SERVO(timer,Channel[timer]);
-    if( SERVO_INDEX(timer,Channel[timer]) < ServoCount && pservo->Pin.isActive == true )  {
+    if( SERVO_INDEX(timer,Channel[timer]) < ServoCount && pservo->Pin.isActive == TRUE )  {
       digitalWrite( pservo->Pin.nbr,LOW); // pulse this channel low if activated
       // See if we are in a timed move, if so update the move for the next time through...
       if (pservo->ticksDelta > 0) {
@@ -128,7 +128,7 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
   if( SERVO_INDEX(timer,Channel[timer]) < ServoCount && Channel[timer] < SERVOS_PER_TIMER) {
 	pservo = &SERVO(timer,Channel[timer]);
     *OCRnA = *TCNTn + pservo->ticks;
-    if(pservo->Pin.isActive == true)     // check if activated
+    if(pservo->Pin.isActive == TRUE)     // check if activated
       digitalWrite( pservo->Pin.nbr,HIGH); // its an active channel so pulse it high
 
   }
@@ -276,12 +276,12 @@ static void finISR(timer16_Sequence_t timer)
 
 static bool isTimerActive(timer16_Sequence_t timer)
 {
-  // returns true if any servo is active on this timer
+  // returns TRUE if any servo is active on this timer
   for(uint8_t channel=0; channel < SERVOS_PER_TIMER; channel++) {
-    if(SERVO(timer,channel).Pin.isActive == true)
-      return true;
+    if(SERVO(timer,channel).Pin.isActive == TRUE)
+      return TRUE;
   }
-  return false;
+  return FALSE;
 }
 
 
@@ -312,18 +312,18 @@ uint8_t ServoEx::attach(int pin, int min, int max)
     this->max  = (MAX_PULSE_WIDTH - max)/4;
     // initialize the timer if it has not already been initialized
     timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
-    if(isTimerActive(timer) == false)
+    if(isTimerActive(timer) == FALSE)
       initISR(timer);
-    servos[this->servoIndex].Pin.isActive = true;  // this must be set after the check for isTimerActive
+    servos[this->servoIndex].Pin.isActive = TRUE;  // this must be set after the check for isTimerActive
   }
   return this->servoIndex ;
 }
 
 void ServoEx::detach()
 {
-  servos[this->servoIndex].Pin.isActive = false;
+  servos[this->servoIndex].Pin.isActive = FALSE;
   timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
-  if(isTimerActive(timer) == false) {
+  if(isTimerActive(timer) == FALSE) {
     finISR(timer);
   }
 }

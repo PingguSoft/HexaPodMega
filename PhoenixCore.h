@@ -138,11 +138,14 @@ private:
     u32         mTimerStart;    //Start time of the calculation cycles
 
     PhoenixServo  *mServo;
-    CTRL_STATE    *mPtrCtrlState;    
+    CTRL_STATE    *mPtrCtrlState;
+
+    
+    u8            mVoltWarnBeepCnt;
 
     void        updateServos(void);
     void        updateLEDs(void);
-    bool        checkVoltage(void);
+    bool        isBattVoltGood(void);
     bool        ctrlSingleLeg(void);
     void        doGaitSeq(void);
     void        doGait(u8 leg, bool fTravelReq);
@@ -173,6 +176,7 @@ public:
     void        initCtrl(void);
     void        selectGait(u8 bGaitType);
     void        adjustLegPosToBodyHeight(void);
+    u16         getBattLevel(void) { return (mServo ? mServo->getBattVolt() : 0); }
 };
 
 #endif

@@ -76,7 +76,7 @@ void Utils::makeSound(unsigned long duration,  unsigned int frequency)
         // delay a half cycle
         delayMicroseconds(lusDelayPerHalfCycle);
     }
-  *pin_port &= ~(pin_mask);  // keep pin low after stop
+    *pin_port &= ~(pin_mask);  // keep pin low after stop
 }
 
 void Utils::sound(u8 notes, ...)

@@ -42,11 +42,11 @@
    writeMicroseconds() - Sets the servo pulse width in microseconds
    read()      - Gets the last written servo pulse width as an angle between 0 and 180.
    readMicroseconds()   - Gets the last written servo pulse width in microseconds. (was read_us() in first release)
-   attached()  - Returns true if there is a servo attached.
+   attached()  - Returns TRUE if there is a servo attached.
    detach()    - Stops an attached servos from pulsing its i/o pin.
 
    New methods:
-	moving      - Returns true if the servo is still moving to it's new location.
+	moving      - Returns TRUE if the servo is still moving to it's new location.
     move	     - Move the one servo to a new location...
 
 	New Class ServoGroupMove - used to start a new group move.  There is one instance of this class
@@ -120,7 +120,7 @@ typedef enum { _timer1, _Nbr_16timers } timer16_Sequence_t ;
 
 typedef struct  {
   uint8_t nbr        :6 ;             // a pin number from 0 to 63
-  uint8_t isActive   :1 ;             // true if this channel is enabled, pin not pulsed if false
+  uint8_t isActive   :1 ;             // TRUE if this channel is enabled, pin not pulsed if FALSE
 } ServoPin_t   ;
 
 typedef struct {
@@ -142,8 +142,8 @@ public:
   void writeMicroseconds(int value); // Write pulse width in microseconds
   int read();                        // returns current pulse width as an angle between 0 and 180 degrees
   int readMicroseconds();            // returns current pulse width in microseconds for this servo (was read_us() in first release)
-  bool attached();                   // return true if this servo is attached, otherwise false
-  bool moving();                     // return true if the servo is still moving
+  bool attached();                   // return TRUE if this servo is attached, otherwise FALSE
+  bool moving();                     // return TRUE if the servo is still moving
   void move(int value, unsigned int MoveTime); // A one servo group move...
 private:
    uint8_t servoIndex;               // index into the channel data for this servo

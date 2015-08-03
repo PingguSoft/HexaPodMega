@@ -369,7 +369,11 @@ void PhoenixCore::loop(void)
         }
     }
 
-    checkVoltage();
+    if (!isBattVoltGood()) {
+        initCtrl();
+        Utils::sound( 1, 45, 2000);
+    }
+
     updateLEDs();
 
     if (mBoolUpsideDown){
@@ -394,13 +398,13 @@ void PhoenixCore::loop(void)
     mTotalZBal1  = 0;
 
     if (mPtrCtrlState->fBalanceMode) {
-        for (u8 i = 0; i < 3; i++) {    // balance calculations for all Right legs
+        for (u8 i = 0; i < CONFIG_NUM_LEGS / 2; i++) {    // balance calculations for all Right legs
             calcBalOneLeg(i, -mLegPosXs[i]+mGaitPosXs[i],
                           mLegPosZs[i]+mGaitPosZs[i],
                           (mLegPosYs[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+mGaitPosYs[i]);
         }
 
-        for (u8 i = 3; i < 6; i++) {    // balance calculations for all Right legs
+        for (u8 i = CONFIG_NUM_LEGS / 2; i < CONFIG_NUM_LEGS; i++) {    // balance calculations for all Right legs
             calcBalOneLeg(i, mLegPosXs[i]+mGaitPosXs[i],
                           mLegPosZs[i]+mGaitPosZs[i],
                           (mLegPosYs[i]-(s16)pgm_read_word(&TBL_INT_POS_Y[i]))+mGaitPosYs[i]);
@@ -409,7 +413,7 @@ void PhoenixCore::loop(void)
     }
 
     //Do IK for all Right legs
-    for (u8 i = 0; i < 3; i++) {
+    for (u8 i = 0; i < CONFIG_NUM_LEGS / 2; i++) {
         getBodyIK(i,
                   -mLegPosXs[i]+mPtrCtrlState->c3dBodyPos.x+mGaitPosXs[i] - mTotalTransX,
                   mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z+mGaitPosZs[i] - mTotalTransZ,
@@ -423,7 +427,7 @@ void PhoenixCore::loop(void)
     }
 
     //Do IK for all Left legs
-    for (u8 i = 3; i < CONFIG_NUM_LEGS; i++) {
+    for (u8 i = CONFIG_NUM_LEGS / 2; i < CONFIG_NUM_LEGS; i++) {
         getBodyIK(i,
                   mLegPosXs[i]-mPtrCtrlState->c3dBodyPos.x+mGaitPosXs[i] - mTotalTransX,
                   mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z+mGaitPosZs[i] - mTotalTransZ,
@@ -448,14 +452,16 @@ void PhoenixCore::loop(void)
     //Drive Servos
     if (mPtrCtrlState->fHexOn) {
         //Calculate Servo Move time
-        if ((abs(mPtrCtrlState->c3dTravelLen.x)>CONFIG_TRAVEL_DEAD_ZONE) || (abs(mPtrCtrlState->c3dTravelLen.z)>CONFIG_TRAVEL_DEAD_ZONE) ||
-            (abs(mPtrCtrlState->c3dTravelLen.y*2)>CONFIG_TRAVEL_DEAD_ZONE)) {
-            mCurServoMoveTime = mNormGaitSpeed + (mPtrCtrlState->bInputTimeDelay*2) + mPtrCtrlState->wSpeedControl;
+        if ((abs(mPtrCtrlState->c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) || 
+            (abs(mPtrCtrlState->c3dTravelLen.z) > CONFIG_TRAVEL_DEAD_ZONE) ||
+            (abs(mPtrCtrlState->c3dTravelLen.y * 2) > CONFIG_TRAVEL_DEAD_ZONE)) {
+            mCurServoMoveTime = mNormGaitSpeed + (mPtrCtrlState->bInputTimeDelay * 2) + mPtrCtrlState->wSpeedControl;
             //Add aditional delay when Balance mode is on
             if (mPtrCtrlState->fBalanceMode)
                 mCurServoMoveTime = mCurServoMoveTime + 100;
-        } else //Movement speed excl. Walking
+        } else { //Movement speed excl. Walking
             mCurServoMoveTime = 200 + mPtrCtrlState->wSpeedControl;
+        }
 
         // note we broke up the servo driver into start/commit that way we can output all of the servo information
         // before we wait and only have the termination information to output after the wait.  That way we hopefully
@@ -510,7 +516,6 @@ void PhoenixCore::loop(void)
 #endif
         delay(20);
     }
-    mPtrCtrlState->fHexOnOld = mPtrCtrlState->fHexOn;
     mOldServoMoveTime = mCurServoMoveTime;
 }
 
@@ -538,14 +543,28 @@ void PhoenixCore::updateLEDs(void)
 #endif
 }
 
-bool PhoenixCore::checkVoltage(void) {
-    if (!mServo->checkVoltage()) {
-        printf(F("volt went low, turn off robot !!!\n"));
-        initCtrl();
-        Utils::sound( 1, 45, 2000);
-        return FALSE;
+bool PhoenixCore::isBattVoltGood(void) {
+    u16     volt;
+    bool    on = TRUE;
+
+#if 0
+    volt = mServo->getBattVolt();
+    printf(F("VOLT:%d\n"), volt);
+
+    if ((volt < CONFIG_VOLT_OFF) || (volt >= 1999)) {
+        if (mVoltWarnBeepCnt < 5) {
+            printf(F("volt went low :%d\n"), volt);
+            mVoltWarnBeepCnt++;
+            Utils::sound( 1, 20, 2000);
+        } else {
+            printf(F("volt went low, turn off robot !!!\n"));
+            on = FALSE;
+            mVoltWarnBeepCnt = 0;
+        }
     }
-    return TRUE;
+#endif
+
+    return on;
 }
 
 bool PhoenixCore::ctrlSingleLeg(void)
@@ -932,9 +951,9 @@ void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY,
 //IKFeetPosX            - Input position of the Feet X
 //IKFeetPosY            - Input position of the Feet Y
 //IKFeetPosZ            - Input Position of the Feet Z
-//IKSolution            - Output true if the solution is possible
-//IKSolutionWarning     - Output true if the solution is NEARLY possible
-//IKSolutionError    - Output true if the solution is NOT possible
+//IKSolution            - Output TRUE if the solution is possible
+//IKSolutionWarning     - Output TRUE if the solution is NEARLY possible
+//IKSolutionError    - Output TRUE if the solution is NOT possible
 //mFemurAngles           - Output Angle of Femur in degrees
 //mTibiaAngles           - Output Angle of Tibia in degrees
 //mCoxaAngles            - Output Angle of Coxa in degrees
@@ -1048,8 +1067,8 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 #if (CONFIG_DOF_PER_LEG == 4)
     //Tars angle
     if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[leg])) {    // We allow mix of 3 and 4 DOF legs...
-        mTarsAngles[leg] = (TarsToGroundAngle1 + mFemurAngles[leg] - mTibiaAngles[leg])
-        + OFFSET_TARS_HORN(leg);
+        mTarsAngles[leg] = (TarsToGroundAngle1 + mFemurAngles[leg] - mTibiaAngles[leg]) + 
+                           OFFSET_TARS_HORN(leg);
     }
 #endif
 
@@ -1170,12 +1189,12 @@ bool PhoenixCore::showTerminal(void)
 
         // Let the Servo driver show it's own set of commands...
         mServo->showTerminal();
-        mBoolShowDbgPrompt = false;
+        mBoolShowDbgPrompt = FALSE;
     }
 
     ich = CONFIG_DBG_SERIAL.available();
     if (ich == 0)
-        return false;
+        return FALSE;
 
     for (ich = 0; ich < sizeof(szCmdLine) - 1; ich++) {
         ch = CONFIG_DBG_SERIAL.read();
@@ -1187,7 +1206,7 @@ bool PhoenixCore::showTerminal(void)
     printf(F("Serial Cmd Line:%s !!\n"), szCmdLine);
 
     if (ich == 0) {
-        mBoolShowDbgPrompt = true;
+        mBoolShowDbgPrompt = TRUE;
     } else {
         switch(szCmdLine[0]) {
             case 'd':
@@ -1205,11 +1224,16 @@ bool PhoenixCore::showTerminal(void)
                 break;
 
             default:
-                mServo->handleTerminal(szCmdLine, ich);
+                if (!isBattVoltGood()) {
+                    initCtrl();
+                    Utils::sound( 1, 45, 2000);
+                } else {
+                    mServo->handleTerminal(szCmdLine, ich);
+                }
                 break;
         }
     }
-    return true;
+    return TRUE;
 }
 
 //--------------------------------------------------------------------

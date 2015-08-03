@@ -1,5 +1,3 @@
-
-
 //=============================================================================
 //Project Lynxmotion Phoenix
 //Description: Phoenix software
@@ -13,18 +11,10 @@
 // and is specifically configured for the Lynxmotion BotBoarduino
 //
 //=============================================================================
-//
-//KNOWN BUGS:
-//    - Lots ;)
-//
-//=============================================================================
-// Header Files
-//=============================================================================
 
 #define DEFINE_HEX_GLOBALS
-#if ARDUINO>99
+#if ARDUINO > 99
 #include <Arduino.h>
-#else
 #endif
 #include <Wire.h>
 #include <EEPROM.h>
@@ -54,7 +44,27 @@ s16       mBodyYShift;
 u8        mModeControl;
 bool      mBoolDoubleHeight;
 bool      mBoolDblTravel;
-bool      mBoolWalk;
+bool      mBoolWalkMode2;
+
+
+#if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
+u8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
+{
+    u8 ret = 0;
+
+    switch (cmd) {
+        case PhoenixInputBTCon::MSP_ANALOG:
+            if (core) {
+                u16 *ptr = (u16*)res;
+                
+                *ptr = core->getBattLevel();
+                ret = 7;
+            }
+            break;
+    }
+    return ret;
+}
+#endif
 
 void setup()
 {
@@ -65,18 +75,24 @@ void setup()
     mModeControl      = MODE_WALK;
     mBoolDoubleHeight = FALSE;
     mBoolDblTravel    = FALSE;
-    mBoolWalk         = FALSE;
+    mBoolWalkMode2    = FALSE;
 
 #ifdef CONFIG_DBG_SERIAL
     CONFIG_DBG_SERIAL.begin(CONFIG_DEBUG_BAUD);
 #endif
 
-    core  = new PhoenixCore(&ctrlState);
-    //input = new PhoenixInputSerial();
+#if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_SERIAL)
+    input = new PhoenixInputSerial();
+	input->init(NULL);
+#elif (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
     input = new PhoenixInputBTCon();
+	input->init(inputCallback);
+#else
+    #error No Controller !!
+#endif
 
+    core  = new PhoenixCore(&ctrlState);
 	core->init();
-	input->init();
 
     printf(F("FREE RAM : %d\n"), freeRam());
 }
@@ -102,17 +118,16 @@ void loop()
             mBodyYOffset = 0;
             mBodyYShift  = 0;
             core->initCtrl();
-            fAdjustLegPositions = TRUE;
             printf(F("OFF\n"));
             Utils::sound(3, 100, 2500, 80, 2250, 60, 2000);
             digitalWrite(PIN_STATUS_LED, 0);
         } else {
             ctrlState.fHexOn = TRUE;
-        	fAdjustLegPositions = TRUE;
             printf(F("ON\n"));
             Utils::sound(3, 60, 2000, 80, 2250, 100, 2500);
             digitalWrite(PIN_STATUS_LED, 1);
         }
+        fAdjustLegPositions = TRUE;
     }
 
     if (!ctrlState.fHexOn)
@@ -121,7 +136,7 @@ void loop()
     // Switch between Walk method 1 && Walk method 2
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_WALK)) { // R3 Button Test
         Utils::sound(1, 50, 2000);
-        mBoolWalk = !mBoolWalk;
+        mBoolWalkMode2 = !mBoolWalkMode2;
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_SHIFT)) {
@@ -152,7 +167,7 @@ void loop()
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_SINGLE_LEG)) {
         if (abs(ctrlState.c3dTravelLen.x) < CONFIG_TRAVEL_DEAD_ZONE && abs(ctrlState.c3dTravelLen.z) < CONFIG_TRAVEL_DEAD_ZONE &&
-            abs(ctrlState.c3dTravelLen.y*2) < CONFIG_TRAVEL_DEAD_ZONE )   {
+            abs(ctrlState.c3dTravelLen.y * 2) < CONFIG_TRAVEL_DEAD_ZONE )   {
             if (mModeControl != MODE_SINGLE_LEG) {
                 mModeControl = MODE_SINGLE_LEG;
             if (ctrlState.bSingleLegCurSel == 255)
@@ -171,12 +186,12 @@ void loop()
         if (ctrlState.fBalanceMode) {
             Utils::sound(1, 250, 1500);
         } else {
-            Utils::sound( 2, 100, 2000, 50, 4000);
+            Utils::sound(2, 100, 2000, 50, 4000);
         }
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_BODY_HEIGHT)) {
-        if (mBodyYOffset>0)
+        if (mBodyYOffset > 0)
             mBodyYOffset = 0;
         else
             mBodyYOffset = 35;
@@ -200,7 +215,7 @@ void loop()
             if (mBodyYOffset > 10)
                 mBodyYOffset -= 10;
             else
-                mBodyYOffset = 0;      // constrain don't go less than zero.
+                mBodyYOffset = 0;
             fAdjustLegPositions = TRUE;
         }
     }
@@ -220,9 +235,8 @@ void loop()
     }
 
 
-    //[Walk functions]
     if (mModeControl == MODE_WALK) {
-        //Switch gates
+        //Switch gaits
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_SEL)) {
             printf(F("x:%d, y:%d, z:%d\n"), ctrlState.c3dTravelLen.x, ctrlState.c3dTravelLen.y, ctrlState.c3dTravelLen.z);
             if (abs(ctrlState.c3dTravelLen.x) < CONFIG_TRAVEL_DEAD_ZONE &&
@@ -258,19 +272,18 @@ void loop()
             mBoolDblTravel = !mBoolDblTravel;
         }
 
-        //Walking
-        if (mBoolWalk)  //(Walk Methode)
+        if (mBoolWalkMode2)
             ctrlState.c3dTravelLen.z = (ry - 128); //Right Stick Up/Down
         else {
             ctrlState.c3dTravelLen.x = -(lx - 128);
             ctrlState.c3dTravelLen.z = (ly - 128);
         }
-/*
-        if (!mBoolDblTravel) {  //(Double travel length)
-            ctrlState.c3dTravelLen.x = ctrlState.c3dTravelLen.x/2;
-            ctrlState.c3dTravelLen.z = ctrlState.c3dTravelLen.z/2;
+
+        if (!mBoolDblTravel) {
+            ctrlState.c3dTravelLen.x = ctrlState.c3dTravelLen.x / 2;
+            ctrlState.c3dTravelLen.z = ctrlState.c3dTravelLen.z / 2;
         }
-*/
+
         ctrlState.c3dTravelLen.y = -(rx - 128)/4; //Right Stick Left/Right
     }
 
@@ -313,6 +326,8 @@ loop_exit:
         core->adjustLegPosToBodyHeight();    // Put main workings into main program file
 
     core->loop();
+
+    ctrlState.fHexOnOld = ctrlState.fHexOn;
 }
 
 int freeRam() {

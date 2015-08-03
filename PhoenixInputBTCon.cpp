@@ -13,12 +13,12 @@ PhoenixInputBTCon::PhoenixInputBTCon(void)
     mOldButtons = 0;
 }
 
-void PhoenixInputBTCon::init(void)
+void PhoenixInputBTCon::init(u8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
 {
     printf(F("%s\n"), __PRETTY_FUNCTION__);
-    CONFIG_CTRL_SERIAL.begin(CONFIG_BT_BAUD);
+    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+    mCallback = callback;
 }
-
 
 static u8 chkSumTX;
 void putChar2TX(u8 data)
@@ -53,17 +53,12 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
         case MSP_IDENT:
             buf[0] = 240;
             buf[1] = 3;
-            sendResponse(true, cmd, buf, 7);
+            sendResponse(TRUE, cmd, buf, 7);
             break;
 
         case MSP_STATUS:
             *((u16*)&buf[0]) = wmCycleTime++;
-            sendResponse(true, cmd, buf, 11);
-            break;
-
-        case MSP_ANALOG:
-            buf[0] = batt++;
-            sendResponse(true, cmd, buf, 7);
+            sendResponse(TRUE, cmd, buf, 11);
             break;
 
         case MSP_MISC:
@@ -75,7 +70,7 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             buf[19] = 110;
             buf[20] = 105;
             buf[21] = 100;
-            sendResponse(true, cmd, buf, 22);
+            sendResponse(TRUE, cmd, buf, 22);
             break;
 
         case MSP_SET_RAW_RC:
@@ -103,7 +98,14 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             printf(F("SW:%d\n"), *data);
             mButtons &= 0x000f;
             mButtons |= (*data << 4);                   // SW BUTTON 5 - 10
-            sendResponse(true, cmd, buf, 0);
+            sendResponse(TRUE, cmd, buf, 0);
+            break;
+
+        default:
+            if (mCallback) {
+                u8 ret = (*mCallback)(cmd, data, size, buf);
+                sendResponse(TRUE, cmd, buf, ret);
+            }
             break;
     }
 }
@@ -182,7 +184,7 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     if (cmd == 0)
         return 0;
 
-    switch(cmd) {
+    switch (cmd) {
         case MSP_SET_USER_BUTTON:
             diff = mButtons ^ mOldButtons;
             printf(F("Button Toggle1:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);

@@ -69,7 +69,7 @@ public:
 
     PhoenixInputBTCon(void);
 
-    virtual void init(void);
+    virtual void init(u8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);
     virtual u8   getBodyHeight(void);
 };
