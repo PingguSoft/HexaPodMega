@@ -95,7 +95,7 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
             break;
 
         case MSP_SET_USER_BUTTON:
-            printf(F("SW:%d\n"), *data);
+            printf(F("SW:%02x\n"), *data);
             mButtons &= 0x000f;
             mButtons |= (*data << 4);                   // SW BUTTON 5 - 10
             sendResponse(TRUE, cmd, buf, 0);
@@ -104,7 +104,8 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
         default:
             if (mCallback) {
                 u8 ret = (*mCallback)(cmd, data, size, buf);
-                sendResponse(TRUE, cmd, buf, ret);
+                if (ret > 0)
+                    sendResponse(TRUE, cmd, buf, ret);
             }
             break;
     }
@@ -159,10 +160,10 @@ u8 PhoenixInputBTCon::handleRX(void)
                 } else {
                     if (mCheckSum == ch) {
                         ret = mCmd;
-                        evalCommand(mCmd, mRxPacket, mDataSize);
+                        evalCommand(ret, mRxPacket, mDataSize);
                     }
                     mState = STATE_IDLE;
-                    rxSize = 0;             // no more than one command per cycle
+                    //rxSize = 0;             // no more than one command per cycle
                 }
                 break;
         }
@@ -173,36 +174,28 @@ u8 PhoenixInputBTCon::handleRX(void)
 u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
 {
     u8  cmd;
-    u16 diff;
+    u32 diff = 0;
+
+    cmd = handleRX();
+    if (cmd == 0)
+        return diff;
 
     *lx = mLX;
     *ly = mLY;
     *rx = mRX;
     *ry = 128;
 
-    cmd = handleRX();
-    if (cmd == 0)
-        return 0;
-
     switch (cmd) {
-        case MSP_SET_USER_BUTTON:
-            diff = mButtons ^ mOldButtons;
-            printf(F("Button Toggle1:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
-            mOldButtons = mButtons;
-            return diff;
-
         case MSP_SET_RAW_RC:
-            *lx = mLX;
-            *ly = mLY;
-            *rx = mRX;
-            *ry = 128;
-            diff = mButtons ^ mOldButtons;
-            if (diff)
-                printf(F("Button Toggle2:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
+            diff = INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG;
+        case MSP_SET_USER_BUTTON:
+            diff |= (mButtons ^ mOldButtons);
+            if (diff & INPUT_BUTTON_MASK)
+                printf(F("BUTTON:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
             mOldButtons = mButtons;
-            return INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG | diff;
+            break;
     }
-    return 0;
+    return diff;
 }
 
 

@@ -35,6 +35,7 @@
 #define INPUT_TOGGLE_BODY_HEIGHT    0x04000
 #define INPUT_LEFT_ANALOG           0x10000
 #define INPUT_RIGHT_ANALOG          0x20000
+#define INPUT_BUTTON_MASK           0x0ffff
 
 #define INPUT_HEIGHT_SUPPORTED      0x80
 #define INPUT_HEIGHT_MASK           0x7f
