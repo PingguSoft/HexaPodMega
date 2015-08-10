@@ -56,7 +56,7 @@ u8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
         case PhoenixInputBTCon::MSP_ANALOG:
             if (core) {
                 u16 *ptr = (u16*)res;
-                
+
                 *ptr = core->getBattLevel();
                 ret = 7;
             }
