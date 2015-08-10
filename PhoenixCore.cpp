@@ -10,19 +10,11 @@
 // This version of the Phoenix code was ported over to the Arduino Environement
 // and is specifically configured for the Lynxmotion BotBoarduino
 //
-// Phoenix_Code.h
-//
-//     This contains the main code for the Phoenix project.  It is included in
-//     all of the different configurations of the phoenix code.
-//
-//NEW IN V2.X
-//=============================================================================
-//
-//KNOWN BUGS:
-//    - Lots ;)
-//
-//=============================================================================
-// Header Files
+// Date : 12-07-2015
+// Programmer : PingguSoft (pinggusoft@gmail.com)
+//              Code rework for smartphone control and readability
+//              Android App : BTCon4Drone
+//               https://play.google.com/store/apps/details?id=com.pinggusoft.btcon
 //=============================================================================
 
 #if ARDUINO>99
@@ -452,7 +444,7 @@ void PhoenixCore::loop(void)
     //Drive Servos
     if (mPtrCtrlState->fHexOn) {
         //Calculate Servo Move time
-        if ((abs(mPtrCtrlState->c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) || 
+        if ((abs(mPtrCtrlState->c3dTravelLen.x) > CONFIG_TRAVEL_DEAD_ZONE) ||
             (abs(mPtrCtrlState->c3dTravelLen.z) > CONFIG_TRAVEL_DEAD_ZONE) ||
             (abs(mPtrCtrlState->c3dTravelLen.y * 2) > CONFIG_TRAVEL_DEAD_ZONE)) {
             mCurServoMoveTime = mNormGaitSpeed + (mPtrCtrlState->bInputTimeDelay * 2) + mPtrCtrlState->wSpeedControl;
@@ -981,7 +973,7 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
     long            T3;
     long            hyp2XY;
     u8              ret;
-#if (CONFIG_DOF_PER_LEG == 4)    
+#if (CONFIG_DOF_PER_LEG == 4)
     s16             sin4;
     s16             cos4;
 #endif
@@ -1067,7 +1059,7 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 #if (CONFIG_DOF_PER_LEG == 4)
     //Tars angle
     if ((u8)pgm_read_byte(&TBL_TARS_LENGTH[leg])) {    // We allow mix of 3 and 4 DOF legs...
-        mTarsAngles[leg] = (TarsToGroundAngle1 + mFemurAngles[leg] - mTibiaAngles[leg]) + 
+        mTarsAngles[leg] = (TarsToGroundAngle1 + mFemurAngles[leg] - mTibiaAngles[leg]) +
                            OFFSET_TARS_HORN(leg);
     }
 #endif

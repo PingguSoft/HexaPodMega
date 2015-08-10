@@ -4,8 +4,6 @@
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- This program is derived from deviationTx project for Arduino.
-
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -140,7 +138,6 @@ private:
     PhoenixServo  *mServo;
     CTRL_STATE    *mPtrCtrlState;
 
-    
     u8            mVoltWarnBeepCnt;
 
     void        updateServos(void);

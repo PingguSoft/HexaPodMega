@@ -10,6 +10,11 @@
 // This version of the Phoenix code was ported over to the Arduino Environement
 // and is specifically configured for the Lynxmotion BotBoarduino
 //
+// Date : 12-07-2015
+// Programmer : PingguSoft (pinggusoft@gmail.com)
+//              Code rework for smartphone control and readability
+//              Android App : BTCon4Drone
+//               https://play.google.com/store/apps/details?id=com.pinggusoft.btcon
 //=============================================================================
 
 #define DEFINE_HEX_GLOBALS
