@@ -44,10 +44,10 @@ class PhoenixInput
 private:
 
 protected:
-    u8  (*mCallback)(u8 cmd, u8 *data, u8 size, u8 *res);
+    s8  (*mCallback)(u8 cmd, u8 *data, u8 size, u8 *res);
 
 public:
-    virtual void init(u8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
+    virtual void init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);
     virtual u8   getBodyHeight(void);
 };

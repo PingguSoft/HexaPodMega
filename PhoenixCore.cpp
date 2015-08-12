@@ -319,6 +319,8 @@ void PhoenixCore::init(void)
 
     mServo->init();
     mLedOutput = 0;
+    mCurVolt = mServo->getBattVolt();
+    mTimerLastCheck = millis();
 
     //Tars init Positions
     for (u8 i = 0; i < CONFIG_NUM_LEGS; i++ ) {
@@ -361,9 +363,15 @@ void PhoenixCore::loop(void)
         }
     }
 
+    // every 500ms
+    if (mTimerStart - mTimerLastCheck > 500) {
+        mCurVolt = mServo->getBattVolt();
+        mTimerLastCheck = mTimerStart;
+    }
+
     if (!isBattVoltGood()) {
         initCtrl();
-        Utils::sound( 1, 45, 2000);
+        //Utils::sound( 1, 45, 2000);
     }
 
     updateLEDs();

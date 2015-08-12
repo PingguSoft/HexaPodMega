@@ -49,7 +49,7 @@ public:
 #else
     virtual void write(u8 LegIndex, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1);
 #endif
-    virtual u16  getBattVolt(void);
+    virtual u8   getBattVolt(void);
 
 #ifdef CONFIG_TERMINAL
     virtual void showTerminal(void);

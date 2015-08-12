@@ -134,11 +134,14 @@ private:
 
     //[TIMING]
     u32         mTimerStart;    //Start time of the calculation cycles
+    u32         mTimerLastCheck;
 
     PhoenixServo  *mServo;
     CTRL_STATE    *mPtrCtrlState;
 
-    u8            mVoltWarnBeepCnt;
+    u8          mCurVolt;
+    u8          mVoltWarnBeepCnt;
+
 
     void        updateServos(void);
     void        updateLEDs(void);
@@ -173,7 +176,7 @@ public:
     void        initCtrl(void);
     void        selectGait(u8 bGaitType);
     void        adjustLegPosToBodyHeight(void);
-    u16         getBattLevel(void) { return (mServo ? mServo->getBattVolt() : 0); }
+    u8          getBattLevel(u8 scale) { return ((u16)mCurVolt * 10) / scale + CONFIG_VBAT_OFFSET; }
 };
 
 #endif

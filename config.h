@@ -35,8 +35,8 @@
     #define CONFIG_TERMINAL
 #endif
 
-#define CONFIG_VOLT_R1  30  // VD Resistor 1 - reduced as only need ratio... 30K and 10K
-#define CONFIG_VOLT_R2  10  // VD Resistor 2
+#define CONFIG_VBAT_SCALE    14
+#define CONFIG_VBAT_OFFSET   -2   // 0.1v unit
 
 #define CONFIG_VOLT_OFF 470 // 4.7v
 #define CONFIG_VOLT_ON  550 // 5.5V - optional part to say if voltage goes back up, turn it back on...
@@ -48,7 +48,7 @@
 #define PIN_SOUND       37
 
 // Define Analog pin and minimum voltage that we will allow the servos to run
-#define PIN_ANALOG_VOLT 0       // Use our Analog pin jumper here...
+#define PIN_ANALOG_VOLT A0   //Use our Analog pin jumper here...
 
 #define PIN_RR_COXA      35  //Rear Right leg Hip Horizontal
 #define PIN_RR_FEMUR     36  //Rear Right leg Hip Vertical

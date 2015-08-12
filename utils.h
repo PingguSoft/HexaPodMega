@@ -20,19 +20,14 @@
 // Bit vector from bit position
 #define BV(bit) (1 << (bit))
 
-#ifdef CONFIG_DBG_SERIAL
-    void printf(char *fmt, ... );
-    void printf(const __FlashStringHelper *fmt, ... );
-#else
-    #define printf(...)
-#endif
+void printf(char *fmt, ... );
+void printf(const __FlashStringHelper *fmt, ... );
 
 class Utils {
 private:
-    static void makeSound(unsigned long duration,  unsigned int frequency);
-
 public:
-    static void sound(u8 notes, ...);
+    static void handleSound(void);
+    static void sound(u16 first,u16 second,u16 third,u16 cyclepause, u16 endpause);
     static void dumpEEPROM(u16 addr, u16 cnt);
     static u16  getCmdLineNum(byte **ppszCmdLine);
 };

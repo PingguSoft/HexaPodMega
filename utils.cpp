@@ -41,63 +41,77 @@ void printf(const __FlashStringHelper *fmt, ... )
     va_end(args);
     CONFIG_DBG_SERIAL.print(buf);
 }
-#endif
-
-
-//==============================================================================
-//    makeSound - Quick and dirty tone function to try to output a frequency
-//            to a speaker for some simple sounds.
-//==============================================================================
-#ifdef PIN_SOUND
-void Utils::makeSound(unsigned long duration,  unsigned int frequency)
-{
-    volatile uint8_t *pin_port;
-    volatile uint8_t pin_mask;
-
-    long toggle_count = 0;
-    long lusDelayPerHalfCycle;
-
-    // Set the pinMode as OUTPUT
-    pinMode(PIN_SOUND, OUTPUT);
-
-    pin_port = portOutputRegister(digitalPinToPort(PIN_SOUND));
-    pin_mask = digitalPinToBitMask(PIN_SOUND);
-
-    toggle_count = 2 * frequency * duration / 1000;
-    lusDelayPerHalfCycle = 1000000L/(frequency * 2);
-
-    // if we are using an 8 bit timer, scan through prescalars to find the best fit
-    while (toggle_count--) {
-        // toggle the pin
-        *pin_port ^= pin_mask;
-
-        // delay a half cycle
-        delayMicroseconds(lusDelayPerHalfCycle);
-    }
-    *pin_port &= ~(pin_mask);  // keep pin low after stop
-}
-
-void Utils::sound(u8 notes, ...)
-{
-    va_list ap;
-    unsigned int uDur;
-    unsigned int uFreq;
-    va_start(ap, notes);
-
-    while (notes > 0) {
-        uDur = va_arg(ap, unsigned int);
-        uFreq = va_arg(ap, unsigned int);
-        Utils::makeSound(uDur, uFreq);
-        notes--;
-    }
-    va_end(ap);
-}
 #else
-void Utils::sound(u8 cNotes, ...)
+void printf(char *fmt, ... )
 {
-};
+}
+void printf(const __FlashStringHelper *fmt, ... )
+{
+}
 #endif
 
+static bool mBoolSeqActive = FALSE;
+static bool mBoolCycleDone = FALSE;
+static bool mBoolOn = FALSE;
+static u16  mPatterns[5];
+static u8   mIdx = 0;
+static u32  mLastToggleTime = 0;
+
+void turnOff(void){
+    if (mBoolOn)
+        digitalWrite(PIN_SOUND, LOW);
+}
+
+void setTiming(u16 pulse, u16 pause){
+    if (!mBoolOn && (millis() >= (mLastToggleTime + pause))&& pulse != 0) {
+        mBoolOn = TRUE;
+        digitalWrite(PIN_SOUND, HIGH);
+        mLastToggleTime = millis();
+    } else if ( (mBoolOn && (millis() >= mLastToggleTime + pulse) ) || (pulse==0 && mBoolOn) ) {
+        mBoolOn = FALSE;
+        digitalWrite(PIN_SOUND, LOW);
+        mBoolCycleDone  = TRUE;
+        mLastToggleTime = millis();
+    }
+}
+
+void Utils::sound(u16 first,u16 second,u16 third,u16 cyclepause, u16 endpause)
+{
+    if(mBoolSeqActive == FALSE){
+        mBoolSeqActive = TRUE;
+        mPatterns[0] = first;
+        mPatterns[1] = second;
+        mPatterns[2] = third;
+        mPatterns[3] = endpause;
+        mPatterns[4] = cyclepause;
+    }
+
+    if (mIdx < 3 ){
+        if (mPatterns[mIdx] != 0){
+            setTiming(mPatterns[mIdx],mPatterns[4]);
+        }
+    } else if (mLastToggleTime < (millis()-mPatterns[3]))  {  //sequence is over: reset everything
+        mIdx=0;
+        mBoolSeqActive = 0;                               //sequence is now done, mBoolCycleDone sequence may begin
+        turnOff();
+        return;
+    }
+
+    if (mBoolCycleDone == 1 || mPatterns[mIdx] == 0) {            //single on off cycle is done
+        if (mIdx < 3) {
+            mIdx++;
+        }
+        mBoolCycleDone = 0;
+        turnOff();
+    }
+}
+
+void Utils::handleSound(void) {
+    if (mBoolSeqActive)
+        sound(0,0,0,0,0);
+    else
+        turnOff();
+}
 
 void Utils::dumpEEPROM(u16 addr, u16 cnt)
 {

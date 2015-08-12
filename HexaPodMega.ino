@@ -53,18 +53,23 @@ bool      mBoolWalkMode2;
 
 
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
-u8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
+u8 scale = 10;
+s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
 {
-    u8 ret = 0;
+    s8 ret = -1;
 
     switch (cmd) {
         case PhoenixInputBTCon::MSP_ANALOG:
             if (core) {
-                u16 *ptr = (u16*)res;
+                u8 *ptr = (u8*)res;
 
-                *ptr = core->getBattLevel();
+                *ptr = core->getBattLevel(scale);
                 ret = 7;
             }
+            break;
+
+        case PhoenixInputBTCon::MSP_SET_MISC:
+            scale = *(data + 18);
             break;
     }
     return ret;
@@ -73,6 +78,8 @@ u8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
 
 void setup()
 {
+    pinMode(PIN_SOUND, OUTPUT);
+
     mBodyYOffset = 0;
     mBodyYShift  = 0;
     mErrorCnt    = 0;
@@ -124,12 +131,12 @@ void loop()
             mBodyYShift  = 0;
             core->initCtrl();
             printf(F("OFF\n"));
-            Utils::sound(3, 100, 2500, 80, 2250, 60, 2000);
+            Utils::sound(400, 0, 0, 100, 300);
             digitalWrite(PIN_STATUS_LED, 0);
         } else {
             ctrlState.fHexOn = TRUE;
             printf(F("ON\n"));
-            Utils::sound(3, 60, 2000, 80, 2250, 100, 2500);
+            Utils::sound(200, 200, 0, 100, 300);
             digitalWrite(PIN_STATUS_LED, 1);
         }
         fAdjustLegPositions = TRUE;
@@ -140,12 +147,12 @@ void loop()
 
     // Switch between Walk method 1 && Walk method 2
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_WALK)) { // R3 Button Test
-        Utils::sound(1, 50, 2000);
+        Utils::sound(100, 100, 100, 50, 300);
         mBoolWalkMode2 = !mBoolWalkMode2;
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_SHIFT)) {
-        Utils::sound( 1, 50, 2000);
+        Utils::sound(100, 0, 0, 50, 300);
         if (mModeControl != MODE_TRANSLATE )
             mModeControl = MODE_TRANSLATE;
         else {
@@ -158,7 +165,7 @@ void loop()
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_ROTATE)) {
-        Utils::sound( 1, 50, 2000);
+        Utils::sound(300, 0, 0, 50, 300);
         if (mModeControl != MODE_ROTATE)
             mModeControl = MODE_ROTATE;
         else {
@@ -189,9 +196,9 @@ void loop()
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_BALANCE)) {
         ctrlState.fBalanceMode = !ctrlState.fBalanceMode;
         if (ctrlState.fBalanceMode) {
-            Utils::sound(1, 250, 1500);
+            Utils::sound(300, 0, 0, 50, 300);
         } else {
-            Utils::sound(2, 100, 2000, 50, 4000);
+            Utils::sound(300, 0, 0, 50, 300);
         }
     }
 
@@ -228,14 +235,14 @@ void loop()
     if (BUTTON_PRESSED(dwButton, INPUT_SPEED_UP)) {
         if (ctrlState.wSpeedControl > 0) {
             ctrlState.wSpeedControl = ctrlState.wSpeedControl - 50;
-            Utils::sound( 1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
         }
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_SPEED_DOWN)) {
         if (ctrlState.wSpeedControl < 2000 ) {
             ctrlState.wSpeedControl = ctrlState.wSpeedControl + 50;
-            Utils::sound( 1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
         }
     }
 
@@ -249,9 +256,9 @@ void loop()
                 abs(ctrlState.c3dTravelLen.y*2) < CONFIG_TRAVEL_DEAD_ZONE) {
                 ctrlState.bGaitType = ctrlState.bGaitType + 1;    // Go to the next gait...
                 if (ctrlState.bGaitType < CONFIG_NUM_GAITS) {            // Make sure we did not exceed number of gaits...
-                    Utils::sound( 1, 50, 2000);
+                    Utils::sound(300, 0, 0, 50, 300);
                 } else {
-                    Utils::sound(2, 50, 2000, 50, 2250);
+                    Utils::sound(300, 0, 0, 50, 300);
                     ctrlState.bGaitType = 0;
                 }
                 core->selectGait(ctrlState.bGaitType);
@@ -263,7 +270,7 @@ void loop()
 
         // Double leg lift height
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_R1)) {
-            Utils::sound( 1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
             mBoolDoubleHeight = !mBoolDoubleHeight;
             if (mBoolDoubleHeight)
                 ctrlState.sLegLiftHeight = 80;
@@ -273,7 +280,7 @@ void loop()
 
         // Double Travel Length
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_R2)) {
-            Utils::sound(1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
             mBoolDblTravel = !mBoolDblTravel;
         }
 
@@ -306,7 +313,7 @@ void loop()
         mBodyYShift = (-(ry - 128)/2);
     } else if (mModeControl == MODE_SINGLE_LEG) {
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_SEL)) { // Select Button Test
-            Utils::sound(1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
             if (ctrlState.bSingleLegCurSel < 5)
                 ctrlState.bSingleLegCurSel = ctrlState.bSingleLegCurSel + 1;
             else
@@ -318,7 +325,7 @@ void loop()
 
         // Hold single leg in place
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_R2)) {
-            Utils::sound(1, 50, 2000);
+            Utils::sound(300, 0, 0, 50, 300);
             ctrlState.fSingleLegHold = !ctrlState.fSingleLegHold;
         }
     }
@@ -331,6 +338,7 @@ loop_exit:
         core->adjustLegPosToBodyHeight();    // Put main workings into main program file
 
     core->loop();
+    Utils::handleSound();
 
     ctrlState.fHexOnOld = ctrlState.fHexOn;
 }

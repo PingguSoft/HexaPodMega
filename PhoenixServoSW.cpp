@@ -47,7 +47,6 @@ static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
 
 PhoenixServoSW::PhoenixServoSW(void)
 {
-
 }
 
 //--------------------------------------------------------------------
@@ -91,9 +90,9 @@ void PhoenixServoSW::init(void) {
     mBoolServosAttached = FALSE;
     loadServosConfig();
 
+    mVoltSum = 0;
+    mVoltIdx = 0;
     memset(mVoltBuf, 0, sizeof(mVoltBuf));
-    for (u8 i = 0; i < 8; i++)
-        getBattVolt();
 }
 
 //--------------------------------------------------------------------
@@ -101,17 +100,20 @@ void PhoenixServoSW::init(void) {
 // as it uses the serial port... Maybe only when we are not interpolating
 // or if maybe some minimum time has elapsed...
 //--------------------------------------------------------------------
-u16 PhoenixServoSW::getBattVolt(void) {
-    mVoltIdx  = (mVoltIdx++) & 0x7;
-    mVoltSum -= mVoltBuf[mVoltIdx];
+u8 PhoenixServoSW::getBattVolt(void) {
+    u16 v;
 #ifdef PIN_ANALOG_VOLT
-    mVoltBuf[mVoltIdx] = analogRead(PIN_ANALOG_VOLT);
+    v = analogRead(PIN_ANALOG_VOLT);
 #else
-    mVoltBuf[mVoltIdx] = CONFIG_VOLT_ON;
+    v = CONFIG_VOLT_ON;
 #endif
-    mVoltSum += mVoltBuf[mVoltIdx];
 
-    return ((long)((long)mVoltSum * 125 * (CONFIG_VOLT_R1 + CONFIG_VOLT_R2))/(long)(2048 * (long)CONFIG_VOLT_R2));
+    mVoltSum += v;
+    mVoltSum -= mVoltBuf[mVoltIdx];
+    mVoltBuf[mVoltIdx++] = v;
+    mVoltIdx &= 0x07;
+
+    return mVoltSum;
 }
 
 //--------------------------------------------------------------------

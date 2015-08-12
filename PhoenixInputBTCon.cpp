@@ -26,7 +26,7 @@ PhoenixInputBTCon::PhoenixInputBTCon(void)
     mOldButtons = 0;
 }
 
-void PhoenixInputBTCon::init(u8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
+void PhoenixInputBTCon::init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
 {
     printf(F("%s\n"), __PRETTY_FUNCTION__);
     CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
@@ -116,8 +116,8 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
 
         default:
             if (mCallback) {
-                u8 ret = (*mCallback)(cmd, data, size, buf);
-                if (ret > 0)
+                s8 ret = (*mCallback)(cmd, data, size, buf);
+                if (ret >= 0)
                     sendResponse(TRUE, cmd, buf, ret);
             }
             break;
@@ -200,8 +200,8 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
 
     switch (cmd) {
         case MSP_SET_RAW_RC:
-            diff = INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG;
         case MSP_SET_USER_BUTTON:
+            diff = INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG;
             diff |= (mButtons ^ mOldButtons);
             if (diff & INPUT_BUTTON_MASK)
                 printf(F("BUTTON:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
@@ -210,7 +210,6 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     }
     return diff;
 }
-
 
 u8 PhoenixInputBTCon::getBodyHeight(void)
 {
