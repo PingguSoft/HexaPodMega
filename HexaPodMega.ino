@@ -63,13 +63,15 @@ s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
             if (core) {
                 u8 *ptr = (u8*)res;
 
-                *ptr = core->getBattLevel(scale);
+                *ptr = core->getBattLevel();
+                *(ptr + 3) = core->getBattLevel(scale);
                 ret = 7;
             }
             break;
 
         case PhoenixInputBTCon::MSP_SET_MISC:
             scale = *(data + 18);
+            ret = 0;
             break;
     }
     return ret;
@@ -111,28 +113,31 @@ void setup()
 
 #define BUTTON_PRESSED(stat, mask) (stat & (mask))
 
+void turnOff(void)
+{
+    mBodyYOffset = 0;
+    mBodyYShift  = 0;
+    core->initCtrl();
+    Utils::sound(400, 0, 0, 100, 300);
+    digitalWrite(PIN_STATUS_LED, 0);
+    printf(F("OFF\n"));
+}
+
 void loop()
 {
 	u32  dwButton;
     u8   lx, ly, rx, ry;
+    u8   ret;
     bool fAdjustLegPositions = FALSE;
 
 	dwButton = input->get(&lx, &ly, &rx, &ry);
-
-//    if (BUTTON_PRESSED(dwButton, INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG))
-//        printf(F("LX:%3d, LY:%3d, RX:%3d, RY:%3d\n"), lx, ly, rx, ry);
 
     if (!dwButton)
         goto loop_exit;
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_ON_OFF)) {
     	if (ctrlState.fHexOn) {
-            mBodyYOffset = 0;
-            mBodyYShift  = 0;
-            core->initCtrl();
-            printf(F("OFF\n"));
-            Utils::sound(400, 0, 0, 100, 300);
-            digitalWrite(PIN_STATUS_LED, 0);
+            turnOff();
         } else {
             ctrlState.fHexOn = TRUE;
             printf(F("ON\n"));
@@ -255,7 +260,7 @@ void loop()
                 abs(ctrlState.c3dTravelLen.z) < CONFIG_TRAVEL_DEAD_ZONE &&
                 abs(ctrlState.c3dTravelLen.y*2) < CONFIG_TRAVEL_DEAD_ZONE) {
                 ctrlState.bGaitType = ctrlState.bGaitType + 1;    // Go to the next gait...
-                if (ctrlState.bGaitType < CONFIG_NUM_GAITS) {            // Make sure we did not exceed number of gaits...
+                if (ctrlState.bGaitType < NUM_GAITS) {            // Make sure we did not exceed number of gaits...
                     Utils::sound(300, 0, 0, 50, 300);
                 } else {
                     Utils::sound(300, 0, 0, 50, 300);
@@ -329,15 +334,24 @@ void loop()
             ctrlState.fSingleLegHold = !ctrlState.fSingleLegHold;
         }
     }
+
+loop_exit:
     ctrlState.bInputTimeDelay = 128 - max( max(abs(lx - 128), abs(ly - 128)),
                                              abs(rx - 128));
     ctrlState.c3dBodyPos.y = min(max(mBodyYOffset + mBodyYShift,  0), MAX_BODY_Y);
 
-loop_exit:
     if (fAdjustLegPositions)
-        core->adjustLegPosToBodyHeight();    // Put main workings into main program file
+        core->adjustLegPosToBodyHeight();
 
-    core->loop();
+    ret = core->loop();
+    if (ctrlState.fHexOn && (ret & PhoenixCore::STATUS_BATT_FAIL)) {
+        turnOff();
+        ctrlState.c3dBodyPos.y = 0;
+        core->adjustLegPosToBodyHeight();
+        core->loop();
+    } else if (ret & PhoenixCore::STATUS_BATT_WARN) {
+        Utils::sound(50, 50, 50, 50, 300);
+    }
     Utils::handleSound();
 
     ctrlState.fHexOnOld = ctrlState.fHexOn;

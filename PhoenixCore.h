@@ -24,6 +24,8 @@
 #define	DEC_EXP_6		1000000
 #define SMOOTH_DIV      4  //"Smooth division" factor for the smooth control function, a value of 3 to 5 is most suitable
 
+#define NUM_GAITS       6
+
 typedef struct {
     s32 x;
     s32 y;
@@ -65,20 +67,6 @@ typedef struct {
 class PhoenixCore
 {
 private:
-
-    enum {
-        LED_RED   = 0,
-        LED_GREEN,
-        LED_ORANGE,
-        LED_EYES
-    };
-
-    enum {
-        SOLUTION_OK,
-        SOLUTION_WARNING,
-        SOLUTION_ERROR,
-    };
-
     static bool mBoolShowDbgPrompt;
     static bool mBoolDbgOutput;
     static bool mBoolUpsideDown;
@@ -95,9 +83,6 @@ private:
     s16         mLegPosXs[CONFIG_NUM_LEGS];    //Actual X Posion of the Leg
     s16         mLegPosYs[CONFIG_NUM_LEGS];    //Actual Y Posion of the Leg
     s16         mLegPosZs[CONFIG_NUM_LEGS];    //Actual Z Posion of the Leg
-
-    // OUTPUTS
-    u8          mLedOutput;
 
     u16         mCurServoMoveTime; // Time for servo updates
     u16         mOldServoMoveTime; // Previous time for the servo updates
@@ -142,10 +127,8 @@ private:
     u8          mCurVolt;
     u8          mVoltWarnBeepCnt;
 
-
     void        updateServos(void);
     void        updateLEDs(void);
-    bool        isBattVoltGood(void);
     bool        ctrlSingleLeg(void);
     void        doGaitSeq(void);
     void        doGait(u8 leg, bool fTravelReq);
@@ -169,13 +152,22 @@ public:
         IDX_LF
     };
 
+    enum {
+        STATUS_OK,
+        STATUS_WARNING,
+        STATUS_ERROR,
+        STATUS_BATT_WARN = 0x10,
+        STATUS_BATT_FAIL = 0x20,
+    };    
+
     PhoenixCore(CTRL_STATE *state);
 
     void        init(void);
-    void        loop(void);
+    u8          loop(void);
     void        initCtrl(void);
     void        selectGait(u8 bGaitType);
     void        adjustLegPosToBodyHeight(void);
+    u8          getBattLevel(void)     { return mCurVolt; }
     u8          getBattLevel(u8 scale) { return ((u16)mCurVolt * 10) / scale + CONFIG_VBAT_OFFSET; }
 };
 

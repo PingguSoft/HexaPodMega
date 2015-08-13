@@ -318,7 +318,6 @@ void PhoenixCore::init(void)
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 
     mServo->init();
-    mLedOutput = 0;
     mCurVolt = mServo->getBattVolt();
     mTimerLastCheck = millis();
 
@@ -343,13 +342,13 @@ void PhoenixCore::init(void)
     pinMode(PIN_STATUS_LED, OUTPUT);
 }
 
-void PhoenixCore::loop(void)
+u8 PhoenixCore::loop(void)
 {
     bool            allDown;
     long            lBodyX;         //Output Position X of feet with Rotation
     long            lBodyY;         //Output Position Y of feet with Rotation
     long            lBodyZ;         //Output Position Z of feet with Rotation
-    u8              ret;
+    u8              ret = STATUS_OK;
 
     //Start time
     mTimerStart = millis();
@@ -359,7 +358,7 @@ void PhoenixCore::loop(void)
             mServo->commit(mCurServoMoveTime);
             mCommitTime = 0;
         } else {
-            return;
+            return ret;
         }
     }
 
@@ -367,16 +366,21 @@ void PhoenixCore::loop(void)
     if (mTimerStart - mTimerLastCheck > 500) {
         mCurVolt = mServo->getBattVolt();
         mTimerLastCheck = mTimerStart;
+
+        if (mCurVolt < CONFIG_VOLT_OFF) {
+            mVoltWarnBeepCnt++;
+            if (mVoltWarnBeepCnt > 10) {
+                
+                return STATUS_BATT_FAIL;
+            }
+            else
+                ret |= STATUS_BATT_WARN;
+        } else {
+            mVoltWarnBeepCnt = 0;
+        }
     }
 
-    if (!isBattVoltGood()) {
-        initCtrl();
-        //Utils::sound( 1, 45, 2000);
-    }
-
-    updateLEDs();
-
-    if (mBoolUpsideDown){
+    if (mBoolUpsideDown) {
         mPtrCtrlState->c3dTravelLen.x = -mPtrCtrlState->c3dTravelLen.x;
         mPtrCtrlState->c3dBodyPos.x = -mPtrCtrlState->c3dBodyPos.x;
         mPtrCtrlState->c3dSingleLeg.x = -mPtrCtrlState->c3dSingleLeg.x;
@@ -421,9 +425,9 @@ void PhoenixCore::loop(void)
                   mGaitRotYs[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(i, mLegPosXs[i]-mPtrCtrlState->c3dBodyPos.x+lBodyX-(mGaitPosXs[i] - mTotalTransX),
-                       mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y-lBodyY+mGaitPosYs[i] - mTotalTransY,
-                       mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z-lBodyZ+mGaitPosZs[i] - mTotalTransZ);
+        ret |= getLegIK(i, mLegPosXs[i]-mPtrCtrlState->c3dBodyPos.x+lBodyX-(mGaitPosXs[i] - mTotalTransX),
+                        mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y-lBodyY+mGaitPosYs[i] - mTotalTransY,
+                        mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z-lBodyZ+mGaitPosZs[i] - mTotalTransZ);
     }
 
     //Do IK for all Left legs
@@ -435,7 +439,7 @@ void PhoenixCore::loop(void)
                   mGaitRotYs[i],
                   &lBodyX, &lBodyY, &lBodyZ);
 
-        ret = getLegIK(i, mLegPosXs[i]+mPtrCtrlState->c3dBodyPos.x-lBodyX+mGaitPosXs[i] - mTotalTransX,
+        ret |= getLegIK(i, mLegPosXs[i]+mPtrCtrlState->c3dBodyPos.x-lBodyX+mGaitPosXs[i] - mTotalTransX,
                        mLegPosYs[i]+mPtrCtrlState->c3dBodyPos.y-lBodyY+mGaitPosYs[i] - mTotalTransY,
                        mLegPosZs[i]+mPtrCtrlState->c3dBodyPos.z-lBodyZ+mGaitPosZs[i] - mTotalTransZ);
     }
@@ -512,11 +516,12 @@ void PhoenixCore::loop(void)
         // check things. call it here..
 #ifdef CONFIG_TERMINAL
         if (showTerminal())
-            return;
+            return ret;
 #endif
-        delay(20);
     }
     mOldServoMoveTime = mCurServoMoveTime;
+    
+    return ret;
 }
 
 void PhoenixCore::updateServos(void)
@@ -531,40 +536,6 @@ void PhoenixCore::updateServos(void)
         mServo->write(i, mCoxaAngles[i], mFemurAngles[i], mTibiaAngles[i]);
 #endif
   }
-}
-
-void PhoenixCore::updateLEDs(void)
-{
-    u8 status;
-
-    status = mLedOutput & BV(LED_EYES);
-#ifdef PIN_LED_EYE
-    digitalWrite(PIN_LED_EYE, status);
-#endif
-}
-
-bool PhoenixCore::isBattVoltGood(void) {
-    u16     volt;
-    bool    on = TRUE;
-
-#if 0
-    volt = mServo->getBattVolt();
-    printf(F("VOLT:%d\n"), volt);
-
-    if ((volt < CONFIG_VOLT_OFF) || (volt >= 1999)) {
-        if (mVoltWarnBeepCnt < 5) {
-            printf(F("volt went low :%d\n"), volt);
-            mVoltWarnBeepCnt++;
-            Utils::sound( 1, 20, 2000);
-        } else {
-            printf(F("volt went low, turn off robot !!!\n"));
-            on = FALSE;
-            mVoltWarnBeepCnt = 0;
-        }
-    }
-#endif
-
-    return on;
 }
 
 bool PhoenixCore::ctrlSingleLeg(void)
@@ -1074,12 +1045,12 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
 
     //Set the Solution quality
     if(IKSW2 < ((word)((u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])+(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])-30)*DEC_EXP_2))
-        ret = SOLUTION_OK;
+        ret = STATUS_OK;
     else {
         if(IKSW2 < ((word)((u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])+(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg]))*DEC_EXP_2))
-            ret = SOLUTION_WARNING;
+            ret = STATUS_WARNING;
         else
-            ret = SOLUTION_ERROR;
+            ret = STATUS_ERROR;
     }
 
   return ret;
@@ -1224,12 +1195,7 @@ bool PhoenixCore::showTerminal(void)
                 break;
 
             default:
-                if (!isBattVoltGood()) {
-                    initCtrl();
-                    Utils::sound( 1, 45, 2000);
-                } else {
-                    mServo->handleTerminal(szCmdLine, ich);
-                }
+                mServo->handleTerminal(szCmdLine, ich);
                 break;
         }
     }

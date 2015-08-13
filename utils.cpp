@@ -57,60 +57,60 @@ static u16  mPatterns[5];
 static u8   mIdx = 0;
 static u32  mLastToggleTime = 0;
 
-void turnOff(void){
+void soundOff(void){
     if (mBoolOn)
         digitalWrite(PIN_SOUND, LOW);
 }
 
-void setTiming(u16 pulse, u16 pause){
-    if (!mBoolOn && (millis() >= (mLastToggleTime + pause))&& pulse != 0) {
+void setTiming(u16 pulse, u16 pause)
+{
+    if (!mBoolOn && (millis() >= (mLastToggleTime + pause)) && pulse != 0) {
         mBoolOn = TRUE;
         digitalWrite(PIN_SOUND, HIGH);
         mLastToggleTime = millis();
-    } else if ( (mBoolOn && (millis() >= mLastToggleTime + pulse) ) || (pulse==0 && mBoolOn) ) {
-        mBoolOn = FALSE;
-        digitalWrite(PIN_SOUND, LOW);
+    } else if (mBoolOn && (pulse == 0 || (millis() >= mLastToggleTime + pulse))) {
+        mBoolOn         = FALSE;
         mBoolCycleDone  = TRUE;
+        digitalWrite(PIN_SOUND, LOW);
         mLastToggleTime = millis();
+    }
+}
+
+void Utils::handleSound(void) {
+    if (mBoolSeqActive) {
+        if (mIdx < 3) {
+            if (mPatterns[mIdx] != 0)
+                setTiming(mPatterns[mIdx], mPatterns[4]);
+        } else if (mLastToggleTime < (millis() - mPatterns[3]))  {  //sequence is over: reset everything
+            mIdx = 0;
+            mBoolSeqActive = FALSE;                               //sequence is now done, mBoolCycleDone sequence may begin
+            soundOff();
+            return;
+        }
+
+        if (mBoolCycleDone || mPatterns[mIdx] == 0) {            //single on off cycle is done
+            if (mIdx < 3) {
+                mIdx++;
+            }
+            mBoolCycleDone = FALSE;
+            soundOff();
+        }
+    } else {
+        soundOff();
     }
 }
 
 void Utils::sound(u16 first,u16 second,u16 third,u16 cyclepause, u16 endpause)
 {
-    if(mBoolSeqActive == FALSE){
+    if (!mBoolSeqActive) {
         mBoolSeqActive = TRUE;
         mPatterns[0] = first;
         mPatterns[1] = second;
         mPatterns[2] = third;
         mPatterns[3] = endpause;
         mPatterns[4] = cyclepause;
+        handleSound();
     }
-
-    if (mIdx < 3 ){
-        if (mPatterns[mIdx] != 0){
-            setTiming(mPatterns[mIdx],mPatterns[4]);
-        }
-    } else if (mLastToggleTime < (millis()-mPatterns[3]))  {  //sequence is over: reset everything
-        mIdx=0;
-        mBoolSeqActive = 0;                               //sequence is now done, mBoolCycleDone sequence may begin
-        turnOff();
-        return;
-    }
-
-    if (mBoolCycleDone == 1 || mPatterns[mIdx] == 0) {            //single on off cycle is done
-        if (mIdx < 3) {
-            mIdx++;
-        }
-        mBoolCycleDone = 0;
-        turnOff();
-    }
-}
-
-void Utils::handleSound(void) {
-    if (mBoolSeqActive)
-        sound(0,0,0,0,0);
-    else
-        turnOff();
 }
 
 void Utils::dumpEEPROM(u16 addr, u16 cnt)

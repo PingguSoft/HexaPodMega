@@ -101,16 +101,15 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
 
             mButtons &= 0xfff0;
             for (u8 i = 0; i < 4; i++) {                // AUX1 - AUX4
-                if (*rc++ > 1700) {
-                    mButtons |= (1 << i);
-                }
+                if (*rc++ > 1700)
+                    mButtons |= BV(i);
             }
             break;
 
         case MSP_SET_USER_BUTTON:
             printf(F("SW:%02x\n"), *data);
             mButtons &= 0x000f;
-            mButtons |= (*data << 4);                   // SW BUTTON 5 - 10
+            mButtons |= ((*data << 4) & 0xf0);          // SW BUTTON 5 - 10
             sendResponse(TRUE, cmd, buf, 0);
             break;
 
@@ -176,7 +175,7 @@ u8 PhoenixInputBTCon::handleRX(void)
                         evalCommand(ret, mRxPacket, mDataSize);
                     }
                     mState = STATE_IDLE;
-                    //rxSize = 0;             // no more than one command per cycle
+                    rxSize = 0;             // no more than one command per cycle
                 }
                 break;
         }
@@ -198,16 +197,11 @@ u32 PhoenixInputBTCon::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     *rx = mRX;
     *ry = 128;
 
-    switch (cmd) {
-        case MSP_SET_RAW_RC:
-        case MSP_SET_USER_BUTTON:
-            diff = INPUT_LEFT_ANALOG | INPUT_RIGHT_ANALOG;
-            diff |= (mButtons ^ mOldButtons);
-            if (diff & INPUT_BUTTON_MASK)
-                printf(F("BUTTON:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
-            mOldButtons = mButtons;
-            break;
-    }
+    diff |= (mButtons ^ mOldButtons);
+    if (diff & INPUT_BUTTON_MASK)
+        printf(F("BUTTON:%04x => %04x [%04x]\n"), mOldButtons, mButtons, diff);
+    mOldButtons = mButtons;
+    
     return diff;
 }
 

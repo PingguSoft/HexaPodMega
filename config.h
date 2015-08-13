@@ -17,7 +17,6 @@
 
 #define CONFIG_DOF_PER_LEG      3
 #define CONFIG_NUM_LEGS         6
-#define CONFIG_NUM_GAITS        6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
 //#define CONFIG_DBG_SERIAL   Serial
@@ -38,8 +37,8 @@
 #define CONFIG_VBAT_SCALE    14
 #define CONFIG_VBAT_OFFSET   -2   // 0.1v unit
 
-#define CONFIG_VOLT_OFF 470 // 4.7v
-#define CONFIG_VOLT_ON  550 // 5.5V - optional part to say if voltage goes back up, turn it back on...
+#define CONFIG_VOLT_OFF 111 // 11.1v
+#define CONFIG_VOLT_ON  115 // 11.5V - optional part to say if voltage goes back up, turn it back on...
 
 
 //====================================================================
@@ -62,23 +61,23 @@
 
 #define PIN_RF_COXA      22  //Front Right leg Hip Horizontal
 #define PIN_RF_FEMUR     23  //Front Right leg Hip Vertical
-#define PIN_RF_TIBIA     24   //Front Right leg Knee
-#define PIN_RF_TARS       1   // Tar
+#define PIN_RF_TIBIA     24  //Front Right leg Knee
+#define PIN_RF_TARS       1  // Tar
 
-#define PIN_LR_COXA       9   //Rear Left leg Hip Horizontal
-#define PIN_LR_FEMUR     10   //Rear Left leg Hip Vertical
-#define PIN_LR_TIBIA     11   //Rear Left leg Knee
-#define PIN_LR_TARS       1   // Tar
+#define PIN_LR_COXA       9  //Rear Left leg Hip Horizontal
+#define PIN_LR_FEMUR     10  //Rear Left leg Hip Vertical
+#define PIN_LR_TIBIA     11  //Rear Left leg Knee
+#define PIN_LR_TARS       1  // Tar
 
 #define PIN_LM_COXA       6  //Middle Left leg Hip Horizontal
-#define PIN_LM_FEMUR      7   //Middle Left leg Hip Vertical
+#define PIN_LM_FEMUR      7  //Middle Left leg Hip Vertical
 #define PIN_LM_TIBIA      8  //Middle Left leg Knee
 #define PIN_LM_TARS       1  // Tar = Not working...
 
-#define PIN_LF_COXA       2   //Front Left leg Hip Horizontal
-#define PIN_LF_FEMUR      3   //Front Left leg Hip Vertical
-#define PIN_LF_TIBIA      5   //Front Left leg Knee
-#define PIN_LF_TARS       1   // Tar
+#define PIN_LF_COXA       2  //Front Left leg Hip Horizontal
+#define PIN_LF_FEMUR      3  //Front Left leg Hip Vertical
+#define PIN_LF_TIBIA      5  //Front Left leg Knee
+#define PIN_LF_TARS       1  // Tar
 
 //--------------------------------------------------------------------
 //[MIN/MAX ANGLES]
