@@ -43,7 +43,7 @@ static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
     0, -115,  165,
     0, -135,   60,
 };
-//0, -150,  -70,    0, -115,  160,    0,  -55,   80,    0,   45,    0,    0, -115,  165,    0, -135,   60,
+//0, -150,  -70,    0, -115,  160,    0,  -55,  120,    0,   45,    0,    0, -115,  165,    0, -135,   60,
 
 PhoenixServoSW::PhoenixServoSW(void)
 {
@@ -93,6 +93,9 @@ void PhoenixServoSW::init(void) {
     mVoltSum = 0;
     mVoltIdx = 0;
     memset(mVoltBuf, 0, sizeof(mVoltBuf));
+
+    for (u8 i = 0; i < CONFIG_VBAT_SMOOTH; i++)
+        getBattVolt();
 }
 
 //--------------------------------------------------------------------
@@ -111,9 +114,19 @@ u8 PhoenixServoSW::getBattVolt(void) {
     mVoltSum += v;
     mVoltSum -= mVoltBuf[mVoltIdx];
     mVoltBuf[mVoltIdx++] = v;
-    mVoltIdx &= 0x07;
+    mVoltIdx %= CONFIG_VBAT_SMOOTH;
 
-    return mVoltSum;
+    u8 t;
+#if CONFIG_VBAT_SMOOTH == 16
+    t = mVoltSum / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+#elif CONFIG_VBAT_SMOOTH < 16
+    t = (mVoltSum * (16 / CONFIG_VBAT_SMOOTH)) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+#else
+    t = ((mVoltSum / CONFIG_VBAT_SMOOTH) * 16) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+#endif
+    printf(F("analog:%d voltsum:%d, v:%d\n"), v, mVoltSum, t);
+
+    return t;
 }
 
 //--------------------------------------------------------------------
@@ -264,12 +277,12 @@ void PhoenixServoSW::move(int servo, int val, unsigned int time)
 
 void PhoenixServoSW::handleServoOffsets(void)
 {
-    int data;
-    s16 sSN = 0;             // which servo number
+    int  data;
+    s16  sSN = 0;             // which servo number
     bool fNew = TRUE;    // is this a new servo to work with?
     bool fExit = FALSE;    // when to exit
-    int ich;
-    s16 sOffset;
+    int  ich;
+    s16  sOffset;
 
     // OK lets move all of the servos to their zero point.
     printf(F("Find Servo Zeros.\n$-Exit, +- changes, *-change servo\n"));
@@ -297,7 +310,7 @@ void PhoenixServoSW::handleServoOffsets(void)
         }
 
         //get user entered data
-    	data = Serial.read();
+    	data = CONFIG_DBG_SERIAL.read();
         //if data received
     	if (data !=-1)     {
             if (data == '$')
@@ -342,7 +355,7 @@ void PhoenixServoSW::handleServoOffsets(void)
 
     printf(F("\nSave Changes? Y/N: "));
     //get user entered data
-    while (((data = Serial.read()) == -1) || ((data >= 10) && (data <= 15)));
+    while (((data = CONFIG_DBG_SERIAL.read()) == -1) || ((data >= 10) && (data <= 15)));
     if ((data == 'Y') || (data == 'y')) {
         // Ok they asked for the data to be saved.  We will store the data with a
         // number of servos (u8)at the start, followed by a u8 for a checksum...followed by our offsets array...

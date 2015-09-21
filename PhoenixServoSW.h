@@ -27,7 +27,7 @@ private:
     ServoGroupMove  mSGM;
     bool            mBoolServosAttached;
 
-    u16             mVoltBuf[8];
+    u16             mVoltBuf[CONFIG_VBAT_SMOOTH];
     u16             mVoltSum;
     u8              mVoltIdx;
 

@@ -158,7 +158,7 @@ public:
         STATUS_ERROR,
         STATUS_BATT_WARN = 0x10,
         STATUS_BATT_FAIL = 0x20,
-    };    
+    };
 
     PhoenixCore(CTRL_STATE *state);
 
@@ -168,7 +168,7 @@ public:
     void        selectGait(u8 bGaitType);
     void        adjustLegPosToBodyHeight(void);
     u8          getBattLevel(void)     { return mCurVolt; }
-    u8          getBattLevel(u8 scale) { return ((u16)mCurVolt * 10) / scale + CONFIG_VBAT_OFFSET; }
+    u8          getBattLevel(u8 scale) { return mCurVolt; }
 };
 
 #endif

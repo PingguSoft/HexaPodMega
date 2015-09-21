@@ -43,6 +43,7 @@ PhoenixCore  *core;
 PhoenixInput *input;
 CTRL_STATE   ctrlState;
 
+u8        mColor;
 s16       mBodyYOffset;
 u16       mErrorCnt;
 s16       mBodyYShift;
@@ -53,7 +54,7 @@ bool      mBoolWalkMode2;
 
 
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
-u8 scale = 10;
+u8 scale = 30;
 s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
 {
     s8 ret = -1;
@@ -63,8 +64,8 @@ s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
             if (core) {
                 u8 *ptr = (u8*)res;
 
-                *ptr = core->getBattLevel();
-                *(ptr + 3) = core->getBattLevel(scale);
+                *ptr = core->getBattLevel(scale);
+                *(ptr + 3) = core->getBattLevel();
                 ret = 7;
             }
             break;
@@ -78,10 +79,32 @@ s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
 }
 #endif
 
+enum {
+    COLOR_BLACK  = 0,
+    COLOR_RED    = 1,
+    COLOR_GREEN  = 2,
+    COLOR_YELLOW = 3,
+    COLOR_BLUE   = 4,
+    COLOR_PURPLE = 5,
+    COLOR_CYAN   = 6,
+    COLOR_WHITE  = 7
+};
+
+void showLED(u8 color)
+{
+    digitalWrite(PIN_STATUS_RED,   color & 0x01);
+    digitalWrite(PIN_STATUS_GREEN, color & 0x02);
+    digitalWrite(PIN_STATUS_BLUE,  color & 0x04);
+}
+
 void setup()
 {
+    pinMode(PIN_STATUS_RED,   OUTPUT);
+    pinMode(PIN_STATUS_GREEN, OUTPUT);
+    pinMode(PIN_STATUS_BLUE,  OUTPUT);
     pinMode(PIN_SOUND, OUTPUT);
 
+    mColor       = 0;
     mBodyYOffset = 0;
     mBodyYShift  = 0;
     mErrorCnt    = 0;
@@ -119,13 +142,13 @@ void turnOff(void)
     mBodyYShift  = 0;
     core->initCtrl();
     Utils::sound(400, 0, 0, 100, 300);
-    digitalWrite(PIN_STATUS_LED, 0);
+    showLED(COLOR_BLACK);
     printf(F("OFF\n"));
 }
 
 void loop()
 {
-	u32  dwButton;
+    u32  dwButton;
     u8   lx, ly, rx, ry;
     u8   ret;
     bool fAdjustLegPositions = FALSE;
@@ -142,7 +165,7 @@ void loop()
             ctrlState.fHexOn = TRUE;
             printf(F("ON\n"));
             Utils::sound(200, 200, 0, 100, 300);
-            digitalWrite(PIN_STATUS_LED, 1);
+            showLED(1);
         }
         fAdjustLegPositions = TRUE;
     }
@@ -160,12 +183,8 @@ void loop()
         Utils::sound(100, 0, 0, 50, 300);
         if (mModeControl != MODE_TRANSLATE )
             mModeControl = MODE_TRANSLATE;
-        else {
-            if (ctrlState.bSingleLegCurSel == 255)
-                mModeControl = MODE_WALK;
-            else
-                mModeControl = MODE_SINGLE_LEG;
-        }
+        else
+            mModeControl = MODE_WALK;
         printf(F("MODE:%d\n"), mModeControl);
     }
 
@@ -173,26 +192,24 @@ void loop()
         Utils::sound(300, 0, 0, 50, 300);
         if (mModeControl != MODE_ROTATE)
             mModeControl = MODE_ROTATE;
-        else {
-            if (ctrlState.bSingleLegCurSel == 255)
-                mModeControl = MODE_WALK;
-            else
-                mModeControl = MODE_SINGLE_LEG;
-        }
+        else
+            mModeControl = MODE_WALK;
         printf(F("MODE:%d\n"), mModeControl);
     }
 
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_SINGLE_LEG)) {
         if (abs(ctrlState.c3dTravelLen.x) < CONFIG_TRAVEL_DEAD_ZONE && abs(ctrlState.c3dTravelLen.z) < CONFIG_TRAVEL_DEAD_ZONE &&
             abs(ctrlState.c3dTravelLen.y * 2) < CONFIG_TRAVEL_DEAD_ZONE )   {
+            Utils::sound(300, 0, 0, 50, 300);
+
             if (mModeControl != MODE_SINGLE_LEG) {
                 mModeControl = MODE_SINGLE_LEG;
+
             if (ctrlState.bSingleLegCurSel == 255)
                 ctrlState.bSingleLegCurSel = PhoenixCore::IDX_RF;
-            }
-            else {
+            } else {
                 mModeControl = MODE_WALK;
-                ctrlState.bSingleLegCurSel=255;
+                ctrlState.bSingleLegCurSel = 255;
             }
         }
         printf(F("MODE:%d\n"), mModeControl);
@@ -201,7 +218,7 @@ void loop()
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_BALANCE)) {
         ctrlState.fBalanceMode = !ctrlState.fBalanceMode;
         if (ctrlState.fBalanceMode) {
-            Utils::sound(300, 0, 0, 50, 300);
+            Utils::sound(30, 30, 0, 50, 300);
         } else {
             Utils::sound(300, 0, 0, 50, 300);
         }
@@ -251,7 +268,6 @@ void loop()
         }
     }
 
-
     if (mModeControl == MODE_WALK) {
         //Switch gaits
         if (BUTTON_PRESSED(dwButton, INPUT_OPT_SEL)) {
@@ -263,7 +279,7 @@ void loop()
                 if (ctrlState.bGaitType < NUM_GAITS) {            // Make sure we did not exceed number of gaits...
                     Utils::sound(300, 0, 0, 50, 300);
                 } else {
-                    Utils::sound(300, 0, 0, 50, 300);
+                    Utils::sound(100, 100, 0, 50, 300);
                     ctrlState.bGaitType = 0;
                 }
                 core->selectGait(ctrlState.bGaitType);
@@ -304,6 +320,8 @@ void loop()
         ctrlState.c3dTravelLen.y = -(rx - 128)/4; //Right Stick Left/Right
     }
 
+    mColor = 1 + mModeControl + (mBoolDblTravel ? 4 : 0);
+
     //[Translate functions]
     mBodyYShift = 0;
     if (mModeControl == MODE_TRANSLATE) {
@@ -335,15 +353,18 @@ void loop()
         }
     }
 
-loop_exit:
     ctrlState.bInputTimeDelay = 128 - max( max(abs(lx - 128), abs(ly - 128)),
                                              abs(rx - 128));
     ctrlState.c3dBodyPos.y = min(max(mBodyYOffset + mBodyYShift,  0), MAX_BODY_Y);
 
+loop_exit:
     if (fAdjustLegPositions)
         core->adjustLegPosToBodyHeight();
 
+    showLED(mColor);
+
     ret = core->loop();
+#if 0
     if (ctrlState.fHexOn && (ret & PhoenixCore::STATUS_BATT_FAIL)) {
         turnOff();
         ctrlState.c3dBodyPos.y = 0;
@@ -352,6 +373,7 @@ loop_exit:
     } else if (ret & PhoenixCore::STATUS_BATT_WARN) {
         Utils::sound(50, 50, 50, 50, 300);
     }
+#endif
     Utils::handleSound();
 
     ctrlState.fHexOnOld = ctrlState.fHexOn;

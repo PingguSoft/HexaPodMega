@@ -19,8 +19,8 @@
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
-//#define CONFIG_DBG_SERIAL   Serial
-//#define CONFIG_DEBUG_BAUD   115200
+#define CONFIG_DBG_SERIAL   Serial2
+#define CONFIG_DEBUG_BAUD   115200
 
 #define CONFIG_CTRL_SERIAL  Serial
 #define CONFIG_CTRL_BAUD    115200
@@ -34,8 +34,9 @@
     #define CONFIG_TERMINAL
 #endif
 
-#define CONFIG_VBAT_SCALE    14
-#define CONFIG_VBAT_OFFSET   -2   // 0.1v unit
+#define CONFIG_VBAT_SMOOTH   16
+#define CONFIG_VBAT_SCALE    48
+#define CONFIG_VBAT_OFFSET   -1   // 0.1v unit
 
 #define CONFIG_VOLT_OFF 111 // 11.1v
 #define CONFIG_VOLT_ON  115 // 11.5V - optional part to say if voltage goes back up, turn it back on...
@@ -43,8 +44,10 @@
 
 //====================================================================
 //[IO Pins On 2560]
-#define PIN_STATUS_LED  30
-#define PIN_SOUND       37
+#define PIN_STATUS_GREEN  30
+#define PIN_STATUS_BLUE   32
+#define PIN_STATUS_RED    31
+#define PIN_SOUND         37
 
 // Define Analog pin and minimum voltage that we will allow the servos to run
 #define PIN_ANALOG_VOLT A0   //Use our Analog pin jumper here...

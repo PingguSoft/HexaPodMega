@@ -339,7 +339,6 @@ void PhoenixCore::init(void)
     // Servo Driver
     mCurServoMoveTime = 150;
     printf(F("up_side_down:%d\n"), mBoolUpsideDown);
-    pinMode(PIN_STATUS_LED, OUTPUT);
 }
 
 u8 PhoenixCore::loop(void)
@@ -370,7 +369,7 @@ u8 PhoenixCore::loop(void)
         if (mCurVolt < CONFIG_VOLT_OFF) {
             mVoltWarnBeepCnt++;
             if (mVoltWarnBeepCnt > 10) {
-                
+
                 return STATUS_BATT_FAIL;
             }
             else
@@ -520,7 +519,7 @@ u8 PhoenixCore::loop(void)
 #endif
     }
     mOldServoMoveTime = mCurServoMoveTime;
-    
+
     return ret;
 }
 
