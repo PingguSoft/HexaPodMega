@@ -19,10 +19,10 @@
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
-#define CONFIG_DBG_SERIAL   Serial2
+#define CONFIG_DBG_SERIAL   Serial
 #define CONFIG_DEBUG_BAUD   115200
 
-#define CONFIG_CTRL_SERIAL  Serial
+#define CONFIG_CTRL_SERIAL  Serial1
 #define CONFIG_CTRL_BAUD    115200
 
 #define CONFIG_CTRL_TYPE_SERIAL 0
