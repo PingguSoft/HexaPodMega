@@ -15,20 +15,33 @@
 #define __CONFIG_H__
 #include "common.h"
 
+#define CONFIG_ORIGINAL         1
+#define CONFIG_NASSPOP_MEGA     2
+#define CONFIG_NASSPOP_MINI     3
+#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
+
+
 #define CONFIG_DOF_PER_LEG      3
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
+#if (CONFIG_BOARD == CONFIG_ORIGINAL) || (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
 #define CONFIG_DBG_SERIAL   Serial
 #define CONFIG_DEBUG_BAUD   115200
 
 #define CONFIG_CTRL_SERIAL  Serial1
 #define CONFIG_CTRL_BAUD    115200
+#elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
+//#define CONFIG_DBG_SERIAL   Serial
+//#define CONFIG_DEBUG_BAUD   115200
+
+#define CONFIG_CTRL_SERIAL  Serial
+#define CONFIG_CTRL_BAUD    115200
+#endif
 
 #define CONFIG_CTRL_TYPE_SERIAL 0
 #define CONFIG_CTRL_TYPE_BTCON  1
 #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
-#define CONFIG_NASSPOP          1
 
 #ifdef CONFIG_DBG_SERIAL
     #define CONFIG_TERMINAL
@@ -47,27 +60,7 @@
 
 #define PIN_ANALOG_VOLT A0
 
-#if defined(CONFIG_NASSPOP)
-    #define PIN_STATUS_RED      A7
-    #define PIN_STATUS_GREEN    A6
-    #define PIN_STATUS_BLUE     A5
-    #define PIN_SOUND           A14
-
-    #define PIN_RR_COXA         44  //Rear Right leg Hip Horizontal
-    #define PIN_RR_FEMUR        45  //Rear Right leg Hip Vertical
-    #define PIN_RR_TIBIA        46  //Rear Right leg Knee
-    #define PIN_RR_TARS          1  //Tar
-
-    #define PIN_RM_COXA         35  //Middle Right leg Hip Horizontal
-    #define PIN_RM_FEMUR        33  //Middle Right leg Hip Vertical
-    #define PIN_RM_TIBIA        36  //Middle Right leg Knee
-    #define PIN_RM_TARS          1  //Tar
-
-    #define PIN_RF_COXA         A15 //Front Right leg Hip Horizontal
-    #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
-    #define PIN_RF_TIBIA        34  //Front Right leg Knee
-    #define PIN_RF_TARS          1  //Tar
-#else
+#if (CONFIG_BOARD == CONFIG_ORIGINAL)
     #define PIN_STATUS_RED      31
     #define PIN_STATUS_GREEN    30
     #define PIN_STATUS_BLUE     32
@@ -87,6 +80,46 @@
     #define PIN_RF_FEMUR        23  //Front Right leg Hip Vertical
     #define PIN_RF_TIBIA        24  //Front Right leg Knee
     #define PIN_RF_TARS         1   //Tar
+#elif (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
+    #define PIN_STATUS_RED      A7
+    #define PIN_STATUS_GREEN    A6
+    #define PIN_STATUS_BLUE     A5
+    #define PIN_SOUND           A14
+
+    #define PIN_RR_COXA         44  //Rear Right leg Hip Horizontal
+    #define PIN_RR_FEMUR        45  //Rear Right leg Hip Vertical
+    #define PIN_RR_TIBIA        46  //Rear Right leg Knee
+    #define PIN_RR_TARS          1  //Tar
+
+    #define PIN_RM_COXA         35  //Middle Right leg Hip Horizontal
+    #define PIN_RM_FEMUR        33  //Middle Right leg Hip Vertical
+    #define PIN_RM_TIBIA        36  //Middle Right leg Knee
+    #define PIN_RM_TARS          1  //Tar
+
+    #define PIN_RF_COXA         A15 //Front Right leg Hip Horizontal
+    #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
+    #define PIN_RF_TIBIA        34  //Front Right leg Knee
+    #define PIN_RF_TARS          1  //Tar
+#elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
+    #define PIN_STATUS_RED      A7
+    #define PIN_STATUS_GREEN    A6
+    #define PIN_STATUS_BLUE     A5
+    #define PIN_SOUND            1
+
+    #define PIN_RR_COXA         44  //Rear Right leg Hip Horizontal
+    #define PIN_RR_FEMUR        45  //Rear Right leg Hip Vertical
+    #define PIN_RR_TIBIA        46  //Rear Right leg Knee
+    #define PIN_RR_TARS          1  //Tar
+
+    #define PIN_RM_COXA         35  //Middle Right leg Hip Horizontal
+    #define PIN_RM_FEMUR        33  //Middle Right leg Hip Vertical
+    #define PIN_RM_TIBIA        36  //Middle Right leg Knee
+    #define PIN_RM_TARS          1  //Tar
+
+    #define PIN_RF_COXA          0 //Front Right leg Hip Horizontal
+    #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
+    #define PIN_RF_TIBIA        34  //Front Right leg Knee
+    #define PIN_RF_TARS          1  //Tar
 #endif
 
 #define PIN_LR_COXA       9  //Rear Left leg Hip Horizontal
@@ -270,5 +303,4 @@
 #define DEFAULT_SLOW_GAIT   70
 
 
-#endif //CFG_HEX_H
-
+#endif
