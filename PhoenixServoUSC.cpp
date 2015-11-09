@@ -119,7 +119,7 @@ u8 PhoenixServoUSC::getBattVolt(void) {
 #ifdef PIN_ANALOG_VOLT
     v = analogRead(PIN_ANALOG_VOLT);
 #else
-    v = CONFIG_VOLT_ON;
+    return CONFIG_VOLT_ON;
 #endif
 
     mVoltSum += v;
@@ -201,17 +201,27 @@ void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibi
 #endif
     }
 
-    char fmt[6];
+    char fmt[7];
     char buf[60];
 
     strncpy_P(fmt, PSTR("#%dP%d"), 6);
+    fmt[6] = 0;
+    memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, pgm_read_byte(&TBL_COXA_PIN[leg]), wCoxaSSCV);
     mPort->write(buf);
+    printf(buf);
+
+    memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, pgm_read_byte(&TBL_FEMUR_PIN[leg]), wFemurSSCV);
     mPort->write(buf);
+    printf(buf);
+
+    memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, pgm_read_byte(&TBL_TIBIA_PIN[leg]), wTibiaSSCV);
     mPort->write(buf);
+    printf(buf);
 #if (CONFIG_DOF_PER_LEG == 4)
+    memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, pgm_read_byte(&TBL_TARS_PIN[leg]), wTarsSSCV);
     mPort->write(buf);
 #endif
@@ -229,6 +239,7 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
 
     sprintf(buf, "T%d\r\n", wMoveTime);
     mPort->write(buf);
+    printf(buf);
 }
 
 //--------------------------------------------------------------------

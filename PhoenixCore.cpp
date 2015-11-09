@@ -1182,7 +1182,7 @@ bool PhoenixCore::showTerminal(void)
         szCmdLine[ich] = ch;
     }
     szCmdLine[ich] = '\0';    // go ahead and null terminate it...
-    printf(F("Serial Cmd Line:%s !!\n"), szCmdLine);
+    printf(F("Terminal Cmd Line:%s !!\n"), szCmdLine);
 
     if (ich == 0) {
         mBoolShowDbgPrompt = TRUE;

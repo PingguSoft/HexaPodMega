@@ -54,6 +54,14 @@ bool      mBoolDblTravel;
 bool      mBoolWalkMode2;
 
 
+
+int freeRam() {
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+
+
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
 u8 scale = 30;
 s8 inputCallback(u8 cmd, u8 *data, u8 size, u8 *res)
@@ -378,11 +386,5 @@ loop_exit:
     Utils::handleSound();
 
     ctrlState.fHexOnOld = ctrlState.fHexOn;
-}
-
-int freeRam() {
-    extern int __heap_start, *__brkval;
-    int v;
-    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 

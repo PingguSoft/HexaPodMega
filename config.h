@@ -147,7 +147,7 @@
     #define PIN_STATUS_RED       3
     #define PIN_STATUS_GREEN     5
     #define PIN_STATUS_BLUE      6
-    #define PIN_SOUND            1
+    #define PIN_SOUND            2
 
     #define PIN_RR_COXA         24  //Rear Right leg Hip Horizontal
     #define PIN_RR_FEMUR        25  //Rear Right leg Hip Vertical
