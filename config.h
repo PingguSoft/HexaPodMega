@@ -32,7 +32,7 @@
 #define CONFIG_SERVO_SW_PWM     1
 #define CONFIG_SERVO_USC        2
 
-#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
+#define CONFIG_BOARD            CONFIG_NASSPOP_MINI
 
 #if (CONFIG_BOARD == CONFIG_ORIGINAL) || (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
     #define CONFIG_DBG_SERIAL   Serial
@@ -43,14 +43,17 @@
     #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
     #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
+
     #define CONFIG_CTRL_SERIAL  Serial
     #define CONFIG_CTRL_BAUD    115200
     #define CONFIG_SERVO        CONFIG_SERVO_USC
-    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_SERIAL
 
-    #define CONFIG_SERVO_USC_TX 15
-    #define CONFIG_SERVO_USC_RX 16
-    #define CONFIG_SERVO_USC_BAUD   57600
+    #define CONFIG_SERVO_USC_TX 12
+    #define CONFIG_SERVO_USC_RX 11
+    #define CONFIG_SERVO_USC_BAUD   9600
 #endif
 
 #ifdef CONFIG_DBG_SERIAL
@@ -68,7 +71,7 @@
 //====================================================================
 //[IO Pins On 2560]
 
-#define PIN_ANALOG_VOLT A0
+//#define PIN_ANALOG_VOLT A0
 
 #if (CONFIG_BOARD == CONFIG_ORIGINAL)
     #define PIN_STATUS_RED      31
@@ -90,6 +93,21 @@
     #define PIN_RF_FEMUR        23  //Front Right leg Hip Vertical
     #define PIN_RF_TIBIA        24  //Front Right leg Knee
     #define PIN_RF_TARS         1   //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        10  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        11  //Rear Left leg Knee
+    #define PIN_LR_TARS         1  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        7  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        8  //Middle Left leg Knee
+    #define PIN_LM_TARS         1  //Tar = Not working...
+
+    #define PIN_LF_COXA         2  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        3  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        5  //Front Left leg Knee
+    #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
     #define PIN_STATUS_RED      A7
     #define PIN_STATUS_GREEN    A6
@@ -110,42 +128,57 @@
     #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
     #define PIN_RF_TIBIA        34  //Front Right leg Knee
     #define PIN_RF_TARS          1  //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        10  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        11  //Rear Left leg Knee
+    #define PIN_LR_TARS         1  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        7  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        8  //Middle Left leg Knee
+    #define PIN_LM_TARS         1  //Tar = Not working...
+
+    #define PIN_LF_COXA         2  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        3  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        5  //Front Left leg Knee
+    #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-    #define PIN_STATUS_RED      A7
-    #define PIN_STATUS_GREEN    A6
-    #define PIN_STATUS_BLUE     A5
+    #define PIN_STATUS_RED       3
+    #define PIN_STATUS_GREEN     5
+    #define PIN_STATUS_BLUE      6
     #define PIN_SOUND            1
 
-    #define PIN_RR_COXA         44  //Rear Right leg Hip Horizontal
-    #define PIN_RR_FEMUR        45  //Rear Right leg Hip Vertical
-    #define PIN_RR_TIBIA        46  //Rear Right leg Knee
-    #define PIN_RR_TARS          1  //Tar
+    #define PIN_RR_COXA         24  //Rear Right leg Hip Horizontal
+    #define PIN_RR_FEMUR        25  //Rear Right leg Hip Vertical
+    #define PIN_RR_TIBIA        26  //Rear Right leg Knee
+    #define PIN_RR_TARS          0  //Tar
 
-    #define PIN_RM_COXA         35  //Middle Right leg Hip Horizontal
-    #define PIN_RM_FEMUR        33  //Middle Right leg Hip Vertical
-    #define PIN_RM_TIBIA        36  //Middle Right leg Knee
-    #define PIN_RM_TARS          1  //Tar
+    #define PIN_RM_COXA         27  //Middle Right leg Hip Horizontal
+    #define PIN_RM_FEMUR        28  //Middle Right leg Hip Vertical
+    #define PIN_RM_TIBIA        29  //Middle Right leg Knee
+    #define PIN_RM_TARS          0  //Tar
 
-    #define PIN_RF_COXA          0 //Front Right leg Hip Horizontal
-    #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
-    #define PIN_RF_TIBIA        34  //Front Right leg Knee
-    #define PIN_RF_TARS          1  //Tar
+    #define PIN_RF_COXA         30 //Front Right leg Hip Horizontal
+    #define PIN_RF_FEMUR        31  //Front Right leg Hip Vertical
+    #define PIN_RF_TIBIA        32  //Front Right leg Knee
+    #define PIN_RF_TARS          0  //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        8  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        7  //Rear Left leg Knee
+    #define PIN_LR_TARS         0  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        5  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        4  //Middle Left leg Knee
+    #define PIN_LM_TARS         0  //Tar = Not working...
+
+    #define PIN_LF_COXA         3  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        2  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        1  //Front Left leg Knee
+    #define PIN_LF_TARS         0  //Tar
 #endif
-
-#define PIN_LR_COXA       9  //Rear Left leg Hip Horizontal
-#define PIN_LR_FEMUR     10  //Rear Left leg Hip Vertical
-#define PIN_LR_TIBIA     11  //Rear Left leg Knee
-#define PIN_LR_TARS       1  //Tar
-
-#define PIN_LM_COXA       6  //Middle Left leg Hip Horizontal
-#define PIN_LM_FEMUR      7  //Middle Left leg Hip Vertical
-#define PIN_LM_TIBIA      8  //Middle Left leg Knee
-#define PIN_LM_TARS       1  //Tar = Not working...
-
-#define PIN_LF_COXA       2  //Front Left leg Hip Horizontal
-#define PIN_LF_FEMUR      3  //Front Left leg Hip Vertical
-#define PIN_LF_TIBIA      5  //Front Left leg Knee
-#define PIN_LF_TARS       1  //Tar
 
 //--------------------------------------------------------------------
 //[MIN/MAX ANGLES]

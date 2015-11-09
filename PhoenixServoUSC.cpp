@@ -87,8 +87,8 @@ void PhoenixServoUSC::loadServosConfig(void)
 void PhoenixServoUSC::init(void) {
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 
-    mSerial = new SoftwareSerial(CONFIG_SERVO_USC_TX, CONFIG_SERVO_USC_RX);
-    mSerial->begin(CONFIG_SERVO_USC_BAUD);
+    mPort = new SoftwareSerial(CONFIG_SERVO_USC_RX, CONFIG_SERVO_USC_TX);
+    mPort->begin(CONFIG_SERVO_USC_BAUD);
 
     mBoolServosAttached = FALSE;
     loadServosConfig();
@@ -99,6 +99,14 @@ void PhoenixServoUSC::init(void) {
 
     for (u8 i = 0; i < CONFIG_VBAT_SMOOTH; i++)
         getBattVolt();
+/*
+    for (;;) {
+        mPort->write("#1P500T800\r\n");
+        delay(1000);
+        mPort->write("#1P2500T800\r\n");
+        delay(1000);
+    }
+*/
 }
 
 //--------------------------------------------------------------------
@@ -140,39 +148,9 @@ void PhoenixServoUSC::attachServos(void) {
 
     if (!mBoolServosAttached) {
         for (u8 j = 0; j < CONFIG_NUM_LEGS; j++) {
-            mServoLegs[tot++].attach(pgm_read_byte(&TBL_COXA_PIN[j]));
-            mServoLegs[tot++].attach(pgm_read_byte(&TBL_FEMUR_PIN[j]));
-            mServoLegs[tot++].attach(pgm_read_byte(&TBL_TIBIA_PIN[j]));
-#if (CONFIG_DOF_PER_LEG == 4)
-            mServoLegs[tot++].attach(pgm_read_byte(&TBL_TARS_PIN[j]));
-#endif
         }
         mBoolServosAttached = TRUE;
     }
-}
-
-u16 PhoenixServoUSC::read(u8 *pb, u16 size, u16 timeout, u8 EOL) {
-    u8  ch;
-    u8  *pIn = pb;
-    u32 ulLastTime = micros();
-
-    while (size) {
-        while (!mSerial.available()) {
-            if ((micros() - ulLastTime) > timeout) {
-                return (u16)(pb - pIn);
-            }
-        }
-        ch = mSerial.read();
-        *pb++ = ch;
-        size--;
-
-        if (ch == EOL)
-            break;
-        
-        ulLastTime = micros();
-    }
-
-    return (u16)(pb - pIn);
 }
 
 
@@ -182,7 +160,6 @@ u16 PhoenixServoUSC::read(u8 *pb, u16 size, u16 timeout, u8 EOL) {
 void PhoenixServoUSC::start(void)    // Start the update
 {
     attachServos();
-    mSGM.start();    // tell the group move system we are starting a new move
 }
 
 //------------------------------------------------------------------------------------------
@@ -224,16 +201,19 @@ void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibi
 #endif
     }
 
-    // Now lets tell the servos their next  location...
-    u8 i = leg * CONFIG_DOF_PER_LEG;
-    mServoLegs[i].writeMicroseconds(wCoxaSSCV + mServoOffsets[i]);
-    i++;
-    mServoLegs[i].writeMicroseconds(wFemurSSCV + mServoOffsets[i]);
-    i++;
-    mServoLegs[i].writeMicroseconds(wTibiaSSCV + mServoOffsets[i]);
+    char fmt[6];
+    char buf[60];
+
+    strncpy_P(fmt, PSTR("#%dP%d"), 6);
+    sprintf(buf, fmt, pgm_read_byte(&TBL_COXA_PIN[leg]), wCoxaSSCV);
+    mPort->write(buf);
+    sprintf(buf, fmt, pgm_read_byte(&TBL_FEMUR_PIN[leg]), wFemurSSCV);
+    mPort->write(buf);
+    sprintf(buf, fmt, pgm_read_byte(&TBL_TIBIA_PIN[leg]), wTibiaSSCV);
+    mPort->write(buf);
 #if (CONFIG_DOF_PER_LEG == 4)
-    i++;
-    mServoLegs[i].writeMicroseconds(wTarsSSCV + mServoOffsets[i]);
+    sprintf(buf, fmt, pgm_read_byte(&TBL_TARS_PIN[leg]), wTarsSSCV);
+    mPort->write(buf);
 #endif
 }
 
@@ -245,7 +225,10 @@ void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibi
 //--------------------------------------------------------------------
 void PhoenixServoUSC::commit(u16 wMoveTime)
 {
-    mSGM.commit(wMoveTime);
+    char buf[20];
+
+    sprintf(buf, "T%d\r\n", wMoveTime);
+    mPort->write(buf);
 }
 
 //--------------------------------------------------------------------
@@ -253,9 +236,6 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
 //--------------------------------------------------------------------
 void PhoenixServoUSC::release(void)
 {
-    for (u8 i = 0; i < CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG; i++) {
-        mServoLegs[i].detach();
-    }
     mBoolServosAttached = FALSE;
 }
 
@@ -283,7 +263,7 @@ bool PhoenixServoUSC::handleTerminal(u8 *psz, u8 bLen)
 void PhoenixServoUSC::setLegs1500ms(void)
 {
     for (u8 i = 0; i < CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG; i++) {
-        mServoLegs[i].writeMicroseconds(1500 + mServoOffsets[i]);
+//        mServoLegs[i].writeMicroseconds(1500 + mServoOffsets[i]);
     }
 }
 
@@ -297,9 +277,7 @@ static const char *apszLJoints[] = {" Coxa", " Femur", " Tibia", " tArs"}; // wh
 
 void PhoenixServoUSC::move(int servo, int val, unsigned int time)
 {
-    mSGM.start();
-	mServoLegs[servo].write(val);
-    mSGM.commit(time);
+
 }
 
 void PhoenixServoUSC::handleServoOffsets(void)
@@ -325,13 +303,10 @@ void PhoenixServoUSC::handleServoOffsets(void)
             printf(F("Servo: %s-%s (%d)\n"), apszLegs[sSN/CONFIG_DOF_PER_LEG], apszLJoints[sSN%CONFIG_DOF_PER_LEG], sOffset);
 
             // Now lets wiggle the servo
-            mSGM.wait(0xffffff);    // wait for any active servos to finish moving...
             move(sSN, 1500+sOffset+250, 500);
 
-            mSGM.wait(0xffffff);    // wait for any active servos to finish moving...
             move(sSN, 1500+sOffset-250, 500);
 
-            mSGM.wait(0xffffff);    // wait for any active servos to finish moving...
             move(sSN, 1500+sOffset, 500);
             fNew = FALSE;
         }

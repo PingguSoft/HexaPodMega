@@ -27,7 +27,9 @@ PhoenixInputSerial::PhoenixInputSerial(void)
 
 void PhoenixInputSerial::init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
 {
-    //CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+#ifndef CONFIG_DBG_SERIAL
+    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+#endif
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 }
 

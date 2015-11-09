@@ -23,6 +23,7 @@
 #endif
 #include <Wire.h>
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 
 #include "common.h"
 #include "ServoEx.h"

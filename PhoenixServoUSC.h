@@ -13,17 +13,17 @@
 
 #ifndef _PHOENIX_SERVO_SW_H_
 #define _PHOENIX_SERVO_SW_H_
-
+#include <SoftwareSerial.h>
 #include "config.h"
 #include "utils.h"
 #include "ServoEx.h"
 #include "PhoenixServo.h"
-#include <SoftwareSerial.h>
+
 
 class PhoenixServoUSC : public PhoenixServo
 {
 private:
-    SoftwareSerial  *mSerial;
+    SoftwareSerial  *mPort;
     s16             mServoOffsets[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     bool            mBoolServosAttached;
 

@@ -25,7 +25,11 @@
 #include <pins_arduino.h>
 #include <avr/pgmspace.h>
 #include "PhoenixCore.h"
+#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
 #include "PhoenixServoSW.h"
+#else
+#include "PhoenixServoUSC.h"
+#endif
 
 #define BALANCE_DIV_FACTOR  6    //;Other values than 6 can be used, testing...CAUTION!! At your own risk ;)
 
@@ -296,7 +300,12 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
 
 PhoenixCore::PhoenixCore(CTRL_STATE *state)
 {
+#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
     mServo = new PhoenixServoSW();
+#else
+    mServo = new PhoenixServoUSC();
+#endif
+
     mCommitTime = 0;
     mPtrCtrlState = state;
 }
