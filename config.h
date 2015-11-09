@@ -15,33 +15,43 @@
 #define __CONFIG_H__
 #include "common.h"
 
-#define CONFIG_ORIGINAL         1
-#define CONFIG_NASSPOP_MEGA     2
-#define CONFIG_NASSPOP_MINI     3
-#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
-
-
 #define CONFIG_DOF_PER_LEG      3
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
+// board type
+#define CONFIG_ORIGINAL         1
+#define CONFIG_NASSPOP_MEGA     2
+#define CONFIG_NASSPOP_MINI     3
+
+// controller input
+#define CONFIG_CTRL_TYPE_SERIAL 1
+#define CONFIG_CTRL_TYPE_BTCON  2
+
+// servo controller
+#define CONFIG_SERVO_SW_PWM     1
+#define CONFIG_SERVO_USC        2
+
+#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
+
 #if (CONFIG_BOARD == CONFIG_ORIGINAL) || (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
-#define CONFIG_DBG_SERIAL   Serial
-#define CONFIG_DEBUG_BAUD   115200
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
 
-#define CONFIG_CTRL_SERIAL  Serial1
-#define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_CTRL_SERIAL  Serial1
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-//#define CONFIG_DBG_SERIAL   Serial
-//#define CONFIG_DEBUG_BAUD   115200
+    #define CONFIG_CTRL_SERIAL  Serial
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_USC
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
 
-#define CONFIG_CTRL_SERIAL  Serial
-#define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO_USC_TX 15
+    #define CONFIG_SERVO_USC_RX 16
+    #define CONFIG_SERVO_USC_BAUD   57600
 #endif
-
-#define CONFIG_CTRL_TYPE_SERIAL 0
-#define CONFIG_CTRL_TYPE_BTCON  1
-#define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
 
 #ifdef CONFIG_DBG_SERIAL
     #define CONFIG_TERMINAL
