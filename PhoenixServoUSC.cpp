@@ -15,7 +15,6 @@
 #include <EEPROM.h>
 #include "PhoenixServoUSC.h"
 
-//Servo Pin numbers - May be SSC-32 or actual pins on main controller, depending on configuration.
 static const u8 TBL_COXA_PIN[] PROGMEM = {
     PIN_RR_COXA,  PIN_RM_COXA,  PIN_RF_COXA,  PIN_LR_COXA,  PIN_LM_COXA,  PIN_LF_COXA
 };
@@ -34,7 +33,7 @@ static const u8 TBL_TARS_PIN[] PROGMEM = {
 };
 #endif
 
-// 12 64 0 0 A1 FF 56 FF 0 0 92 FF 0 0 0 0
+
 static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
     0, -150,  -70,
     0, -115,  160,
@@ -43,15 +42,14 @@ static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
     0, -115,  165,
     0, -135,   60,
 };
-//0, -150,  -70,    0, -115,  160,    0,  -55,  120,    0,   45,    0,    0, -115,  165,    0, -135,   60,
 
 PhoenixServoUSC::PhoenixServoUSC(void)
 {
 }
 
-//--------------------------------------------------------------------
-// Helper function to load the servo offsets from the EEPROM
-//--------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// load the servo offsets from the EEPROM
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::loadServosConfig(void)
 {
     u8    *pb = (u8*)&mServoOffsets;
@@ -60,7 +58,6 @@ void PhoenixServoUSC::loadServosConfig(void)
 
     memset(mServoOffsets, 0, sizeof(mServoOffsets));
 
-#if 1
     if (EEPROM.read(0) == CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG) {
         printf(F("Load from EEPROM !!\n"));
         for (i=0; i < sizeof(mServoOffsets); i++) {
@@ -72,7 +69,6 @@ void PhoenixServoUSC::loadServosConfig(void)
             return;
         }
     }
-#endif
 
     printf(F("Load default !!\n"));
     for (i = 0; i < CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG; i++) {
@@ -81,10 +77,11 @@ void PhoenixServoUSC::loadServosConfig(void)
 }
 
 
-//--------------------------------------------------------------------
-//init
-//--------------------------------------------------------------------
-void PhoenixServoUSC::init(void) {
+//-----------------------------------------------------------------------------
+// init
+//-----------------------------------------------------------------------------
+void PhoenixServoUSC::init(void) 
+{
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 
     mPort = new SoftwareSerial(CONFIG_SERVO_USC_RX, CONFIG_SERVO_USC_TX);
@@ -99,21 +96,11 @@ void PhoenixServoUSC::init(void) {
 
     for (u8 i = 0; i < CONFIG_VBAT_SMOOTH; i++)
         getBattVolt();
-/*
-    for (;;) {
-        mPort->write("#1P500T800\r\n");
-        delay(1000);
-        mPort->write("#1P2500T800\r\n");
-        delay(1000);
-    }
-*/
 }
 
-//--------------------------------------------------------------------
-//getBattVolt - Maybe should try to minimize when this is called
-// as it uses the serial port... Maybe only when we are not interpolating
-// or if maybe some minimum time has elapsed...
-//--------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// getBattVolt
+//-----------------------------------------------------------------------------
 u8 PhoenixServoUSC::getBattVolt(void) {
     u16 v;
 #ifdef PIN_ANALOG_VOLT
@@ -140,32 +127,67 @@ u8 PhoenixServoUSC::getBattVolt(void) {
     return t;
 }
 
-//--------------------------------------------------------------------
-// Attach Servos...
-//--------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// attachServos
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::attachServos(void) {
     u8 tot = 0;
 
     if (!mBoolServosAttached) {
         for (u8 j = 0; j < CONFIG_NUM_LEGS; j++) {
+            mServos[tot++] = pgm_read_byte(&TBL_COXA_PIN[j]);
+            mServos[tot++] = pgm_read_byte(&TBL_FEMUR_PIN[j]);
+            mServos[tot++] = pgm_read_byte(&TBL_TIBIA_PIN[j]);
+#if (CONFIG_DOF_PER_LEG == 4)
+            mServos[tot++] = pgm_read_byte(&TBL_TARS_PIN[j]);
+#endif
         }
         mBoolServosAttached = TRUE;
     }
 }
 
-
-//------------------------------------------------------------------------------------------
-//[start] Does whatever preperation that is needed to starrt a move of our servos
-//------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// start
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::start(void)    // Start the update
 {
     attachServos();
 }
 
-//------------------------------------------------------------------------------------------
-//[write] Do the output to the SSC-32 for the servos associated with
-//         the Leg number passed in.
-//------------------------------------------------------------------------------------------
+#if (CONFIG_DOF_PER_LEG == 4)
+void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia, u16 wTars)
+#else
+void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia)
+#endif
+{
+    char    fmt[7];
+    char    buf[10];
+    u8      i = leg * CONFIG_DOF_PER_LEG;
+
+    memcpy_P(fmt, PSTR("#%dP%d\x00"), 7);
+
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, fmt, mServos[i++], wCoxa);
+    mPort->write(buf);
+
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, fmt, mServos[i++], wFemur);
+    mPort->write(buf);
+
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, fmt, mServos[i++], wTibia);
+    mPort->write(buf);
+
+#if (CONFIG_DOF_PER_LEG == 4)
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, fmt, mServos[i++], wTars);
+    mPort->write(buf);
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// write
+//-----------------------------------------------------------------------------
 #define PWM_DIV       991  //old 1059;
 #define PF_CONST      592  //old 650 ; 900*(1000/PWM_DIV)+PF_CONST must always be 1500
 
@@ -186,53 +208,31 @@ void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibi
 
     //Update Right Legs
     if (leg < 3) {
-        wCoxaSSCV  = ((long)(sCoxaAngle1 +900))*1000/PWM_DIV+PF_CONST;
-        wFemurSSCV = ((long)(-sFemurAngle1+900)*1000/PWM_DIV+PF_CONST);
-        wTibiaSSCV = ((long)(-sTibiaAngle1+900))*1000/PWM_DIV+PF_CONST;
+        wCoxaSSCV  = ((long)(sCoxaAngle1   + 900)) * 1000 / PWM_DIV + PF_CONST;
+        wFemurSSCV = ((long)(-sFemurAngle1 + 900)  * 1000 / PWM_DIV + PF_CONST);
+        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
 #if (CONFIG_DOF_PER_LEG == 4)
-        wTarsSSCV  = ((long)(-sTarsAngle1+900))*1000/PWM_DIV+PF_CONST;
+        wTarsSSCV  = ((long)(-sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
 #endif
     } else {
-        wCoxaSSCV  = ((long)(-sCoxaAngle1 +900))*1000/PWM_DIV+PF_CONST;
-        wFemurSSCV = ((long)((long)(-sFemurAngle1+900))*1000/PWM_DIV+PF_CONST);
-        wTibiaSSCV = ((long)(-sTibiaAngle1+900))*1000/PWM_DIV+PF_CONST;
+        wCoxaSSCV  = ((long)(-sCoxaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+        wFemurSSCV = ((long)((long)(-sFemurAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST);
+        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
 #if (CONFIG_DOF_PER_LEG == 4)
-        wTarsSSCV  = ((long)(sTarsAngle1+900))*1000/PWM_DIV+PF_CONST;
+        wTarsSSCV  = ((long)(sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
 #endif
     }
 
-    char fmt[7];
-    char buf[60];
-
-    strncpy_P(fmt, PSTR("#%dP%d"), 6);
-    fmt[6] = 0;
-    memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, pgm_read_byte(&TBL_COXA_PIN[leg]), wCoxaSSCV);
-    mPort->write(buf);
-    printf(buf);
-
-    memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, pgm_read_byte(&TBL_FEMUR_PIN[leg]), wFemurSSCV);
-    mPort->write(buf);
-    printf(buf);
-
-    memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, pgm_read_byte(&TBL_TIBIA_PIN[leg]), wTibiaSSCV);
-    mPort->write(buf);
-    printf(buf);
 #if (CONFIG_DOF_PER_LEG == 4)
-    memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, pgm_read_byte(&TBL_TARS_PIN[leg]), wTarsSSCV);
-    mPort->write(buf);
+    writeServo(leg, wCoxaSSCV, wFemurSSCV, wTibiaSSCV, wTarsSSCV);
+#else
+    writeServo(leg, wCoxaSSCV, wFemurSSCV, wTibiaSSCV);
 #endif
 }
 
-//--------------------------------------------------------------------
-//[commit Updates the positions of the servos - This outputs
-//         as much of the command as we can without committing it.  This
-//         allows us to once the previous update was completed to quickly
-//        get the next command to start
-//--------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// commit
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::commit(u16 wMoveTime)
 {
     char buf[20];
@@ -242,28 +242,34 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
     printf(buf);
 }
 
-//--------------------------------------------------------------------
-//[FREE SERVOS] Frees all the servos
-//--------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// release
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::release(void)
 {
+    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {    
+#if (CONFIG_DOF_PER_LEG == 4)
+        writeServo(leg, 0, 0, 0, 0);
+#else
+        writeServo(leg, 0, 0, 0);
+#endif
+    }
+    commit(500);
     mBoolServosAttached = FALSE;
 }
 
 #ifdef CONFIG_TERMINAL
-//==============================================================================
-// showTerminal: Allow the Terminal monitor to call the servo driver
-//      to allow it to display any additional commands it may have.
-//==============================================================================
+//-----------------------------------------------------------------------------
+// showTerminal
+//-----------------------------------------------------------------------------
 void PhoenixServoUSC::showTerminal(void)
 {
     printf(F("O - Enter Servo offset mode\n"));
 }
 
-//==============================================================================
-// handleTerminal: The terminal monitor will call this to see if the
-//     command the user entered was one added by the servo driver.
-//==============================================================================
+//-----------------------------------------------------------------------------
+// handleTerminal
+//-----------------------------------------------------------------------------
 bool PhoenixServoUSC::handleTerminal(u8 *psz, u8 bLen)
 {
     if ((bLen == 1) && ((*psz == 'o') || (*psz == 'O'))) {
@@ -273,114 +279,115 @@ bool PhoenixServoUSC::handleTerminal(u8 *psz, u8 bLen)
 
 void PhoenixServoUSC::setLegs1500ms(void)
 {
-    for (u8 i = 0; i < CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG; i++) {
-//        mServoLegs[i].writeMicroseconds(1500 + mServoOffsets[i]);
+    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {    
+#if (CONFIG_DOF_PER_LEG == 4)
+        writeServo(leg, 1500, 1500, 1500, 1500);
+#else
+        writeServo(leg, 1500, 1500, 1500);
+#endif
     }
+    commit(500);
 }
 
-//==============================================================================
-//	handleServoOffsets - Find the zero points for each of our servos...
-//     	Will use the new servo function to set the actual pwm rate and see
-//    	how well that works...
-//==============================================================================
-static const char *apszLegs[]    = {"RR","RM","RF", "LR", "LM", "LF"};  // Leg Order
-static const char *apszLJoints[] = {" Coxa", " Femur", " Tibia", " tArs"}; // which joint on the leg...
+//-----------------------------------------------------------------------------
+//	handleServoOffsets
+//-----------------------------------------------------------------------------
+static const char *apszLegs[]    = {"RR","RM","RF", "LR", "LM", "LF"};
+static const char *apszLJoints[] = {" Coxa", " Femur", " Tibia", " tArs"};
 
 void PhoenixServoUSC::move(int servo, int val, unsigned int time)
 {
+    char    fmt[12];
+    char    buf[20];
 
+    memcpy_P(fmt, PSTR("#%dP%dT%d\r\n\x00"), 12);
+
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, fmt, mServos[servo], val, time);
+    mPort->write(buf);
 }
 
 void PhoenixServoUSC::handleServoOffsets(void)
 {
     int  data;
-    s16  sSN = 0;             // which servo number
-    bool fNew = TRUE;    // is this a new servo to work with?
-    bool fExit = FALSE;    // when to exit
+    s16  sSN = 0;
+    bool fNew = TRUE;
+    bool fExit = FALSE;
     int  ich;
     s16  sOffset;
 
-    // OK lets move all of the servos to their zero point.
     printf(F("Find Servo Zeros.\n$-Exit, +- changes, *-change servo\n"));
-    printf(F("    0-5 Chooses a leg, C-Coxa, F-Femur, T-Tibia\n"));
-
-    // don't continue here until we have a valid voltage to work with.
+    printf(F("    0-5 Chooses a leg, C-Coxa, F-Femur, T-Tibia, A-tArs\n"));
     attachServos();
     setLegs1500ms();
 
-    while(!fExit) {
+    while (!fExit) {
         if (fNew) {
             sOffset = mServoOffsets[sSN];
             printf(F("Servo: %s-%s (%d)\n"), apszLegs[sSN/CONFIG_DOF_PER_LEG], apszLJoints[sSN%CONFIG_DOF_PER_LEG], sOffset);
 
             // Now lets wiggle the servo
-            move(sSN, 1500+sOffset+250, 500);
-
-            move(sSN, 1500+sOffset-250, 500);
-
-            move(sSN, 1500+sOffset, 500);
+            move(sSN, 1500 + sOffset + 250, 500);
+            move(sSN, 1500 + sOffset - 250, 500);
+            move(sSN, 1500 + sOffset, 500);
             fNew = FALSE;
         }
 
-        //get user entered data
     	data = CONFIG_DBG_SERIAL.read();
-        //if data received
-    	if (data !=-1)     {
+
+    	if (data != -1)     {
             if (data == '$')
-        	    fExit = TRUE;    // not sure how the keypad will map so give NL, CR, LF... all implies exit
+        	    fExit = TRUE;
             else if ((data == '+') || (data == '-')) {
                 if (data == '+')
-                    sOffset += 5;        // increment by 5us
+                    sOffset += 5;
         	    else
-                    sOffset -= 5;        // increment by 5us
-
+                    sOffset -= 5;
             	printf(F(" %4d\n"), sOffset);
                 mServoOffsets[sSN] = sOffset;
-                move(sSN, 1500+sOffset, 500);
+                move(sSN, 1500 + sOffset, 500);
             } else if ((data >= '0') && (data <= '5')) {
-                // direct enter of which servo to change
             	fNew = TRUE;
             	sSN = (sSN % CONFIG_DOF_PER_LEG) + (data - '0')*CONFIG_DOF_PER_LEG;
             } else if ((data == 'c') && (data == 'C')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 0;
-            } else if ((data == 'c') && (data == 'C')) {
+            } else if ((data == 'f') && (data == 'F')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 1;
-            } else if ((data == 'c') && (data == 'C')) {
-                // direct enter of which servo to change
+            } else if ((data == 't') && (data == 'T')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 2;
+#if (CONFIG_DOF_PER_LEG == 4)
+            } else if ((data == 'a') && (data == 'A')) {
+            	fNew = TRUE;
+            	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 3;
+#endif
             } else if (data == '*') {
-                    // direct enter of which servo to change
             	fNew = TRUE;
             	sSN++;
-            	if (sSN == 6*CONFIG_DOF_PER_LEG)
+            	if (sSN == CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG)
                     sSN = 0;
             }
         }
     }
 
-    printf(F("Find Servo exit "));
+    printf(F("Servo offsets : "));
     for (u8 i = 0; i < CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG; i++) {
         printf(F("%4d, "), mServoOffsets[i]);
     }
 
     printf(F("\nSave Changes? Y/N: "));
-    //get user entered data
     while (((data = CONFIG_DBG_SERIAL.read()) == -1) || ((data >= 10) && (data <= 15)));
     if ((data == 'Y') || (data == 'y')) {
-        // Ok they asked for the data to be saved.  We will store the data with a
-        // number of servos (u8)at the start, followed by a u8 for a checksum...followed by our offsets array...
-        // Currently we store these values starting at EEPROM address 0. May later change...
-        u8 *pb = (u8*)&mServoOffsets;
-        u8 bChkSum = 0;  //
-        EEPROM.write(0, CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG);    // Ok lets write out our count of servos
+        u8  *pb = (u8*)&mServoOffsets;
+        u8  bChkSum = 0;
+
+        EEPROM.write(0, CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG);
         for (sSN=0; sSN < sizeof(mServoOffsets); sSN++) {
             EEPROM.write(sSN + 2, *pb);
             bChkSum += *pb++;
         }
-        // Then write out to address 1 our calculated checksum
         EEPROM.write(1, bChkSum);
     } else {
         loadServosConfig();
@@ -388,5 +395,5 @@ void PhoenixServoUSC::handleServoOffsets(void)
 
     release();
 }
-#endif  // Terminal monitor
+#endif
 

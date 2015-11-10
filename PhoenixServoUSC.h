@@ -24,6 +24,7 @@ class PhoenixServoUSC : public PhoenixServo
 {
 private:
     SoftwareSerial  *mPort;
+    u8              mServos[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     s16             mServoOffsets[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     bool            mBoolServosAttached;
 
@@ -36,7 +37,12 @@ private:
     void setLegs1500ms(void);
     void handleServoOffsets(void);
 
-    u16  read(u8 *pb, u16 size, u16 timeout, u8 EOL);
+#if (CONFIG_DOF_PER_LEG == 4)
+    void writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia, u16 wTars);
+#else
+    void writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia);
+#endif
+
 
 public:
     PhoenixServoUSC(void);
