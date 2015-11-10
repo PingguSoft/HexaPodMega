@@ -45,6 +45,8 @@ static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
 
 PhoenixServoUSC::PhoenixServoUSC(void)
 {
+    mPort = new SoftwareSerial(CONFIG_SERVO_USC_RX, CONFIG_SERVO_USC_TX);
+    mPort->begin(CONFIG_SERVO_USC_BAUD);
 }
 
 //-----------------------------------------------------------------------------
@@ -80,12 +82,9 @@ void PhoenixServoUSC::loadServosConfig(void)
 //-----------------------------------------------------------------------------
 // init
 //-----------------------------------------------------------------------------
-void PhoenixServoUSC::init(void) 
+void PhoenixServoUSC::init(void)
 {
     printf(F("%s\n"), __PRETTY_FUNCTION__);
-
-    mPort = new SoftwareSerial(CONFIG_SERVO_USC_RX, CONFIG_SERVO_USC_TX);
-    mPort->begin(CONFIG_SERVO_USC_BAUD);
 
     mBoolServosAttached = FALSE;
     loadServosConfig();
@@ -96,6 +95,25 @@ void PhoenixServoUSC::init(void)
 
     for (u8 i = 0; i < CONFIG_VBAT_SMOOTH; i++)
         getBattVolt();
+
+
+/*
+    char buf[80];
+    attachServos();
+    for (;;) {
+        for (int i = 0; i < 6; i++) {
+            writeServo(i, 1000, 1000, 1000);
+        }
+        commit(500);
+        delay(700);
+
+        for (int i = 0; i < 6; i++) {
+            writeServo(i, 2500, 2500, 2500);
+        }
+        commit(500);
+        delay(700);
+    }
+*/
 }
 
 //-----------------------------------------------------------------------------
@@ -167,20 +185,27 @@ void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia)
     memcpy_P(fmt, PSTR("#%dP%d\x00"), 7);
 
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, mServos[i++], wCoxa);
+    sprintf(buf, fmt, mServos[i], wCoxa + mServoOffsets[i]);
+    i++;
     mPort->write(buf);
+    printf(buf);
 
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, mServos[i++], wFemur);
+    sprintf(buf, fmt, mServos[i], wFemur + mServoOffsets[i]);
+    i++;
     mPort->write(buf);
+    printf(buf);
 
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, mServos[i++], wTibia);
+    sprintf(buf, fmt, mServos[i++], wTibia + mServoOffsets[i]);
+    i++;
     mPort->write(buf);
+    printf(buf);
 
 #if (CONFIG_DOF_PER_LEG == 4)
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, fmt, mServos[i++], wTars);
+    sprintf(buf, fmt, mServos[i], wTars + mServoOffsets[i]);
+    i++;
     mPort->write(buf);
 #endif
 }
@@ -240,6 +265,7 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
     sprintf(buf, "T%d\r\n", wMoveTime);
     mPort->write(buf);
     printf(buf);
+    printf(F("TS:%ld\r\n\r\n"), millis());
 }
 
 //-----------------------------------------------------------------------------
@@ -247,11 +273,11 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
 //-----------------------------------------------------------------------------
 void PhoenixServoUSC::release(void)
 {
-    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {    
+    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {
 #if (CONFIG_DOF_PER_LEG == 4)
-        writeServo(leg, 0, 0, 0, 0);
+        writeServo(leg, 1500, 1500, 1500, 1500);
 #else
-        writeServo(leg, 0, 0, 0);
+        writeServo(leg, 1500, 1500, 1500);
 #endif
     }
     commit(500);
@@ -279,7 +305,7 @@ bool PhoenixServoUSC::handleTerminal(u8 *psz, u8 bLen)
 
 void PhoenixServoUSC::setLegs1500ms(void)
 {
-    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {    
+    for (u8 leg = 0; leg < CONFIG_NUM_LEGS; leg++) {
 #if (CONFIG_DOF_PER_LEG == 4)
         writeServo(leg, 1500, 1500, 1500, 1500);
 #else
@@ -305,6 +331,8 @@ void PhoenixServoUSC::move(int servo, int val, unsigned int time)
     memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, mServos[servo], val, time);
     mPort->write(buf);
+    printf(buf);
+    delay(time);
 }
 
 void PhoenixServoUSC::handleServoOffsets(void)
@@ -324,18 +352,18 @@ void PhoenixServoUSC::handleServoOffsets(void)
     while (!fExit) {
         if (fNew) {
             sOffset = mServoOffsets[sSN];
-            printf(F("Servo: %s-%s (%d)\n"), apszLegs[sSN/CONFIG_DOF_PER_LEG], apszLJoints[sSN%CONFIG_DOF_PER_LEG], sOffset);
+            printf(F("Servo: %s-%s (%d)\n"), apszLegs[sSN / CONFIG_DOF_PER_LEG], apszLJoints[sSN % CONFIG_DOF_PER_LEG], sOffset);
 
             // Now lets wiggle the servo
-            move(sSN, 1500 + sOffset + 250, 500);
-            move(sSN, 1500 + sOffset - 250, 500);
-            move(sSN, 1500 + sOffset, 500);
+            move(sSN, 1500 + sOffset + 250, 250);
+            move(sSN, 1500 + sOffset - 250, 250);
+            move(sSN, 1500 + sOffset, 250);
             fNew = FALSE;
         }
 
     	data = CONFIG_DBG_SERIAL.read();
 
-    	if (data != -1)     {
+    	if (data != -1) {
             if (data == '$')
         	    fExit = TRUE;
             else if ((data == '+') || (data == '-')) {
@@ -345,21 +373,21 @@ void PhoenixServoUSC::handleServoOffsets(void)
                     sOffset -= 5;
             	printf(F(" %4d\n"), sOffset);
                 mServoOffsets[sSN] = sOffset;
-                move(sSN, 1500 + sOffset, 500);
+                move(sSN, 1500 + sOffset, 200);
             } else if ((data >= '0') && (data <= '5')) {
             	fNew = TRUE;
-            	sSN = (sSN % CONFIG_DOF_PER_LEG) + (data - '0')*CONFIG_DOF_PER_LEG;
-            } else if ((data == 'c') && (data == 'C')) {
+            	sSN = (sSN % CONFIG_DOF_PER_LEG) + (data - '0') * CONFIG_DOF_PER_LEG;
+            } else if ((data == 'c') || (data == 'C')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 0;
-            } else if ((data == 'f') && (data == 'F')) {
+            } else if ((data == 'f') || (data == 'F')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 1;
-            } else if ((data == 't') && (data == 'T')) {
+            } else if ((data == 't') || (data == 'T')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 2;
 #if (CONFIG_DOF_PER_LEG == 4)
-            } else if ((data == 'a') && (data == 'A')) {
+            } else if ((data == 'a') || (data == 'A')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 3;
 #endif

@@ -306,7 +306,7 @@ PhoenixCore::PhoenixCore(CTRL_STATE *state)
     mServo = new PhoenixServoUSC();
 #endif
 
-    mCommitTime = 0;
+    mNextCommitTime = 0;
     mPtrCtrlState = state;
 }
 
@@ -361,15 +361,6 @@ u8 PhoenixCore::loop(void)
     //Start time
     mTimerStart = millis();
 
-    if (mCommitTime != 0) {
-        if (mTimerStart >= mCommitTime) {
-            mServo->commit(mCurServoMoveTime);
-            mCommitTime = 0;
-        } else {
-            return ret;
-        }
-    }
-
     // every 500ms
     if (mTimerStart - mTimerLastCheck > 500) {
         mCurVolt = mServo->getBattVolt();
@@ -386,6 +377,10 @@ u8 PhoenixCore::loop(void)
         } else {
             mVoltWarnBeepCnt = 0;
         }
+    }
+
+    if (mNextCommitTime != 0 && mTimerStart < mNextCommitTime) {
+        return ret;
     }
 
     if (mBoolUpsideDown) {
@@ -494,17 +489,15 @@ u8 PhoenixCore::loop(void)
         if (mExtraCycle > 0) {
             mExtraCycle--;
             mBoolWalking = (mExtraCycle != 0);
-            mCommitTime  = mTimerStart + mOldServoMoveTime;
-
             if (mBoolDbgOutput) {
                 printf(F("BRX:%d, Walk:%d, GS:%d\n"), mPtrCtrlState->c3dBodyRot.x, mBoolWalking, mGaitStep);
                 printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_LF], mGaitPosYs[IDX_LF], mGaitPosZs[IDX_LF]);
                 printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_RF], mGaitPosYs[IDX_RF], mGaitPosZs[IDX_RF]);
             }
-        } else {
-            // commit immediately
-            mServo->commit(mCurServoMoveTime);
         }
+
+        mServo->commit(mCurServoMoveTime);
+        mNextCommitTime = millis() + mCurServoMoveTime;
 
         if (mBoolDbgOutput) {
             printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZs[IDX_LF]);
@@ -518,7 +511,7 @@ u8 PhoenixCore::loop(void)
             mServo->commit(mCurServoMoveTime);
             delay(600);
         } else {
-            mServo->release();
+            //mServo->release();
         }
         // We also have a simple debug monitor that allows us to
         // check things. call it here..
@@ -527,8 +520,6 @@ u8 PhoenixCore::loop(void)
             return ret;
 #endif
     }
-    mOldServoMoveTime = mCurServoMoveTime;
-
     return ret;
 }
 

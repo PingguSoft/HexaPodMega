@@ -101,6 +101,7 @@ enum {
 
 void showLED(u8 color)
 {
+    //printf(F("COLOR : %d\n"), color);
     digitalWrite(PIN_STATUS_RED,   color & 0x01);
     digitalWrite(PIN_STATUS_GREEN, color & 0x02);
     digitalWrite(PIN_STATUS_BLUE,  color & 0x04);
@@ -151,7 +152,6 @@ void turnOff(void)
     mBodyYShift  = 0;
     core->initCtrl();
     Utils::sound(400, 0, 0, 100, 300);
-    showLED(COLOR_BLACK);
     printf(F("OFF\n"));
 }
 
@@ -170,11 +170,11 @@ void loop()
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_ON_OFF)) {
     	if (ctrlState.fHexOn) {
             turnOff();
+            mColor = 0;
         } else {
             ctrlState.fHexOn = TRUE;
             printf(F("ON\n"));
             Utils::sound(200, 200, 0, 100, 300);
-            showLED(1);
         }
         fAdjustLegPositions = TRUE;
     }
@@ -329,7 +329,8 @@ void loop()
         ctrlState.c3dTravelLen.y = -(rx - 128)/4; //Right Stick Left/Right
     }
 
-    mColor = 1 + mModeControl + (mBoolDblTravel ? 4 : 0);
+    if (ctrlState.fHexOn)
+        mColor = 1 + mModeControl + (mBoolDblTravel ? 4 : 0);
 
     //[Translate functions]
     mBodyYShift = 0;

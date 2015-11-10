@@ -34,32 +34,6 @@
 
 #define CONFIG_BOARD            CONFIG_NASSPOP_MINI
 
-#if (CONFIG_BOARD == CONFIG_ORIGINAL) || (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
-    #define CONFIG_DBG_SERIAL   Serial
-    #define CONFIG_DEBUG_BAUD   115200
-
-    #define CONFIG_CTRL_SERIAL  Serial1
-    #define CONFIG_CTRL_BAUD    115200
-    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
-    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
-#elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-    #define CONFIG_DBG_SERIAL   Serial
-    #define CONFIG_DEBUG_BAUD   115200
-
-    #define CONFIG_CTRL_SERIAL  Serial
-    #define CONFIG_CTRL_BAUD    115200
-    #define CONFIG_SERVO        CONFIG_SERVO_USC
-    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_SERIAL
-
-    #define CONFIG_SERVO_USC_TX 12
-    #define CONFIG_SERVO_USC_RX 11
-    #define CONFIG_SERVO_USC_BAUD   9600
-#endif
-
-#ifdef CONFIG_DBG_SERIAL
-    #define CONFIG_TERMINAL
-#endif
-
 #define CONFIG_VBAT_SMOOTH   16
 #define CONFIG_VBAT_SCALE    48
 #define CONFIG_VBAT_OFFSET   -1   // 0.1v unit
@@ -74,6 +48,14 @@
 //#define PIN_ANALOG_VOLT A0
 
 #if (CONFIG_BOARD == CONFIG_ORIGINAL)
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
+
+    #define CONFIG_CTRL_SERIAL  Serial1
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
     #define PIN_STATUS_RED      31
     #define PIN_STATUS_GREEN    30
     #define PIN_STATUS_BLUE     32
@@ -109,6 +91,14 @@
     #define PIN_LF_TIBIA        5  //Front Left leg Knee
     #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
+
+    #define CONFIG_CTRL_SERIAL  Serial1
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
     #define PIN_STATUS_RED      A7
     #define PIN_STATUS_GREEN    A6
     #define PIN_STATUS_BLUE     A5
@@ -144,9 +134,26 @@
     #define PIN_LF_TIBIA        5  //Front Left leg Knee
     #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-    #define PIN_STATUS_RED       3
-    #define PIN_STATUS_GREEN     5
-    #define PIN_STATUS_BLUE      6
+//    #define CONFIG_DBG_SERIAL   Serial
+//    #define CONFIG_DEBUG_BAUD   115200
+
+    #define CONFIG_CTRL_SERIAL  Serial
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_USC
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
+    #define CONFIG_SERVO_USC_TX 12
+    #define CONFIG_SERVO_USC_RX 11
+    #define CONFIG_SERVO_USC_BAUD   9600
+
+#ifdef CONFIG_DBG_SERIAL
+//    #define CONFIG_TERMINAL
+#endif
+
+    // USC PINS
+    #define PIN_STATUS_RED       6
+    #define PIN_STATUS_GREEN     3
+    #define PIN_STATUS_BLUE      5
     #define PIN_SOUND            2
 
     #define PIN_RR_COXA         24  //Rear Right leg Hip Horizontal

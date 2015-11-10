@@ -79,7 +79,7 @@ void PhoenixServoSW::loadServosConfig(void)
 //-----------------------------------------------------------------------------
 // init
 //-----------------------------------------------------------------------------
-void PhoenixServoSW::init(void) 
+void PhoenixServoSW::init(void)
 {
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 
@@ -97,7 +97,7 @@ void PhoenixServoSW::init(void)
 //-----------------------------------------------------------------------------
 // getBattVolt
 //-----------------------------------------------------------------------------
-u8 PhoenixServoSW::getBattVolt(void) 
+u8 PhoenixServoSW::getBattVolt(void)
 {
     u16 v;
 #ifdef PIN_ANALOG_VOLT
@@ -127,7 +127,7 @@ u8 PhoenixServoSW::getBattVolt(void)
 //-----------------------------------------------------------------------------
 // attachServos
 //-----------------------------------------------------------------------------
-void PhoenixServoSW::attachServos(void) 
+void PhoenixServoSW::attachServos(void)
 {
     u8 tot = 0;
 
@@ -308,17 +308,17 @@ void PhoenixServoSW::handleServoOffsets(void)
             } else if ((data >= '0') && (data <= '5')) {
             	fNew = TRUE;
             	sSN = (sSN % CONFIG_DOF_PER_LEG) + (data - '0')*CONFIG_DOF_PER_LEG;
-            } else if ((data == 'c') && (data == 'C')) {
+            } else if ((data == 'c') || (data == 'C')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 0;
-            } else if ((data == 'f') && (data == 'F')) {
+            } else if ((data == 'f') || (data == 'F')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 1;
-            } else if ((data == 't') && (data == 'T')) {
+            } else if ((data == 't') || (data == 'T')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 2;
 #if (CONFIG_DOF_PER_LEG == 4)
-            } else if ((data == 'a') && (data == 'A')) {
+            } else if ((data == 'a') || (data == 'A')) {
             	fNew = TRUE;
             	sSN = (sSN / CONFIG_DOF_PER_LEG) * CONFIG_DOF_PER_LEG + 3;
 #endif
@@ -341,7 +341,7 @@ void PhoenixServoSW::handleServoOffsets(void)
     if ((data == 'Y') || (data == 'y')) {
         u8  *pb = (u8*)&mServoOffsets;
         u8  bChkSum = 0;
-        
+
         EEPROM.write(0, CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG);
         for (sSN=0; sSN < sizeof(mServoOffsets); sSN++) {
             EEPROM.write(sSN + 2, *pb);

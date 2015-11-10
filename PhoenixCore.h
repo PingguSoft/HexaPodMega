@@ -85,9 +85,8 @@ private:
     s16         mLegPosZs[CONFIG_NUM_LEGS];    //Actual Z Posion of the Leg
 
     u16         mCurServoMoveTime; // Time for servo updates
-    u16         mOldServoMoveTime; // Previous time for the servo updates
 
-    u32         mCommitTime;
+    u32         mNextCommitTime;
 
     bool        mBoolWalking;            //  True if the robot are walking
 
