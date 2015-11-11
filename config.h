@@ -150,8 +150,8 @@
     #define PIN_LF_TIBIA        5  //Front Left leg Knee
     #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-    #define CONFIG_DBG_SERIAL   Serial
-    #define CONFIG_DEBUG_BAUD   115200
+//    #define CONFIG_DBG_SERIAL   Serial
+//    #define CONFIG_DEBUG_BAUD   115200
 
     // software serial
     #define CONFIG_SERVO        CONFIG_SERVO_USC

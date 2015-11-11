@@ -30,6 +30,7 @@ private:
 #endif
     u8              mServos[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     s16             mServoOffsets[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
+    u16             mServoValues[CONFIG_NUM_LEGS][CONFIG_DOF_PER_LEG];
     bool            mBoolServosAttached;
 
     u16             mVoltBuf[CONFIG_VBAT_SMOOTH];

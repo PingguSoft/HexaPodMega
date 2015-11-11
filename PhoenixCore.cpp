@@ -301,8 +301,9 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
 PhoenixCore::PhoenixCore(PhoenixServo *servo, CTRL_STATE *state)
 {
     mServo = servo;
-    mNextCommitTime = 0;
-    mPtrCtrlState = state;
+    mCommitTime = 0;
+    mOldServoMoveTime = 0;
+    mPtrCtrlState     = state;
 }
 
 void PhoenixCore::initCtrl(void)
@@ -356,6 +357,16 @@ u8 PhoenixCore::loop(void)
     //Start time
     mTimerStart = millis();
 
+    if (mCommitTime != 0) {
+        if (mTimerStart >= mCommitTime) {
+            mServo->commit(mCurServoMoveTime);
+            mCommitTime = 0;
+            mTimerStart = millis();
+        } else {
+            return ret;
+        }
+    }
+
     // every 500ms
     if (mTimerStart - mTimerLastCheck > 500) {
         mCurVolt = mServo->getBattVolt();
@@ -372,10 +383,6 @@ u8 PhoenixCore::loop(void)
         } else {
             mVoltWarnBeepCnt = 0;
         }
-    }
-
-    if (mNextCommitTime != 0 && mTimerStart < mNextCommitTime) {
-        return ret;
     }
 
     if (mBoolUpsideDown) {
@@ -481,22 +488,30 @@ u8 PhoenixCore::loop(void)
                 break;
             }
         }
+
+        //printf(F("ExtraCycle:%d\n"), mExtraCycle);
         if (mExtraCycle > 0) {
             mExtraCycle--;
             mBoolWalking = (mExtraCycle != 0);
+            mCommitTime  = mTimerStart + mOldServoMoveTime;
+            //printf(F("Next1:%ld\n"), mCommitTime);
+
             if (mBoolDbgOutput) {
                 printf(F("BRX:%d, Walk:%d, GS:%d\n"), mPtrCtrlState->c3dBodyRot.x, mBoolWalking, mGaitStep);
                 printf(F("LEFT  GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_LF], mGaitPosYs[IDX_LF], mGaitPosZs[IDX_LF]);
                 printf(F("RIGHT GPX:%5d, GPY:%5d, GPZ:%5d\n"), mGaitPosXs[IDX_RF], mGaitPosYs[IDX_RF], mGaitPosZs[IDX_RF]);
             }
+        } else {
+            // commit immediately
+            mCommitTime = mTimerStart + mOldServoMoveTime;
+            //printf(F("Next2:%ld\n"), mCommitTime);
         }
-
-        mServo->commit(mCurServoMoveTime);
-        mNextCommitTime = millis() + mCurServoMoveTime;
 
         if (mBoolDbgOutput) {
             printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZs[IDX_LF]);
         }
+
+
     } else {
         //Turn the bot off - May need to add ajust here...
         if (mPtrCtrlState->fHexOnOld) {
@@ -515,12 +530,13 @@ u8 PhoenixCore::loop(void)
             return ret;
 #endif
     }
+    mOldServoMoveTime = mCurServoMoveTime;
+
     return ret;
 }
 
 void PhoenixCore::updateServos(void)
 {
-     printf(F("--- TS:%ld \r\n"), millis());
     // First call off to the init...
     mServo->start();
 

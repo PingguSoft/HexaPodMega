@@ -181,6 +181,53 @@ void PhoenixServoUSC::start(void)    // Start the update
     attachServos();
 }
 
+//-----------------------------------------------------------------------------
+// write
+//-----------------------------------------------------------------------------
+#define PWM_DIV       991  //old 1059;
+#define PF_CONST      592  //old 650 ; 900*(1000/PWM_DIV)+PF_CONST must always be 1500
+
+// A PWM/deg factor of 10,09 give PWM_DIV = 991 and PF_CONST = 592
+// For a modified 5645 (to 180 deg travel): PWM_DIV = 1500 and PF_CONST = 900.
+#if (CONFIG_DOF_PER_LEG == 4)
+void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1, s16 sTarsAngle1)
+#else
+void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1)
+#endif
+{
+    u16    wCoxaSSCV;           // Coxa value in SSC units
+    u16    wFemurSSCV;
+    u16    wTibiaSSCV;
+#if (CONFIG_DOF_PER_LEG == 4)
+    u16    wTarsSSCV;
+#endif
+
+    //Update Right Legs
+    if (leg < 3) {
+        wCoxaSSCV  = ((long)(sCoxaAngle1   + 900)) * 1000 / PWM_DIV + PF_CONST;
+        wFemurSSCV = ((long)(-sFemurAngle1 + 900)  * 1000 / PWM_DIV + PF_CONST);
+        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+#if (CONFIG_DOF_PER_LEG == 4)
+        wTarsSSCV  = ((long)(-sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+#endif
+    } else {
+        wCoxaSSCV  = ((long)(-sCoxaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+        wFemurSSCV = ((long)((long)(-sFemurAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST);
+        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+#if (CONFIG_DOF_PER_LEG == 4)
+        wTarsSSCV  = ((long)(sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
+#endif
+    }
+    mServoValues[leg][0] = wCoxaSSCV;
+    mServoValues[leg][1] = wFemurSSCV;
+    mServoValues[leg][2] = wTibiaSSCV;
+#if (CONFIG_DOF_PER_LEG == 4)
+    mServoValues[leg][3] = wTarsSSCV;
+#endif
+}
+
+
+
 #if (CONFIG_DOF_PER_LEG == 4)
 void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia, u16 wTars)
 #else
@@ -220,60 +267,25 @@ void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia)
 }
 
 //-----------------------------------------------------------------------------
-// write
-//-----------------------------------------------------------------------------
-#define PWM_DIV       991  //old 1059;
-#define PF_CONST      592  //old 650 ; 900*(1000/PWM_DIV)+PF_CONST must always be 1500
-
-// A PWM/deg factor of 10,09 give PWM_DIV = 991 and PF_CONST = 592
-// For a modified 5645 (to 180 deg travel): PWM_DIV = 1500 and PF_CONST = 900.
-#if (CONFIG_DOF_PER_LEG == 4)
-void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1, s16 sTarsAngle1)
-#else
-void PhoenixServoUSC::write(u8 leg, s16 sCoxaAngle1, s16 sFemurAngle1, s16 sTibiaAngle1)
-#endif
-{
-    u16    wCoxaSSCV;           // Coxa value in SSC units
-    u16    wFemurSSCV;
-    u16    wTibiaSSCV;
-#if (CONFIG_DOF_PER_LEG == 4)
-    u16    wTarsSSCV;
-#endif
-
-    //Update Right Legs
-    if (leg < 3) {
-        wCoxaSSCV  = ((long)(sCoxaAngle1   + 900)) * 1000 / PWM_DIV + PF_CONST;
-        wFemurSSCV = ((long)(-sFemurAngle1 + 900)  * 1000 / PWM_DIV + PF_CONST);
-        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
-#if (CONFIG_DOF_PER_LEG == 4)
-        wTarsSSCV  = ((long)(-sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
-#endif
-    } else {
-        wCoxaSSCV  = ((long)(-sCoxaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
-        wFemurSSCV = ((long)((long)(-sFemurAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST);
-        wTibiaSSCV = ((long)(-sTibiaAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
-#if (CONFIG_DOF_PER_LEG == 4)
-        wTarsSSCV  = ((long)(sTarsAngle1 + 900)) * 1000 / PWM_DIV + PF_CONST;
-#endif
-    }
-
-#if (CONFIG_DOF_PER_LEG == 4)
-    writeServo(leg, wCoxaSSCV, wFemurSSCV, wTibiaSSCV, wTarsSSCV);
-#else
-    writeServo(leg, wCoxaSSCV, wFemurSSCV, wTibiaSSCV);
-#endif
-}
-
-//-----------------------------------------------------------------------------
 // commit
 //-----------------------------------------------------------------------------
 void PhoenixServoUSC::commit(u16 wMoveTime)
 {
     char buf[20];
 
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+#if (CONFIG_DOF_PER_LEG == 4)
+        writeServo(i, mServoValues[i][0], mServoValues[i][1], mServoValues[i][2], mServoValues[i][3]);
+#else
+        writeServo(i, mServoValues[i][0], mServoValues[i][1], mServoValues[i][2]);
+#endif
+    }
+
     sprintf(buf, "T%d\r\n", wMoveTime);
     mSerial->write(buf);
-    //printf(buf);
+    printf(buf);
+
+    printf(F("--- TS:%ld \r\n"), millis());
 }
 
 //-----------------------------------------------------------------------------
