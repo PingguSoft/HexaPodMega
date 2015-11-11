@@ -15,6 +15,15 @@
 #define __CONFIG_H__
 #include "common.h"
 
+
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  #define CONFIG_CPU_PROMINI
+#elif defined(__AVR_ATmega32U4__) || defined(TEENSY20)
+  #define CONFIG_CPU_PROMICRO
+#elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
+  #define CONFIG_CPU_MEGA
+#endif
+
 #define CONFIG_DOF_PER_LEG      3
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
@@ -32,15 +41,22 @@
 #define CONFIG_SERVO_SW_PWM     1
 #define CONFIG_SERVO_USC        2
 
-#define CONFIG_BOARD            CONFIG_NASSPOP_MINI
+#define CONFIG_VBAT_SMOOTH      16
+#define CONFIG_VBAT_SCALE       48
+#define CONFIG_VBAT_OFFSET      -1   // 0.1v unit
 
-#define CONFIG_VBAT_SMOOTH   16
-#define CONFIG_VBAT_SCALE    48
-#define CONFIG_VBAT_OFFSET   -1   // 0.1v unit
+#define CONFIG_VOLT_OFF         111
+#define CONFIG_VOLT_ON          115
 
-#define CONFIG_VOLT_OFF 111 // 11.1v
-#define CONFIG_VOLT_ON  115 // 11.5V - optional part to say if voltage goes back up, turn it back on...
+//#define CONFIG_BOARD            CONFIG_ORIGINAL
 
+#if defined(CONFIG_CPU_MEGA) && !defined(CONFIG_BOARD)
+    #error DEFINE CONFIG_BOARD !!!
+#elif defined(CONFIG_CPU_PROMINI)
+    #define CONFIG_BOARD        CONFIG_NASSPOP_MINI
+#else
+    #error UNKNOWN BOARD !!!
+#endif
 
 //====================================================================
 //[IO Pins On 2560]
@@ -137,18 +153,30 @@
 //    #define CONFIG_DBG_SERIAL   Serial
 //    #define CONFIG_DEBUG_BAUD   115200
 
-    #define CONFIG_CTRL_SERIAL  Serial
-    #define CONFIG_CTRL_BAUD    115200
     #define CONFIG_SERVO        CONFIG_SERVO_USC
-    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
 
-    #define CONFIG_SERVO_USC_TX 12
-    #define CONFIG_SERVO_USC_RX 11
-    #define CONFIG_SERVO_USC_BAUD   9600
+    #ifdef CONFIG_DBG_SERIAL
+        //#define CONFIG_TERMINAL
+    
+        #define CONFIG_CTRL_SERIAL      Serial
+        #define CONFIG_CTRL_BAUD        115200
+        #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_SERIAL
 
-#ifdef CONFIG_DBG_SERIAL
-//    #define CONFIG_TERMINAL
-#endif
+        // software serial
+        #define CONFIG_SERVO_USC_TX     12
+        #define CONFIG_SERVO_USC_RX     11
+        #define CONFIG_SERVO_USC_BAUD   9600
+    #else
+        #define CONFIG_SERVO_USC_BAUD   9600
+
+        #define CONFIG_CTRL_SERIAL      Serial
+        #define CONFIG_CTRL_BAUD        9600
+        #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_BTCON
+    #endif
+
+    #if !defined(CONFIG_DBG_SERIAL) && (CONFIG_SERVO_USC_BAUD != CONFIG_CTRL_BAUD)
+        #error SHARED UART BAUD IS NOT SAME !!!
+    #endif
 
     // USC PINS
     #define PIN_STATUS_RED       6

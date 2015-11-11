@@ -32,6 +32,9 @@
 #include "PhoenixInput.h"
 #include "PhoenixInputSerial.h"
 #include "PhoenixInputBTCon.h"
+#include "PhoenixServo.h"
+#include "PhoenixServoSW.h"
+#include "PhoenixServoUSC.h"
 
 enum {
     MODE_WALK = 0,
@@ -128,17 +131,35 @@ void setup()
     CONFIG_DBG_SERIAL.begin(CONFIG_DEBUG_BAUD);
 #endif
 
+
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_SERIAL)
     input = new PhoenixInputSerial();
 	input->init(NULL);
+
 #elif (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
-    input = new PhoenixInputBTCon();
+    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+    input = new PhoenixInputBTCon(&CONFIG_CTRL_SERIAL);
 	input->init(inputCallback);
+
 #else
     #error No Controller !!
 #endif
 
-    core  = new PhoenixCore(&ctrlState);
+
+    PhoenixServo    *servo;
+#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
+    servo = new PhoenixServoSW();
+
+#elif (CONFIG_SERVO == CONFIG_SERVO_USC)
+    #if (CONFIG_BOARD == CONFIG_NASSPOP_MINI) && defined(CONFIG_DBG_SERIAL)
+        servo = new PhoenixServoUSC();
+    #else
+        servo = new PhoenixServoUSC(&CONFIG_CTRL_SERIAL);
+    #endif
+
+#endif
+
+    core = new PhoenixCore(servo, &ctrlState);
 	core->init();
 
     printf(F("FREE RAM : %d\n"), freeRam());

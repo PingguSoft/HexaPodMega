@@ -19,16 +19,22 @@
 
 PhoenixInputSerial::PhoenixInputSerial(void)
 {
-    mLX = 128;
-    mLY = 128;
-    mRX = 128;
-    mRY = 128;
+    mSerial = &CONFIG_CTRL_SERIAL;
+}
+
+PhoenixInputSerial::PhoenixInputSerial(HardwareSerial *serial)
+{
+    mSerial = serial;
 }
 
 void PhoenixInputSerial::init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
 {
+    mLX = 128;
+    mLY = 128;
+    mRX = 128;
+    mRY = 128;
 #ifndef CONFIG_DBG_SERIAL
-    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+    mSerial->begin(CONFIG_CTRL_BAUD);
 #endif
     printf(F("%s\n"), __PRETTY_FUNCTION__);
 }
@@ -46,10 +52,10 @@ u32 PhoenixInputSerial::get(u8 *lx, u8 *ly, u8 *rx, u8 *ry)
     *rx = mRX;
     *ry = mRY;
 
-    if (CONFIG_CTRL_SERIAL.available() == 0)
+    if (mSerial->available() == 0)
         return 0;
 
-    cmd = CONFIG_CTRL_SERIAL.read();
+    cmd = mSerial->read();
     printf(F("cmd:%c\n"), cmd);
 
     switch(cmd) {

@@ -11,8 +11,8 @@
  see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PHOENIX_SERVO_SW_H_
-#define _PHOENIX_SERVO_SW_H_
+#ifndef _PHOENIX_SERVO_USC_H_
+#define _PHOENIX_SERVO_USC_H_
 #include <SoftwareSerial.h>
 #include "config.h"
 #include "utils.h"
@@ -23,7 +23,11 @@
 class PhoenixServoUSC : public PhoenixServo
 {
 private:
-    SoftwareSerial  *mPort;
+#if defined(CONFIG_DBG_SERIAL) && defined(CONFIG_CPU_PROMINI)
+    SoftwareSerial  *mSerial;
+#else
+    HardwareSerial  *mSerial;
+#endif
     u8              mServos[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     s16             mServoOffsets[CONFIG_NUM_LEGS * CONFIG_DOF_PER_LEG];
     bool            mBoolServosAttached;
@@ -46,6 +50,7 @@ private:
 
 public:
     PhoenixServoUSC(void);
+    PhoenixServoUSC(HardwareSerial *serial);
 
     virtual void init(void);
     virtual void start(void);

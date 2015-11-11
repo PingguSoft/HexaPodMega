@@ -159,7 +159,7 @@ public:
         STATUS_BATT_FAIL = 0x20,
     };
 
-    PhoenixCore(CTRL_STATE *state);
+    PhoenixCore(PhoenixServo *servo, CTRL_STATE *state);
 
     void        init(void);
     u8          loop(void);

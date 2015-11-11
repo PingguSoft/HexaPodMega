@@ -298,14 +298,9 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
     return atan4;
 }
 
-PhoenixCore::PhoenixCore(CTRL_STATE *state)
+PhoenixCore::PhoenixCore(PhoenixServo *servo, CTRL_STATE *state)
 {
-#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
-    mServo = new PhoenixServoSW();
-#else
-    mServo = new PhoenixServoUSC();
-#endif
-
+    mServo = servo;
     mNextCommitTime = 0;
     mPtrCtrlState = state;
 }
