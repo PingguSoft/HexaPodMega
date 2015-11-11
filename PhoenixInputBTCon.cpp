@@ -49,7 +49,6 @@ void PhoenixInputBTCon::putChar2TX(u8 data)
 
 void PhoenixInputBTCon::sendResponse(bool ok, u8 cmd, u8 *data, u8 size)
 {
-#if 0    
     putChar2TX('$');
     putChar2TX('M');
     putChar2TX((ok ? '>' : '!'));
@@ -59,7 +58,6 @@ void PhoenixInputBTCon::sendResponse(bool ok, u8 cmd, u8 *data, u8 size)
     for (u8 i = 0; i < size; i++)
         putChar2TX(*data++);
     putChar2TX(chkSumTX);
-#endif
 }
 
 void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)

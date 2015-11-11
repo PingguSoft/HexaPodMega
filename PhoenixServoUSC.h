@@ -23,7 +23,7 @@
 class PhoenixServoUSC : public PhoenixServo
 {
 private:
-#if defined(CONFIG_DBG_SERIAL) && defined(CONFIG_CPU_PROMINI)
+#if defined(CONFIG_SERVO_USC_TX) && defined(CONFIG_CPU_PROMINI)
     SoftwareSerial  *mSerial;
 #else
     HardwareSerial  *mSerial;

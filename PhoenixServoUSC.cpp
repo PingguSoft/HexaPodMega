@@ -45,7 +45,7 @@ static const s16 TBL_LEGS_OFFSET[] PROGMEM = {
 
 PhoenixServoUSC::PhoenixServoUSC(void)
 {
-#if defined(CONFIG_DBG_SERIAL) && defined(CONFIG_BOARD_PROMINI)
+#if defined(CONFIG_SERVO_USC_TX)
     mSerial = new SoftwareSerial(CONFIG_SERVO_USC_RX, CONFIG_SERVO_USC_TX);
     mSerial->begin(CONFIG_SERVO_USC_BAUD);
 #endif
@@ -53,7 +53,9 @@ PhoenixServoUSC::PhoenixServoUSC(void)
 
 PhoenixServoUSC::PhoenixServoUSC(HardwareSerial *serial)
 {
+#if !defined(CONFIG_SERVO_USC_TX) && defined(CONFIG_CPU_PROMINI)
     mSerial = serial;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -195,19 +197,19 @@ void PhoenixServoUSC::writeServo(u8 leg, u16 wCoxa, u16 wFemur, u16 wTibia)
     sprintf(buf, fmt, mServos[i], wCoxa + mServoOffsets[i]);
     i++;
     mSerial->write(buf);
-    printf(buf);
+    //printf(buf);
 
     memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, mServos[i], wFemur + mServoOffsets[i]);
     i++;
     mSerial->write(buf);
-    printf(buf);
+    //printf(buf);
 
     memset(buf, 0, sizeof(buf));
     sprintf(buf, fmt, mServos[i++], wTibia + mServoOffsets[i]);
     i++;
     mSerial->write(buf);
-    printf(buf);
+    //printf(buf);
 
 #if (CONFIG_DOF_PER_LEG == 4)
     memset(buf, 0, sizeof(buf));
@@ -271,8 +273,7 @@ void PhoenixServoUSC::commit(u16 wMoveTime)
 
     sprintf(buf, "T%d\r\n", wMoveTime);
     mSerial->write(buf);
-    printf(buf);
-    printf(F("TS:%ld\r\n\r\n"), millis());
+    //printf(buf);
 }
 
 //-----------------------------------------------------------------------------

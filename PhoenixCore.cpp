@@ -520,6 +520,7 @@ u8 PhoenixCore::loop(void)
 
 void PhoenixCore::updateServos(void)
 {
+     printf(F("--- TS:%ld \r\n"), millis());
     // First call off to the init...
     mServo->start();
 

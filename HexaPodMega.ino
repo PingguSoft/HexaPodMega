@@ -151,7 +151,7 @@ void setup()
     servo = new PhoenixServoSW();
 
 #elif (CONFIG_SERVO == CONFIG_SERVO_USC)
-    #if (CONFIG_BOARD == CONFIG_NASSPOP_MINI) && defined(CONFIG_DBG_SERIAL)
+    #if (CONFIG_BOARD == CONFIG_NASSPOP_MINI) && defined(CONFIG_SERVO_USC_TX)
         servo = new PhoenixServoUSC();
     #else
         servo = new PhoenixServoUSC(&CONFIG_CTRL_SERIAL);

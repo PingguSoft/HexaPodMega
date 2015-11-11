@@ -150,31 +150,27 @@
     #define PIN_LF_TIBIA        5  //Front Left leg Knee
     #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-//    #define CONFIG_DBG_SERIAL   Serial
-//    #define CONFIG_DEBUG_BAUD   115200
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
 
+    // software serial
     #define CONFIG_SERVO        CONFIG_SERVO_USC
+    #define CONFIG_SERVO_USC_TX     12
+    #define CONFIG_SERVO_USC_RX     11
+    #define CONFIG_SERVO_USC_BAUD   9600
 
     #ifdef CONFIG_DBG_SERIAL
         //#define CONFIG_TERMINAL
-    
         #define CONFIG_CTRL_SERIAL      Serial
         #define CONFIG_CTRL_BAUD        115200
         #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_SERIAL
-
-        // software serial
-        #define CONFIG_SERVO_USC_TX     12
-        #define CONFIG_SERVO_USC_RX     11
-        #define CONFIG_SERVO_USC_BAUD   9600
     #else
-        #define CONFIG_SERVO_USC_BAUD   9600
-
         #define CONFIG_CTRL_SERIAL      Serial
-        #define CONFIG_CTRL_BAUD        9600
+        #define CONFIG_CTRL_BAUD        115200
         #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_BTCON
     #endif
 
-    #if !defined(CONFIG_DBG_SERIAL) && (CONFIG_SERVO_USC_BAUD != CONFIG_CTRL_BAUD)
+    #if !defined(CONFIG_SERVO_USC_TX) && (CONFIG_SERVO_USC_BAUD != CONFIG_CTRL_BAUD)
         #error SHARED UART BAUD IS NOT SAME !!!
     #endif
 
