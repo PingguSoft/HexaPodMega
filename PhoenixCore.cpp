@@ -521,7 +521,7 @@ u8 PhoenixCore::loop(void)
             mServo->commit(mCurServoMoveTime);
             delay(600);
         } else {
-            //mServo->release();
+            mServo->release();
         }
         // We also have a simple debug monitor that allows us to
         // check things. call it here..
@@ -551,16 +551,14 @@ void PhoenixCore::updateServos(void)
 
 bool PhoenixCore::ctrlSingleLeg(void)
 {
-    bool allDown = FALSE;
+    bool allDown = TRUE;
 
-    //Check if all legs are down
-    allDown =
-        (mLegPosYs[IDX_RF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RF])) &&
-        (mLegPosYs[IDX_RM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RM])) &&
-        (mLegPosYs[IDX_RR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RR])) &&
-        (mLegPosYs[IDX_LR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LR])) &&
-        (mLegPosYs[IDX_LM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LM])) &&
-        (mLegPosYs[IDX_LF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LF]));
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+        if (mLegPosYs[i] != (s16)pgm_read_word(&TBL_INT_POS_Y[i])) {
+            allDown = FALSE;
+            break;
+        }
+    }
 
     if (mPtrCtrlState->bSingleLegCurSel < CONFIG_NUM_LEGS) {
         if (mPtrCtrlState->bSingleLegCurSel != mPtrCtrlState->bSingleLegOldSel) {
@@ -918,22 +916,22 @@ void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY,
         sincos(mPtrCtrlState->c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
 
     //Calcualtion of rotation matrix:
-    *x = ((long)CPR_X*DEC_EXP_2 - 
-            ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 - 
-             (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4 + 
+    *x = ((long)CPR_X*DEC_EXP_2 -
+            ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 -
+             (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4 +
              (long)CPR_Y*DEC_EXP_2*sinB4/DEC_EXP_4)) / DEC_EXP_2;
-    
-    *z = ((long)CPR_Z*DEC_EXP_2 - 
-            ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 + 
+
+    *z = ((long)CPR_Z*DEC_EXP_2 -
+            ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 +
               (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4 +
-              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4 - 
+              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4 -
               (long)CPR_Z*DEC_EXP_2*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4 -
               (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*sinG4/DEC_EXP_4 )) / DEC_EXP_2;
-    
-    *y = ((long)CPR_Y  *DEC_EXP_2 - 
-            ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 - 
+
+    *y = ((long)CPR_Y  *DEC_EXP_2 -
+            ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 -
               (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4*sinB4/DEC_EXP_4 +
-              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*sinG4/DEC_EXP_4 + 
+              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*sinG4/DEC_EXP_4 +
               (long)CPR_Z*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4 +
               (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*cosG4/DEC_EXP_4 )) / DEC_EXP_2;
 }
@@ -1027,7 +1025,7 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
     IKSW2 = hyp2XY;
 
     //IKA2 - Angle of the line S>W with respect to the femur in radians
-    Temp1 = (( ((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) - 
+    Temp1 = (( ((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) -
                 ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])) )*DEC_EXP_4 + ((long)IKSW2*IKSW2));
     Temp2 = (long)(2*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg]))*DEC_EXP_2 * (u32)IKSW2;
     T3 = Temp1 / (Temp2/DEC_EXP_4);
@@ -1040,7 +1038,7 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
         mFemurAngles[leg] = -(long)(IKA14 + IKA24) * 180 / 3141 + 900 + OFFSET_FEMUR_HORN(leg);//Normal
 
     //IKTibiaAngle
-    Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) + 
+    Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) +
             ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])))*DEC_EXP_4 - ((long)IKSW2*IKSW2));
     Temp2 = (2*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg]));
     long angleRad4 = arccos(Temp1 / Temp2);
