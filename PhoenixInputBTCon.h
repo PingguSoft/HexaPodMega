@@ -30,6 +30,7 @@ private:
     u8        mRY;
     u16       mButtons;
     u16       mOldButtons;
+    HardwareSerial  *mSerial;
 
     typedef enum
     {
@@ -51,9 +52,12 @@ private:
     u8   mCheckSum;
     u8   mCmd;
 
+    u8  chkSumTX;
+
     u8   handleRX(void);
     void sendResponse(bool ok, u8 cmd, u8 *data, u8 size);
     void evalCommand(u8 cmd, u8 *data, u8 size);
+    void putChar2TX(u8 data);
 
 public:
     typedef enum {
@@ -67,6 +71,7 @@ public:
     } MSP_T;
 
     PhoenixInputBTCon(void);
+    PhoenixInputBTCon(HardwareSerial *serial);
 
     virtual void init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);

@@ -26,9 +26,11 @@ private:
     u8        mLY;
     u8        mRX;
     u8        mRY;
+    HardwareSerial  *mSerial;
 public:
 
     PhoenixInputSerial(void);
+    PhoenixInputSerial(HardwareSerial *serial);
 
     virtual void init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res));
     virtual u32  get(u8 *lx, u8 *ly, u8 *rx, u8 *ry);

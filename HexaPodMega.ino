@@ -23,6 +23,7 @@
 #endif
 #include <Wire.h>
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 
 #include "common.h"
 #include "ServoEx.h"
@@ -31,6 +32,9 @@
 #include "PhoenixInput.h"
 #include "PhoenixInputSerial.h"
 #include "PhoenixInputBTCon.h"
+#include "PhoenixServo.h"
+#include "PhoenixServoSW.h"
+#include "PhoenixServoUSC.h"
 
 enum {
     MODE_WALK = 0,
@@ -51,6 +55,14 @@ u8        mModeControl;
 bool      mBoolDoubleHeight;
 bool      mBoolDblTravel;
 bool      mBoolWalkMode2;
+
+
+
+int freeRam() {
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
 
 
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
@@ -92,6 +104,7 @@ enum {
 
 void showLED(u8 color)
 {
+    //printf(F("COLOR : %d\n"), color);
     digitalWrite(PIN_STATUS_RED,   color & 0x01);
     digitalWrite(PIN_STATUS_GREEN, color & 0x02);
     digitalWrite(PIN_STATUS_BLUE,  color & 0x04);
@@ -118,17 +131,35 @@ void setup()
     CONFIG_DBG_SERIAL.begin(CONFIG_DEBUG_BAUD);
 #endif
 
+
 #if (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_SERIAL)
     input = new PhoenixInputSerial();
 	input->init(NULL);
+
 #elif (CONFIG_CTRL_TYPE == CONFIG_CTRL_TYPE_BTCON)
-    input = new PhoenixInputBTCon();
+    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
+    input = new PhoenixInputBTCon(&CONFIG_CTRL_SERIAL);
 	input->init(inputCallback);
+
 #else
     #error No Controller !!
 #endif
 
-    core  = new PhoenixCore(&ctrlState);
+
+    PhoenixServo    *servo;
+#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
+    servo = new PhoenixServoSW();
+
+#elif (CONFIG_SERVO == CONFIG_SERVO_USC)
+    #if (CONFIG_BOARD == CONFIG_NASSPOP_MINI) && defined(CONFIG_SERVO_USC_TX)
+        servo = new PhoenixServoUSC();
+    #else
+        servo = new PhoenixServoUSC(&CONFIG_CTRL_SERIAL);
+    #endif
+
+#endif
+
+    core = new PhoenixCore(servo, &ctrlState);
 	core->init();
 
     printf(F("FREE RAM : %d\n"), freeRam());
@@ -142,7 +173,6 @@ void turnOff(void)
     mBodyYShift  = 0;
     core->initCtrl();
     Utils::sound(400, 0, 0, 100, 300);
-    showLED(COLOR_BLACK);
     printf(F("OFF\n"));
 }
 
@@ -161,11 +191,11 @@ void loop()
     if (BUTTON_PRESSED(dwButton, INPUT_TOGGLE_ON_OFF)) {
     	if (ctrlState.fHexOn) {
             turnOff();
+            mColor = 0;
         } else {
             ctrlState.fHexOn = TRUE;
             printf(F("ON\n"));
             Utils::sound(200, 200, 0, 100, 300);
-            showLED(1);
         }
         fAdjustLegPositions = TRUE;
     }
@@ -320,7 +350,8 @@ void loop()
         ctrlState.c3dTravelLen.y = -(rx - 128)/4; //Right Stick Left/Right
     }
 
-    mColor = 1 + mModeControl + (mBoolDblTravel ? 4 : 0);
+    if (ctrlState.fHexOn)
+        mColor = 1 + mModeControl + (mBoolDblTravel ? 4 : 0);
 
     //[Translate functions]
     mBodyYShift = 0;
@@ -377,11 +408,5 @@ loop_exit:
     Utils::handleSound();
 
     ctrlState.fHexOnOld = ctrlState.fHexOn;
-}
-
-int freeRam() {
-    extern int __heap_start, *__brkval;
-    int v;
-    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 

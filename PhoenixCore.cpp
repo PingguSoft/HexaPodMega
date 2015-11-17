@@ -25,7 +25,11 @@
 #include <pins_arduino.h>
 #include <avr/pgmspace.h>
 #include "PhoenixCore.h"
+#if (CONFIG_SERVO == CONFIG_SERVO_SW_PWM)
 #include "PhoenixServoSW.h"
+#else
+#include "PhoenixServoUSC.h"
+#endif
 
 #define BALANCE_DIV_FACTOR  6    //;Other values than 6 can be used, testing...CAUTION!! At your own risk ;)
 
@@ -294,11 +298,12 @@ s16 arctan2(s16 atanX, s16 atanY, long *hyp2XY)
     return atan4;
 }
 
-PhoenixCore::PhoenixCore(CTRL_STATE *state)
+PhoenixCore::PhoenixCore(PhoenixServo *servo, CTRL_STATE *state)
 {
-    mServo = new PhoenixServoSW();
+    mServo = servo;
     mCommitTime = 0;
-    mPtrCtrlState = state;
+    mOldServoMoveTime = 0;
+    mPtrCtrlState     = state;
 }
 
 void PhoenixCore::initCtrl(void)
@@ -356,6 +361,7 @@ u8 PhoenixCore::loop(void)
         if (mTimerStart >= mCommitTime) {
             mServo->commit(mCurServoMoveTime);
             mCommitTime = 0;
+            mTimerStart = millis();
         } else {
             return ret;
         }
@@ -482,10 +488,13 @@ u8 PhoenixCore::loop(void)
                 break;
             }
         }
+
+        //printf(F("ExtraCycle:%d\n"), mExtraCycle);
         if (mExtraCycle > 0) {
             mExtraCycle--;
             mBoolWalking = (mExtraCycle != 0);
             mCommitTime  = mTimerStart + mOldServoMoveTime;
+            //printf(F("Next1:%ld\n"), mCommitTime);
 
             if (mBoolDbgOutput) {
                 printf(F("BRX:%d, Walk:%d, GS:%d\n"), mPtrCtrlState->c3dBodyRot.x, mBoolWalking, mGaitStep);
@@ -494,12 +503,15 @@ u8 PhoenixCore::loop(void)
             }
         } else {
             // commit immediately
-            mServo->commit(mCurServoMoveTime);
+            mCommitTime = mTimerStart + mOldServoMoveTime;
+            //printf(F("Next2:%ld\n"), mCommitTime);
         }
 
         if (mBoolDbgOutput) {
             printf(F("TY:%5d, LFZ:%5d\n"), mTotalYBal1, mLegPosZs[IDX_LF]);
         }
+
+
     } else {
         //Turn the bot off - May need to add ajust here...
         if (mPtrCtrlState->fHexOnOld) {
@@ -539,16 +551,14 @@ void PhoenixCore::updateServos(void)
 
 bool PhoenixCore::ctrlSingleLeg(void)
 {
-    bool allDown = FALSE;
+    bool allDown = TRUE;
 
-    //Check if all legs are down
-    allDown =
-        (mLegPosYs[IDX_RF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RF])) &&
-        (mLegPosYs[IDX_RM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RM])) &&
-        (mLegPosYs[IDX_RR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_RR])) &&
-        (mLegPosYs[IDX_LR] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LR])) &&
-        (mLegPosYs[IDX_LM] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LM])) &&
-        (mLegPosYs[IDX_LF] == (s16)pgm_read_word(&TBL_INT_POS_Y[IDX_LF]));
+    for (u8 i = 0; i < CONFIG_NUM_LEGS; i++) {
+        if (mLegPosYs[i] != (s16)pgm_read_word(&TBL_INT_POS_Y[i])) {
+            allDown = FALSE;
+            break;
+        }
+    }
 
     if (mPtrCtrlState->bSingleLegCurSel < CONFIG_NUM_LEGS) {
         if (mPtrCtrlState->bSingleLegCurSel != mPtrCtrlState->bSingleLegOldSel) {
@@ -906,14 +916,24 @@ void PhoenixCore::getBodyIK(u8 leg, s16 posX, s16 posZ, s16 posY, s16 RotationY,
         sincos(mPtrCtrlState->c3dBodyRot.y + (RotationY * DEC_EXP_1) + mTotalYBal1, &sinA4, &cosA4) ;
 
     //Calcualtion of rotation matrix:
-    *x = ((long)CPR_X*DEC_EXP_2 - ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 - (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4
-        + (long)CPR_Y*DEC_EXP_2*sinB4/DEC_EXP_4 ))/DEC_EXP_2;
-    *z = ((long)CPR_Z*DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 + (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4
-        + (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4 - (long)CPR_Z*DEC_EXP_2*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4
-        - (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*sinG4/DEC_EXP_4 ))/DEC_EXP_2;
-    *y = ((long)CPR_Y  *DEC_EXP_2 - ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 - (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4*sinB4/DEC_EXP_4
-        + (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*sinG4/DEC_EXP_4 + (long)CPR_Z*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4
-        + (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*cosG4/DEC_EXP_4 ))/DEC_EXP_2;
+    *x = ((long)CPR_X*DEC_EXP_2 -
+            ((long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosB4/DEC_EXP_4 -
+             (long)CPR_Z*DEC_EXP_2*cosB4/DEC_EXP_4*sinA4/DEC_EXP_4 +
+             (long)CPR_Y*DEC_EXP_2*sinB4/DEC_EXP_4)) / DEC_EXP_2;
+
+    *z = ((long)CPR_Z*DEC_EXP_2 -
+            ( (long)CPR_X*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4 +
+              (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4 +
+              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4 -
+              (long)CPR_Z*DEC_EXP_2*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4*sinG4/DEC_EXP_4 -
+              (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*sinG4/DEC_EXP_4 )) / DEC_EXP_2;
+
+    *y = ((long)CPR_Y  *DEC_EXP_2 -
+            ( (long)CPR_X*DEC_EXP_2*sinA4/DEC_EXP_4*sinG4/DEC_EXP_4 -
+              (long)CPR_X*DEC_EXP_2*cosA4/DEC_EXP_4*cosG4/DEC_EXP_4*sinB4/DEC_EXP_4 +
+              (long)CPR_Z*DEC_EXP_2*cosA4/DEC_EXP_4*sinG4/DEC_EXP_4 +
+              (long)CPR_Z*DEC_EXP_2*cosG4/DEC_EXP_4*sinA4/DEC_EXP_4*sinB4/DEC_EXP_4 +
+              (long)CPR_Y*DEC_EXP_2*cosB4/DEC_EXP_4*cosG4/DEC_EXP_4 )) / DEC_EXP_2;
 }
 
 //--------------------------------------------------------------------
@@ -1005,7 +1025,8 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
     IKSW2 = hyp2XY;
 
     //IKA2 - Angle of the line S>W with respect to the femur in radians
-    Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) - ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])))*DEC_EXP_4 + ((long)IKSW2*IKSW2));
+    Temp1 = (( ((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) -
+                ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])) )*DEC_EXP_4 + ((long)IKSW2*IKSW2));
     Temp2 = (long)(2*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg]))*DEC_EXP_2 * (u32)IKSW2;
     T3 = Temp1 / (Temp2/DEC_EXP_4);
     IKA24 = arccos (T3 );
@@ -1017,7 +1038,8 @@ u8 PhoenixCore::getLegIK(u8 leg, s16 IKFeetPosX, s16 IKFeetPosY, s16 IKFeetPosZ)
         mFemurAngles[leg] = -(long)(IKA14 + IKA24) * 180 / 3141 + 900 + OFFSET_FEMUR_HORN(leg);//Normal
 
     //IKTibiaAngle
-    Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) + ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])))*DEC_EXP_4 - ((long)IKSW2*IKSW2));
+    Temp1 = ((((long)(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])) +
+            ((long)(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg])))*DEC_EXP_4 - ((long)IKSW2*IKSW2));
     Temp2 = (2*(u8)pgm_read_byte(&TBL_FEMUR_LENGTH[leg])*(u8)pgm_read_byte(&TBL_TIBIA_LENGTH[leg]));
     long angleRad4 = arccos(Temp1 / Temp2);
 
@@ -1173,7 +1195,7 @@ bool PhoenixCore::showTerminal(void)
         szCmdLine[ich] = ch;
     }
     szCmdLine[ich] = '\0';    // go ahead and null terminate it...
-    printf(F("Serial Cmd Line:%s !!\n"), szCmdLine);
+    printf(F("Terminal Cmd Line:%s !!\n"), szCmdLine);
 
     if (ich == 0) {
         mBoolShowDbgPrompt = TRUE;

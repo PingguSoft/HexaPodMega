@@ -18,6 +18,18 @@
 
 PhoenixInputBTCon::PhoenixInputBTCon(void)
 {
+    mSerial = &CONFIG_CTRL_SERIAL;
+    mSerial->begin(CONFIG_CTRL_BAUD);
+}
+
+PhoenixInputBTCon::PhoenixInputBTCon(HardwareSerial *serial)
+{
+    mSerial = serial;
+}
+
+void PhoenixInputBTCon::init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
+{
+    printf(F("%s\n"), __PRETTY_FUNCTION__);
     mLX = 128;
     mLY = 128;
     mRX = 128;
@@ -25,20 +37,14 @@ PhoenixInputBTCon::PhoenixInputBTCon(void)
     mState = STATE_IDLE;
     mOldButtons = 0;
     mButtons = 0;
-}
-
-void PhoenixInputBTCon::init(s8 (*callback)(u8 cmd, u8 *data, u8 size, u8 *res))
-{
-    printf(F("%s\n"), __PRETTY_FUNCTION__);
-    CONFIG_CTRL_SERIAL.begin(CONFIG_CTRL_BAUD);
     mCallback = callback;
 }
 
-static u8 chkSumTX;
-void putChar2TX(u8 data)
+
+void PhoenixInputBTCon::putChar2TX(u8 data)
 {
     chkSumTX ^= data;
-    CONFIG_CTRL_SERIAL.write(data);
+    mSerial->write(data);
 }
 
 void PhoenixInputBTCon::sendResponse(bool ok, u8 cmd, u8 *data, u8 size)
@@ -127,13 +133,13 @@ void PhoenixInputBTCon::evalCommand(u8 cmd, u8 *data, u8 size)
 u8 PhoenixInputBTCon::handleRX(void)
 {
     u8 ret = 0;
-    u8 rxSize = CONFIG_CTRL_SERIAL.available();
+    u8 rxSize = mSerial->available();
 
     if (rxSize == 0)
         return ret;
 
     while (rxSize--) {
-        u8 ch = CONFIG_CTRL_SERIAL.read();
+        u8 ch = mSerial->read();
 
         switch (mState) {
             case STATE_IDLE:

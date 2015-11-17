@@ -15,52 +15,63 @@
 #define __CONFIG_H__
 #include "common.h"
 
-#define CONFIG_ORIGINAL         1
-#define CONFIG_NASSPOP_MEGA     2
-#define CONFIG_NASSPOP_MINI     3
-#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
 
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  #define CONFIG_CPU_PROMINI
+#elif defined(__AVR_ATmega32U4__) || defined(TEENSY20)
+  #define CONFIG_CPU_PROMICRO
+#elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
+  #define CONFIG_CPU_MEGA
+#endif
 
 #define CONFIG_DOF_PER_LEG      3
 #define CONFIG_NUM_LEGS         6
 #define CONFIG_TRAVEL_DEAD_ZONE 4
 
-#if (CONFIG_BOARD == CONFIG_ORIGINAL) || (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
-#define CONFIG_DBG_SERIAL   Serial
-#define CONFIG_DEBUG_BAUD   115200
+// board type
+#define CONFIG_ORIGINAL         1
+#define CONFIG_NASSPOP_MEGA     2
+#define CONFIG_NASSPOP_MINI     3
 
-#define CONFIG_CTRL_SERIAL  Serial1
-#define CONFIG_CTRL_BAUD    115200
-#elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-//#define CONFIG_DBG_SERIAL   Serial
-//#define CONFIG_DEBUG_BAUD   115200
+// controller input
+#define CONFIG_CTRL_TYPE_SERIAL 1
+#define CONFIG_CTRL_TYPE_BTCON  2
 
-#define CONFIG_CTRL_SERIAL  Serial
-#define CONFIG_CTRL_BAUD    115200
+// servo controller
+#define CONFIG_SERVO_SW_PWM     1
+#define CONFIG_SERVO_USC        2
+
+#define CONFIG_VBAT_SMOOTH      16
+#define CONFIG_VBAT_SCALE       48
+#define CONFIG_VBAT_OFFSET      -1   // 0.1v unit
+
+#define CONFIG_VOLT_OFF         111
+#define CONFIG_VOLT_ON          115
+
+#define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
+
+#if defined(CONFIG_CPU_MEGA) && !defined(CONFIG_BOARD)
+    #error DEFINE CONFIG_BOARD !!!
+#elif defined(CONFIG_CPU_PROMINI)
+    #define CONFIG_BOARD        CONFIG_NASSPOP_MINI
+#else
+    #error UNKNOWN BOARD !!!
 #endif
-
-#define CONFIG_CTRL_TYPE_SERIAL 0
-#define CONFIG_CTRL_TYPE_BTCON  1
-#define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
-
-#ifdef CONFIG_DBG_SERIAL
-    #define CONFIG_TERMINAL
-#endif
-
-#define CONFIG_VBAT_SMOOTH   16
-#define CONFIG_VBAT_SCALE    48
-#define CONFIG_VBAT_OFFSET   -1   // 0.1v unit
-
-#define CONFIG_VOLT_OFF 111 // 11.1v
-#define CONFIG_VOLT_ON  115 // 11.5V - optional part to say if voltage goes back up, turn it back on...
-
 
 //====================================================================
 //[IO Pins On 2560]
 
-#define PIN_ANALOG_VOLT A0
+//#define PIN_ANALOG_VOLT A0
 
 #if (CONFIG_BOARD == CONFIG_ORIGINAL)
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
+
+    #define CONFIG_CTRL_SERIAL  Serial1
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
     #define PIN_STATUS_RED      31
     #define PIN_STATUS_GREEN    30
     #define PIN_STATUS_BLUE     32
@@ -80,7 +91,30 @@
     #define PIN_RF_FEMUR        23  //Front Right leg Hip Vertical
     #define PIN_RF_TIBIA        24  //Front Right leg Knee
     #define PIN_RF_TARS         1   //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        10  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        11  //Rear Left leg Knee
+    #define PIN_LR_TARS         1  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        7  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        8  //Middle Left leg Knee
+    #define PIN_LM_TARS         1  //Tar = Not working...
+
+    #define PIN_LF_COXA         2  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        3  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        5  //Front Left leg Knee
+    #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MEGA)
+    #define CONFIG_DBG_SERIAL   Serial
+    #define CONFIG_DEBUG_BAUD   115200
+
+    #define CONFIG_CTRL_SERIAL  Serial1
+    #define CONFIG_CTRL_BAUD    115200
+    #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
+    #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
+
     #define PIN_STATUS_RED      A7
     #define PIN_STATUS_GREEN    A6
     #define PIN_STATUS_BLUE     A5
@@ -100,42 +134,82 @@
     #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
     #define PIN_RF_TIBIA        34  //Front Right leg Knee
     #define PIN_RF_TARS          1  //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        10  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        11  //Rear Left leg Knee
+    #define PIN_LR_TARS         1  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        7  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        8  //Middle Left leg Knee
+    #define PIN_LM_TARS         1  //Tar = Not working...
+
+    #define PIN_LF_COXA         2  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        3  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        5  //Front Left leg Knee
+    #define PIN_LF_TARS         1  //Tar
 #elif (CONFIG_BOARD == CONFIG_NASSPOP_MINI)
-    #define PIN_STATUS_RED      A7
-    #define PIN_STATUS_GREEN    A6
-    #define PIN_STATUS_BLUE     A5
-    #define PIN_SOUND            1
+//    #define CONFIG_DBG_SERIAL   Serial
+//    #define CONFIG_DEBUG_BAUD   115200
 
-    #define PIN_RR_COXA         44  //Rear Right leg Hip Horizontal
-    #define PIN_RR_FEMUR        45  //Rear Right leg Hip Vertical
-    #define PIN_RR_TIBIA        46  //Rear Right leg Knee
-    #define PIN_RR_TARS          1  //Tar
+    // software serial
+    #define CONFIG_SERVO        CONFIG_SERVO_USC
+    #define CONFIG_SERVO_USC_TX     12
+    #define CONFIG_SERVO_USC_RX     11
+    #define CONFIG_SERVO_USC_BAUD   9600
 
-    #define PIN_RM_COXA         35  //Middle Right leg Hip Horizontal
-    #define PIN_RM_FEMUR        33  //Middle Right leg Hip Vertical
-    #define PIN_RM_TIBIA        36  //Middle Right leg Knee
-    #define PIN_RM_TARS          1  //Tar
+    #ifdef CONFIG_DBG_SERIAL
+        //#define CONFIG_TERMINAL
+        #define CONFIG_CTRL_SERIAL      Serial
+        #define CONFIG_CTRL_BAUD        115200
+        #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_SERIAL
+    #else
+        #define CONFIG_CTRL_SERIAL      Serial
+        #define CONFIG_CTRL_BAUD        115200
+        #define CONFIG_CTRL_TYPE        CONFIG_CTRL_TYPE_BTCON
+    #endif
 
-    #define PIN_RF_COXA          0 //Front Right leg Hip Horizontal
-    #define PIN_RF_FEMUR        32  //Front Right leg Hip Vertical
-    #define PIN_RF_TIBIA        34  //Front Right leg Knee
-    #define PIN_RF_TARS          1  //Tar
+    #if !defined(CONFIG_SERVO_USC_TX) && (CONFIG_SERVO_USC_BAUD != CONFIG_CTRL_BAUD)
+        #error SHARED UART BAUD IS NOT SAME !!!
+    #endif
+
+    // USC PINS
+    #define PIN_STATUS_RED       6
+    #define PIN_STATUS_GREEN     3
+    #define PIN_STATUS_BLUE      5
+    #define PIN_SOUND            2
+
+    #define PIN_RR_COXA         24  //Rear Right leg Hip Horizontal
+    #define PIN_RR_FEMUR        25  //Rear Right leg Hip Vertical
+    #define PIN_RR_TIBIA        26  //Rear Right leg Knee
+    #define PIN_RR_TARS          0  //Tar
+
+    #define PIN_RM_COXA         27  //Middle Right leg Hip Horizontal
+    #define PIN_RM_FEMUR        28  //Middle Right leg Hip Vertical
+    #define PIN_RM_TIBIA        29  //Middle Right leg Knee
+    #define PIN_RM_TARS          0  //Tar
+
+    #define PIN_RF_COXA         30 //Front Right leg Hip Horizontal
+    #define PIN_RF_FEMUR        31  //Front Right leg Hip Vertical
+    #define PIN_RF_TIBIA        32  //Front Right leg Knee
+    #define PIN_RF_TARS          0  //Tar
+
+    #define PIN_LR_COXA         9  //Rear Left leg Hip Horizontal
+    #define PIN_LR_FEMUR        8  //Rear Left leg Hip Vertical
+    #define PIN_LR_TIBIA        7  //Rear Left leg Knee
+    #define PIN_LR_TARS         0  //Tar
+
+    #define PIN_LM_COXA         6  //Middle Left leg Hip Horizontal
+    #define PIN_LM_FEMUR        5  //Middle Left leg Hip Vertical
+    #define PIN_LM_TIBIA        4  //Middle Left leg Knee
+    #define PIN_LM_TARS         0  //Tar = Not working...
+
+    #define PIN_LF_COXA         3  //Front Left leg Hip Horizontal
+    #define PIN_LF_FEMUR        2  //Front Left leg Hip Vertical
+    #define PIN_LF_TIBIA        1  //Front Left leg Knee
+    #define PIN_LF_TARS         0  //Tar
 #endif
-
-#define PIN_LR_COXA       9  //Rear Left leg Hip Horizontal
-#define PIN_LR_FEMUR     10  //Rear Left leg Hip Vertical
-#define PIN_LR_TIBIA     11  //Rear Left leg Knee
-#define PIN_LR_TARS       1  //Tar
-
-#define PIN_LM_COXA       6  //Middle Left leg Hip Horizontal
-#define PIN_LM_FEMUR      7  //Middle Left leg Hip Vertical
-#define PIN_LM_TIBIA      8  //Middle Left leg Knee
-#define PIN_LM_TARS       1  //Tar = Not working...
-
-#define PIN_LF_COXA       2  //Front Left leg Hip Horizontal
-#define PIN_LF_FEMUR      3  //Front Left leg Hip Vertical
-#define PIN_LF_TIBIA      5  //Front Left leg Knee
-#define PIN_LF_TARS       1  //Tar
 
 //--------------------------------------------------------------------
 //[MIN/MAX ANGLES]
