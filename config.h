@@ -48,6 +48,7 @@
 #define CONFIG_VOLT_OFF         111
 #define CONFIG_VOLT_ON          115
 
+//#define CONFIG_TERMINAL       // for leg calibration
 #define CONFIG_BOARD            CONFIG_NASSPOP_MEGA
 
 #if defined(CONFIG_CPU_MEGA) && !defined(CONFIG_BOARD)
