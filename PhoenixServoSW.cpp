@@ -102,9 +102,6 @@ u8 PhoenixServoSW::getBattVolt(void)
     u16 v;
 #ifdef PIN_ANALOG_VOLT
     v = analogRead(PIN_ANALOG_VOLT);
-#else
-    v = CONFIG_VOLT_ON;
-#endif
 
     mVoltSum += v;
     mVoltSum -= mVoltBuf[mVoltIdx];
@@ -112,16 +109,21 @@ u8 PhoenixServoSW::getBattVolt(void)
     mVoltIdx %= CONFIG_VBAT_SMOOTH;
 
     u8 t;
-#if CONFIG_VBAT_SMOOTH == 16
-    t = mVoltSum / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
-#elif CONFIG_VBAT_SMOOTH < 16
-    t = (mVoltSum * (16 / CONFIG_VBAT_SMOOTH)) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
-#else
-    t = ((mVoltSum / CONFIG_VBAT_SMOOTH) * 16) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
-#endif
+
+    #if CONFIG_VBAT_SMOOTH == 16
+        t = mVoltSum / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+    #elif CONFIG_VBAT_SMOOTH < 16
+        t = (mVoltSum * (16 / CONFIG_VBAT_SMOOTH)) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+    #else
+        t = ((mVoltSum / CONFIG_VBAT_SMOOTH) * 16) / CONFIG_VBAT_SCALE + CONFIG_VBAT_OFFSET;
+    #endif
+
     printf(F("analog:%d voltsum:%d, v:%d\n"), v, mVoltSum, t);
 
     return t;
+#else
+    return CONFIG_VOLT_ON;
+#endif
 }
 
 //-----------------------------------------------------------------------------
