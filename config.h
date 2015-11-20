@@ -55,20 +55,19 @@
     #error DEFINE CONFIG_BOARD !!!
 #elif defined(CONFIG_CPU_PROMINI)
     #define CONFIG_BOARD        CONFIG_NASSPOP_MINI
-#else
-    #error UNKNOWN BOARD !!!
 #endif
 
 //====================================================================
 //[IO Pins On 2560]
 
-//#define PIN_ANALOG_VOLT A0
 
 #if (CONFIG_BOARD == CONFIG_ORIGINAL)
-    #define CONFIG_DBG_SERIAL   Serial
-    #define CONFIG_DEBUG_BAUD   115200
+//    #define CONFIG_DBG_SERIAL   Serial
+//    #define CONFIG_DEBUG_BAUD   115200
 
-    #define CONFIG_CTRL_SERIAL  Serial1
+    #define PIN_ANALOG_VOLT A0
+
+    #define CONFIG_CTRL_SERIAL  Serial
     #define CONFIG_CTRL_BAUD    115200
     #define CONFIG_SERVO        CONFIG_SERVO_SW_PWM
     #define CONFIG_CTRL_TYPE    CONFIG_CTRL_TYPE_BTCON
