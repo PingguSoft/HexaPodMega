@@ -17,6 +17,11 @@
 //               https://play.google.com/store/apps/details?id=com.pinggusoft.btcon
 //=============================================================================
 
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega1281__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
+    #define SERIAL_RX_BUFFER_SIZE 256
+    #define SERIAL_TX_BUFFER_SIZE 256
+#endif
+
 #define DEFINE_HEX_GLOBALS
 #if ARDUINO > 99
 #include <Arduino.h>
