@@ -493,7 +493,7 @@ u8 PhoenixCore::loop(void)
         if (mExtraCycle > 0) {
             mExtraCycle--;
             mBoolWalking = (mExtraCycle != 0);
-            mCommitTime  = mTimerStart + mOldServoMoveTime;
+            mCommitTime  = mTimerStart + mOldServoMoveTime + CONFIG_SERVO_MARGIN;
             //printf(F("Next1:%ld\n"), mCommitTime);
 
             if (mBoolDbgOutput) {
@@ -503,7 +503,7 @@ u8 PhoenixCore::loop(void)
             }
         } else {
             // commit immediately
-            mCommitTime = mTimerStart + mOldServoMoveTime;
+            mCommitTime = mTimerStart + mOldServoMoveTime + CONFIG_SERVO_MARGIN;
             //printf(F("Next2:%ld\n"), mCommitTime);
         }
 

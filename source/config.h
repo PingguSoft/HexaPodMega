@@ -154,7 +154,8 @@
 //    #define CONFIG_DEBUG_BAUD   115200
 
     // software serial
-    #define CONFIG_SERVO        CONFIG_SERVO_USC
+    #define CONFIG_SERVO            CONFIG_SERVO_USC
+    #define CONFIG_SERVO_MARGIN     200
     #define CONFIG_SERVO_USC_TX     12
     #define CONFIG_SERVO_USC_RX     11
     #define CONFIG_SERVO_USC_BAUD   9600
@@ -210,6 +211,13 @@
     #define PIN_LF_TIBIA        1  //Front Left leg Knee
     #define PIN_LF_TARS         0  //Tar
 #endif
+
+#if  (CONFIG_SERVO == CONFIG_SERVO_USC)
+    #define CONFIG_SERVO_MARGIN 200
+#else
+    #define CONFIG_SERVO_MARGIN 0
+#endif
+
 
 //--------------------------------------------------------------------
 //[MIN/MAX ANGLES]
